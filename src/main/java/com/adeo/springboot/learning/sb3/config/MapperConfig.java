@@ -1,0 +1,15 @@
+package com.adeo.springboot.learning.sb3.config;
+
+import com.adeo.springboot.learning.sb3.mapper.VideoMapper;
+import org.mapstruct.factory.Mappers;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class MapperConfig {
+
+    @Bean
+    VideoMapper videoMapper() {
+        return Mappers.getMapper(VideoMapper.class);
+    }
+}

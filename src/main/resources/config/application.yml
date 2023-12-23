@@ -1,0 +1,61 @@
+
+logging:
+  level:
+    root: INFO
+
+server.port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
+      base-path: /management
+  endpoint:
+    health:
+      show-details: always
+      cache:
+        time-to-live: 10000ms
+    info:
+      cache:
+        time-to-live: 10000ms
+
+spring:
+  jackson:
+    deserialization:
+      accept-single-value-as-array: true
+    serialization:
+      write-dates-as-timestamps: false
+    generator:
+      write-numbers-as-strings: false
+    default-property-inclusion: NON_NULL
+    date-format: yyyy-MM-dd'T'HH:mm:ssZ
+
+  application:
+    name: web-lab
+
+  threads:
+    virtual:
+      enabled: true
+  sql:
+    init:
+      mode: always
+
+api:
+  pagination:
+    pageNumber: 0
+    pageSize: 50
+
+integration:
+  poller:
+    fixed-rate-in-millis: 50
+    max-messages-per-poll-primary: 300
+    max-messages-per-poll-secondary: 150
+
+security:
+  enhanced: true
+
+webclient:
+  retry:
+    maxAttempts: 2
+    durationInMillis: 500
