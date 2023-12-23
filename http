@@ -1,0 +1,100 @@
+#!/bin/bash
+
+set -e 
+
+cd $(dirname $0)
+
+cat src/main/resources/banner.txt
+echo
+
+Help()
+{
+   # Display Help
+   echo "For the using of this script you need several parameters."
+   echo
+   echo "Syntax: [-i|-e|-o|-t|-p|-s|-m|-f|-q|-P|-h]"
+   echo "options:"
+   echo "i     The resource identifier or for the management endpoint [info|health]."
+   echo "e     The endpoint name [management|videos]."
+   echo "o     An option for the management metrics endpoint [jvm.memory.max|jvm.memory.used|system.cpu.count|system.cpu.usage]."
+   echo "t     The token (required)."
+   echo "p     Page number for the pagination (0 is the default value)."
+   echo "s     Size parameter is the page size for the pagination (5 is the default value)."
+   echo "m     The request method [GET(default)|POST]"
+   echo "f     The name of the file that contains the restaurant to be added [newVideo01.json]."
+   echo "q     Query parameters (name=\"Learn Spring boot 3 with Testing\")."
+   echo "P     The Http port [8080(default)|7001(otherwise)]."
+   echo "h     Print this Help."
+   echo
+}
+
+while getopts ":e:i:o:t:p:m:f:s:q:P:h" arg; do
+  case $arg in
+    h) 	Help
+    	exit;;
+    e)	ENDPOINT=$OPTARG;;
+    i) 	ID=$OPTARG;;
+    o)	OPTION=$OPTARG;;
+    t)	TOKEN=$OPTARG;;
+    p)  PAGE=$OPTARG;;
+    s)	SIZE=$OPTARG;;
+    q)	QUERY=$OPTARG;;
+    P)  PORT=$OPTARG;;
+    m)  METHOD=$OPTARG;;
+    f)  FILE=$OPTARG;;
+    \?)	#incorrect option
+    	echo "Error : invalid option"
+    	echo
+    	Help
+    	exit;;
+  esac
+done
+
+if [ -z $ENDPOINT ]
+then ENDPOINT="videos"
+fi
+
+if [ -z $PAGE ]
+then PAGE=0
+fi
+
+if [ -z $SIZE ]
+then SIZE=2
+fi
+
+if [ -z $PORT ]
+then PORT="8080"
+fi
+
+if [[ $ID == "info" || $ID == "health" ]]
+then
+	ENDPOINT="management"
+	http ":$PORT/api/v1/$ENDPOINT/$ID"
+	exit 0
+fi
+
+if [[ -n $METHOD && $METHOD == "POST" && -n $QUERY ]]
+then http POST ":$PORT/api/v1/$ENDPOINT?$QUERY" < src/test/resources/$FILE "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+elif [[ -n $METHOD && $METHOD == "POST" ]]
+then http POST ":$PORT/api/v1/$ENDPOINT" < src/test/resources/json/$FILE "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+elif [[ -n $METHOD && $METHOD == "PUT" ]]
+then http PUT ":$PORT/api/v1/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+elif [[ -n $METHOD && $METHOD == "DELETE" ]]
+then http DELETE ":$PORT/api/v1/$ENDPOINT?$QUERY" "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+elif [[ -n $ID && -n $OPTION && $ENDPOINT == "management" ]]
+then http ":$PORT/api/v1/$ENDPOINT/$ID/$OPTION" "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+elif [[ -n $ID ]]
+then http ":$PORT/api/v1/$ENDPOINT/$ID?page=$PAGE&size=$SIZE&$QUERY" "Origin: http://localhost:8081"
+else 
+	http ":$PORT/api/v1/$ENDPOINT?page=$PAGE&size=$SIZE&$QUERY" "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+fi
+
+if [[ $ID == "metrics" ]]
+then 
+	echo "Several metrics options : [http.server.requests|jvm.memory.max|jvm.memory.used]"
+	echo "Several metrics options : [system.cpu.count|system.cpu.usage|process.cpu.usage]"
+	echo " > For more metrics launch with this options : -e management -i metrics"
+	echo
+fi
+
+exit 0

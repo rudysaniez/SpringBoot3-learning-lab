@@ -9,16 +9,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @RestController
-public class VideoApiController {
+public class VideoRestController {
 
     private final VideoService videoService;
     private final VideoMapper videoMapper;
 
-    public VideoApiController(VideoService videoService,
-                              VideoMapper videoMapper) {
+    public VideoRestController(VideoService videoService,
+                               VideoMapper videoMapper) {
 
         this.videoService = videoService;
         this.videoMapper = videoMapper;
@@ -29,11 +30,13 @@ public class VideoApiController {
      * @return list of {@link Video}
      */
     @GetMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page all(@RequestParam(value = "page", required = false) Integer page,
-                           @RequestParam(value = "size", required = false) Integer size) {
+    public ResponseEntity<PageVideo> all(@RequestParam(value = "page", required = false) Integer page,
+                         @RequestParam(value = "size", required = false) Integer size) {
 
         if(Objects.isNull(page)) page = 0;
         if(Objects.isNull(size)) size = 10;
+        if(page < 0) page = 0;
+        if(size > 20) size = 20;
 
         var pagination = videoService.findAll(page, size);
 
@@ -46,7 +49,7 @@ public class VideoApiController {
                 pagination.getTotalElements(),
                 pagination.getTotalPages());
 
-        return new Page(videoModelList, pageMetadata);
+        return ResponseEntity.ok(new PageVideo(videoModelList, pageMetadata));
     }
 
     /**
@@ -64,10 +67,12 @@ public class VideoApiController {
      * @return list of {@link Video}
      */
     @GetMapping(value = "/videos/:search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Video> search(@RequestParam(name = "name") String name) {
-        return videoService.search(new VideoSearch(name, null)).stream()
-                .map(videoMapper::toModel)
-                .toList();
+    public ResponseEntity<List<Video>> search(@RequestParam(name = "name") String name) {
+        return ResponseEntity.ok(
+                    videoService.search(new VideoSearch(name, Optional.empty())).stream()
+                        .map(videoMapper::toModel)
+                        .toList()
+        );
     }
 
     /**
@@ -76,10 +81,8 @@ public class VideoApiController {
      * @return {@link Video}
      */
     @PostMapping(value = "/videos", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Video create(@RequestBody Video video) {
-
-        var videoEntity = videoService.save(video);
-        return videoMapper.toModel(videoEntity);
+    public ResponseEntity<Video> create(@RequestBody Video video) {
+        return ResponseEntity.ok(videoMapper.toModel(videoService.save(video)));
     }
 
     /**

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @Configuration
-class Springboot3LearningLabApplicationTests {
+class Start {
 
 	@Bean
 	@RestartScope
@@ -19,7 +19,7 @@ class Springboot3LearningLabApplicationTests {
 
 	public static void main(String[] args) {
 		SpringApplication.from(Application::main)
-				.with(Springboot3LearningLabApplicationTests.class)
+				.with(Start.class)
 				.run(args);
 	}
 

@@ -69,8 +69,8 @@ public class VideoService {
 
         if(StringUtils.hasText(videoSearch.name()))
             return videoRepository.findTop3ByNameContainsIgnoreCaseOrderByName(videoSearch.name());
-        else if (StringUtils.hasText(videoSearch.description()))
-            return videoRepository.findTop3ByDescriptionContainingIgnoreCaseOrderByName(videoSearch.description());
+        else if (videoSearch.description().isPresent() && StringUtils.hasText(videoSearch.description().get()))
+            return videoRepository.findTop3ByDescriptionContainingIgnoreCaseOrderByName(videoSearch.description().get());
 
         return List.of();
     }

@@ -59,3 +59,7 @@ webclient:
   retry:
     maxAttempts: 2
     durationInMillis: 500
+
+server:
+  servlet:
+    context-path: /api/v1
