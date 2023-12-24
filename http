@@ -12,7 +12,7 @@ Help()
    # Display Help
    echo "For the using of this script you need several parameters."
    echo
-   echo "Syntax: [-i|-e|-o|-t|-p|-s|-m|-f|-q|-P|-h]"
+   echo "Syntax: [-i|-e|-o|-t|-p|-s|-m|-f|-q|-P|-U|-W|-h]"
    echo "options:"
    echo "i     The resource identifier or for the management endpoint [info|health]."
    echo "e     The endpoint name [management|videos]."
@@ -24,11 +24,13 @@ Help()
    echo "f     The name of the file that contains the restaurant to be added [newVideo01.json]."
    echo "q     Query parameters (name=\"Learn Spring boot 3 with Testing\")."
    echo "P     The Http port [8080(default)|7001(otherwise)]."
+   echo "U     The username."
+   echo "W     The user password."
    echo "h     Print this Help."
    echo
 }
 
-while getopts ":e:i:o:t:p:m:f:s:q:P:h" arg; do
+while getopts ":e:i:o:t:p:m:f:s:q:P:U:W:h" arg; do
   case $arg in
     h) 	Help
     	exit;;
@@ -41,6 +43,8 @@ while getopts ":e:i:o:t:p:m:f:s:q:P:h" arg; do
     q)	QUERY=$OPTARG;;
     P)  PORT=$OPTARG;;
     m)  METHOD=$OPTARG;;
+    U)  USERNAME=$OPTARG;;
+    W)  PASSWORD=$OPTARG;;
     f)  FILE=$OPTARG;;
     \?)	#incorrect option
     	echo "Error : invalid option"
@@ -66,6 +70,14 @@ if [ -z $PORT ]
 then PORT="8080"
 fi
 
+if [[ -z $USERNAME || -z $PASSWORD ]]
+then
+  USERNAME="user"
+  PASSWORD="user"
+  echo " > Use the default username [user:user]."
+  echo ""
+fi
+
 if [[ $ID == "info" || $ID == "health" ]]
 then
 	ENDPOINT="management"
@@ -74,19 +86,19 @@ then
 fi
 
 if [[ -n $METHOD && $METHOD == "POST" && -n $QUERY ]]
-then http POST ":$PORT/api/v1/$ENDPOINT?$QUERY" < src/test/resources/$FILE "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+then http POST ":$PORT/$ENDPOINT?$QUERY" < src/test/resources/$FILE -a $USERNAME:$PASSWORD
 elif [[ -n $METHOD && $METHOD == "POST" ]]
-then http POST ":$PORT/api/v1/$ENDPOINT" < src/test/resources/json/$FILE "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+then http -a $USERNAME:$PASSWORD POST ":$PORT/$ENDPOINT" < src/test/resources/json/$FILE
 elif [[ -n $METHOD && $METHOD == "PUT" ]]
-then http PUT ":$PORT/api/v1/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+then http PUT ":$PORT/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE -a $USERNAME:$PASSWORD
 elif [[ -n $METHOD && $METHOD == "DELETE" ]]
-then http DELETE ":$PORT/api/v1/$ENDPOINT?$QUERY" "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+then http DELETE ":$PORT/$ENDPOINT?$QUERY" -a $USERNAME:$PASSWORD
 elif [[ -n $ID && -n $OPTION && $ENDPOINT == "management" ]]
-then http ":$PORT/api/v1/$ENDPOINT/$ID/$OPTION" "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+then http ":$PORT/$ENDPOINT/$ID/$OPTION" -a $USERNAME:$PASSWORD
 elif [[ -n $ID ]]
-then http ":$PORT/api/v1/$ENDPOINT/$ID?page=$PAGE&size=$SIZE&$QUERY" "Origin: http://localhost:8081"
+then http ":$PORT/$ENDPOINT/$ID?page=$PAGE&size=$SIZE&$QUERY" -a $USERNAME:$PASSWORD
 else 
-	http ":$PORT/api/v1/$ENDPOINT?page=$PAGE&size=$SIZE&$QUERY" "Origin: http://localhost:8081" "Authorization: bearer $TOKEN"
+	http -a $USERNAME:$PASSWORD ":$PORT/$ENDPOINT?page=$PAGE&size=$SIZE&$QUERY"
 fi
 
 if [[ $ID == "metrics" ]]

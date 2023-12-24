@@ -37,29 +37,25 @@ spring:
   threads:
     virtual:
       enabled: true
+
+  # More information is here :
+  # https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.data-initialization.using-basic-sql-scripts
   sql:
     init:
       mode: always
+      data-locations: classpath*:sql/data.sql
+      schema-locations: classpath*:sql/schema.sql
 
 api:
   pagination:
-    pageNumber: 0
-    pageSize: 50
-
-integration:
-  poller:
-    fixed-rate-in-millis: 50
-    max-messages-per-poll-primary: 300
-    max-messages-per-poll-secondary: 150
+    page: 0
+    size: 20
 
 security:
-  enhanced: true
+  user: user
+  user-password: ${USER_PASSWORD}
+  admin: admin
+  admin-password: ${ADMIN_PASSWORD}
+  writer: writer
+  writer-password: ${WRITER_PASSWORD}
 
-webclient:
-  retry:
-    maxAttempts: 2
-    durationInMillis: 500
-
-server:
-  servlet:
-    context-path: /api/v1
