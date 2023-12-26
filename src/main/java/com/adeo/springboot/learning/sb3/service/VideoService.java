@@ -38,7 +38,7 @@ public class VideoService {
     /**
      * @param page : the page number
      * @param size : the size
-     * @return {@link Page<  VideoEntity  >}
+     * @return page of {@link VideoEntity}
      */
     public Page<VideoEntity> findAll(int page, int size) {
         return videoPagingRepository.findAll(PageRequest.of(page, size));

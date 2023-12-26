@@ -43,14 +43,16 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain defaultSecurity(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/videos", "/videos/:count", "/videos/:search")
+                .requestMatchers(HttpMethod.GET, "/videos")
                 .hasAnyRole(ROLE_READER, ROLE_WRITER, ROLE_ADMIN)
+
+                .requestMatchers(HttpMethod.GET, "/videos/:search", "/videos/:count").authenticated()
 
                 .requestMatchers("/management/info", "management/health")
                 .permitAll()
 
                 .requestMatchers(HttpMethod.POST, "/videos")
-                .hasAnyRole(ROLE_WRITER)
+                .hasAnyRole(ROLE_WRITER, ROLE_ADMIN)
 
                 .requestMatchers(HttpMethod.DELETE, "/videos")
                 .hasAnyRole(ROLE_WRITER, ROLE_ADMIN)
