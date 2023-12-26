@@ -1,6 +1,6 @@
 package com.adeo.springboot.learning.sb3.service;
 
-import com.adeo.springboot.learning.sb3.domain.Video;
+import com.adeo.springboot.learning.sb3.domain.VideoEntity;
 import com.adeo.springboot.learning.sb3.dto.VideoDeletion;
 import com.adeo.springboot.learning.sb3.dto.VideoSearch;
 import com.adeo.springboot.learning.sb3.mapper.VideoMapper;
@@ -38,14 +38,14 @@ public class VideoService {
     /**
      * @param page : the page number
      * @param size : the size
-     * @return {@link Page< Video >}
+     * @return {@link Page<  VideoEntity  >}
      */
-    public Page<Video> findAll(int page, int size) {
+    public Page<VideoEntity> findAll(int page, int size) {
         return videoPagingRepository.findAll(PageRequest.of(page, size));
     }
 
     /**
-     * @return number of {@link Video}
+     * @return number of {@link VideoEntity}
      */
     public long count() {
         return videoRepository.count();
@@ -53,17 +53,17 @@ public class VideoService {
 
     /**
      * @param video : a video
-     * @return {@link Video}
+     * @return {@link VideoEntity}
      */
-    public Video save(@NotNull com.adeo.springboot.learning.sb3.dto.Video video) {
+    public VideoEntity save(@NotNull com.adeo.springboot.learning.sb3.dto.Video video) {
         return videoRepository.save(videoMapper.toEntity(video));
     }
 
     /**
      * @param videoSearch : a video search criteria
-     * @return list of {@link Video}
+     * @return list of {@link VideoEntity}
      */
-    public List<Video> search(VideoSearch videoSearch) {
+    public List<VideoEntity> search(VideoSearch videoSearch) {
 
         log.info(" > Search many videos by {}.", videoSearch);
 

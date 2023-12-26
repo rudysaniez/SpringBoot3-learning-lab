@@ -63,7 +63,7 @@ then PAGE=0
 fi
 
 if [ -z $SIZE ]
-then SIZE=2
+then SIZE=5
 fi
 
 if [ -z $PORT ]

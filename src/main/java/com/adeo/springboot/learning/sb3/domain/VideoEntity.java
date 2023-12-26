@@ -1,16 +1,18 @@
 package com.adeo.springboot.learning.sb3.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Objects;
 
-public record Video(@Id Long id, String name, String description) {
+@Table("video")
+public record VideoEntity(@Id Long id, String name, String description) {
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Video video = (Video) o;
+        VideoEntity video = (VideoEntity) o;
         return Objects.equals(name, video.name);
     }
 

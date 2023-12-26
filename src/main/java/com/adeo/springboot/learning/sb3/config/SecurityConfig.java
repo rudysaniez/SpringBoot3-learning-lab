@@ -1,12 +1,17 @@
 package com.adeo.springboot.learning.sb3.config;
 
+import com.adeo.springboot.learning.sb3.domain.UserAccountEntity;
+import com.adeo.springboot.learning.sb3.repository.UserAccountRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,11 +19,22 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 @Configuration
 public class SecurityConfig {
 
-    private static final String ROLE_WRITER = "WRITER";
-    private static final String ROLE_READER = "READER";
+    public static final String ROLE_WRITER = "WRITER";
+    public static final String ROLE_READER = "READER";
+    public static final String ROLE_ADMIN = "ADMIN";
+
+    private final UserAccountRepository userAccountRepository;
+
+    public SecurityConfig(UserAccountRepository userAccountRepository) {
+        this.userAccountRepository = userAccountRepository;
+    }
 
     /**
      * @param http : the http security
@@ -26,10 +42,9 @@ public class SecurityConfig {
      */
     @Bean
     SecurityFilterChain defaultSecurity(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> auth
+        http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/videos", "/videos/:count", "/videos/:search")
-                .hasAnyRole(ROLE_READER, ROLE_WRITER)
+                .hasAnyRole(ROLE_READER, ROLE_WRITER, ROLE_ADMIN)
 
                 .requestMatchers("/management/info", "management/health")
                 .permitAll()
@@ -38,13 +53,13 @@ public class SecurityConfig {
                 .hasAnyRole(ROLE_WRITER)
 
                 .requestMatchers(HttpMethod.DELETE, "/videos")
-                .hasAnyRole(ROLE_WRITER)
+                .hasAnyRole(ROLE_WRITER, ROLE_ADMIN)
 
-                .anyRequest()
-                .denyAll()
+                .anyRequest().denyAll()
             )
             .formLogin(Customizer.withDefaults())
-            .httpBasic(Customizer.withDefaults());
+            .httpBasic(Customizer.withDefaults())
+            .csrf(CsrfConfigurer::disable);
 
         return http.build();
     }
@@ -65,38 +80,72 @@ public class SecurityConfig {
     @Bean
     UserDetailsService userDetailsService(PropertiesConfig.UserSecurityAccess userSecurityAccess) {
 
-        UserDetailsManager manager = new InMemoryUserDetailsManager();
+        final UserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
+
+        final var adminUserDetails = buildUserDetails(userSecurityAccess.admin(),
+                userSecurityAccess.adminPassword(),
+                List.of(ROLE_READER, ROLE_ADMIN));
+        userDetailsManager.createUser(adminUserDetails);
+
+        final var simpleUserDetails = buildUserDetails(userSecurityAccess.user(),
+                userSecurityAccess.userPassword(),
+                List.of(ROLE_READER));
+        userDetailsManager.createUser(simpleUserDetails);
+
+        final var writerUserDetails = buildUserDetails(userSecurityAccess.writer(),
+                userSecurityAccess.writerPassword(),
+                List.of(ROLE_WRITER, ROLE_READER));
+        userDetailsManager.createUser(writerUserDetails);
 
         /*
-        Admin
+        lambda is already created with a temporary password...
+        The lambda user has only a READER role.
          */
-        var passAdmin = passwordEncoder().encode(userSecurityAccess.adminPassword());
-        var userAdmin = User.withUsername(userSecurityAccess.admin())
-               .password(passAdmin)
-                .roles(ROLE_WRITER, ROLE_READER)
-               .build();
-        manager.createUser(userAdmin);
+        Optional<UserAccountEntity> lambdaEntity = userAccountRepository.findByUsername("lambda");
+        if(lambdaEntity.isPresent()) {
 
-        /*
-        User
-         */
-        var passUser = passwordEncoder().encode(userSecurityAccess.userPassword());
-        var user = User.withUsername(userSecurityAccess.user())
-                .password(passUser)
-                .roles(ROLE_READER)
-                .build();
-        manager.createUser(user);
+            final var pass = passwordEncoder().encode(lambdaEntity.get().password());
+            UserAccountEntity entityUpdated = new UserAccountEntity(lambdaEntity.get().id(),
+                    lambdaEntity.get().username(),
+                    pass,
+                    lambdaEntity.get().authorities());
 
-        /*
-        Writer
-         */
-        var passWriter = passwordEncoder().encode(userSecurityAccess.writerPassword());
-        var writer = User.withUsername(userSecurityAccess.writer())
-                .password(passWriter)
-                .roles(ROLE_WRITER, ROLE_READER)
-                .build();
-        manager.createUser(writer);
+            final var lambdaUpdated = userAccountRepository.save(entityUpdated);
 
-        return manager;
+            UserDetails lambdaUserDetails = User.withUsername(lambdaUpdated.username())
+                    .password(lambdaUpdated.password())
+                    .roles(lambdaUpdated.authorities().toArray(String[]::new))
+                    .build();
+
+            userDetailsManager.createUser(lambdaUserDetails);
+        }
+
+        return userDetailsManager;
+    }
+
+    /**
+     * @param username : the username
+     * @param password : the password
+     * @param roles : the roles
+     * @return {@link UserDetails}
+     */
+    private UserDetails buildUserDetails(String username,
+                                         String password,
+                                         List<String> roles) {
+
+        final Optional<UserAccountEntity> entity = userAccountRepository.findByUsername(username);
+        return entity.map(UserAccountEntity::asUser).orElseGet(() -> {
+
+            final String pass = passwordEncoder().encode(password);
+            final var entityCreated = userAccountRepository.save(new UserAccountEntity(null,
+                    username,
+                    pass,
+                    roles));
+
+            return User.withUsername(entityCreated.username())
+                    .password(entityCreated.password())
+                    .roles(entityCreated.authorities().toArray(String[]::new))
+                    .build();
+        });
     }
 }
