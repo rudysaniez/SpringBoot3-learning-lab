@@ -4,6 +4,7 @@ import com.adeo.springboot.learning.sb3.dto.Video;
 import com.adeo.springboot.learning.sb3.dto.VideoSearch;
 import com.adeo.springboot.learning.sb3.mapper.VideoMapper;
 import com.adeo.springboot.learning.sb3.service.VideoService;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,10 +40,10 @@ public class VideoWebController {
     }
 
     @PostMapping("/new-video")
-    public String newVideo(@ModelAttribute Video videoName) {
+    public String newVideo(@ModelAttribute Video videoName, Authentication authentication) {
 
         synchronized (this) {
-            videoService.save(videoName);
+            videoService.save(videoName, authentication.getName());
         }
 
         return "redirect:/";

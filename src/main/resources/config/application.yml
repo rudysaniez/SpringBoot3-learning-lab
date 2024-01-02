@@ -59,3 +59,29 @@ security:
   writer: writer
   writer-password: ${WRITER_PASSWORD}
 
+  access:
+    users:
+      -
+        username: user
+        password: ${USER_PASSWORD}
+        authorities:
+          - READER
+          - WRITER
+
+      -
+        username: user_writer
+        password: ${WRITER_PASSWORD}
+        authorities:
+          - READER
+          - WRITER
+
+      -
+        username: admin
+        password: ${ADMIN_PASSWORD}
+        authorities:
+          - READER
+          - WRITER
+          - ADMIN
+
+
+

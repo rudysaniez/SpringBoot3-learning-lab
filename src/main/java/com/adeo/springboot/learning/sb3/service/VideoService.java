@@ -1,6 +1,7 @@
 package com.adeo.springboot.learning.sb3.service;
 
 import com.adeo.springboot.learning.sb3.domain.VideoEntity;
+import com.adeo.springboot.learning.sb3.dto.Video;
 import com.adeo.springboot.learning.sb3.dto.VideoDeletion;
 import com.adeo.springboot.learning.sb3.dto.VideoSearch;
 import com.adeo.springboot.learning.sb3.mapper.VideoMapper;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -45,6 +47,14 @@ public class VideoService {
     }
 
     /**
+     * @param name : the video name
+     * @return {@link List<VideoEntity>}
+     */
+    public List<VideoEntity> findByName(String name) {
+        return videoRepository.findByName(name);
+    }
+
+    /**
      * @return number of {@link VideoEntity}
      */
     public long count() {
@@ -53,10 +63,14 @@ public class VideoService {
 
     /**
      * @param video : a video
+     * @param username : the user
      * @return {@link VideoEntity}
      */
-    public VideoEntity save(@NotNull com.adeo.springboot.learning.sb3.dto.Video video) {
-        return videoRepository.save(videoMapper.toEntity(video));
+    public VideoEntity save(@NotNull com.adeo.springboot.learning.sb3.dto.Video video,
+                            @NotNull String username) {
+
+        final VideoEntity entity = new VideoEntity(null, video.name(), video.description(), username);
+        return videoRepository.save(entity);
     }
 
     /**
@@ -79,16 +93,21 @@ public class VideoService {
      * Delete by {@link VideoDeletion}.
      * @param videoDeletion : the video deletion
      */
-    public boolean delete(VideoDeletion videoDeletion) {
+    public boolean delete(@NotNull VideoDeletion videoDeletion,
+                          Authentication authentication) {
 
-        log.info(" > Delete all by {}.", videoDeletion);
+        log.info(" > Delete this video {}, by {}.", videoDeletion, authentication.getName());
 
-        int videoDeletedNumber = videoRepository.deleteByName(videoDeletion.name());
-        if(videoDeletedNumber > 0)
-            log.info(" > Number of video deleted is {}.", videoDeletedNumber);
-        else
-            log.info(" > Nothing deletion is executed.");
+        List<VideoEntity> data = this.findByName(videoDeletion.name());
 
-        return videoDeletedNumber > 0;
+        final boolean out;
+
+        if(!data.isEmpty()) {
+            data.forEach(videoRepository::delete);
+            out = true;
+        }
+        else out = false;
+
+        return out;
     }
 }

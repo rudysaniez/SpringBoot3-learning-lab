@@ -2,8 +2,8 @@ create table if not exists video
 (
     id          serial primary key,
     name        text not null,
-    description text null
-
+    description text null,
+    username    text not null
 );
 
 create table if not exists user_account

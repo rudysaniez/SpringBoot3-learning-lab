@@ -2,10 +2,13 @@ package com.adeo.springboot.learning.sb3.config;
 
 import com.adeo.springboot.learning.sb3.domain.UserAccountEntity;
 import com.adeo.springboot.learning.sb3.repository.UserAccountRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -31,6 +35,8 @@ public class SecurityConfig {
     public static final String ROLE_ADMIN = "ADMIN";
 
     private final UserAccountRepository userAccountRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     public SecurityConfig(UserAccountRepository userAccountRepository) {
         this.userAccountRepository = userAccountRepository;
@@ -52,10 +58,10 @@ public class SecurityConfig {
                 .permitAll()
 
                 .requestMatchers(HttpMethod.POST, "/videos")
-                .hasAnyRole(ROLE_WRITER, ROLE_ADMIN)
+                .hasAnyRole(ROLE_WRITER)
 
                 .requestMatchers(HttpMethod.DELETE, "/videos")
-                .hasAnyRole(ROLE_WRITER, ROLE_ADMIN)
+                .hasAnyRole(ROLE_WRITER)
 
                 .anyRequest().denyAll()
             )
@@ -76,28 +82,17 @@ public class SecurityConfig {
 
     /**
      * <a href="https://www.baeldung.com/java-spring-fix-403-error">How to solve 403 error in Spring</a>
-     * @param userSecurityAccess : the user security access
+     * @param userSecurityAccessConfiguration : the user security access
      * @return {@link UserDetailsService}
      */
     @Bean
-    UserDetailsService userDetailsService(PropertiesConfig.UserSecurityAccess userSecurityAccess) {
+    UserDetailsService userDetailsService(PropertiesConfig.UserSecurityAccessConfiguration userSecurityAccessConfiguration) {
 
         final UserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
 
-        final var adminUserDetails = buildUserDetails(userSecurityAccess.admin(),
-                userSecurityAccess.adminPassword(),
-                List.of(ROLE_READER, ROLE_ADMIN));
-        userDetailsManager.createUser(adminUserDetails);
-
-        final var simpleUserDetails = buildUserDetails(userSecurityAccess.user(),
-                userSecurityAccess.userPassword(),
-                List.of(ROLE_READER));
-        userDetailsManager.createUser(simpleUserDetails);
-
-        final var writerUserDetails = buildUserDetails(userSecurityAccess.writer(),
-                userSecurityAccess.writerPassword(),
-                List.of(ROLE_WRITER, ROLE_READER));
-        userDetailsManager.createUser(writerUserDetails);
+        userSecurityAccessConfiguration.users().stream()
+                .map(user -> buildUserDetails(user.username(), user.password(), user.authorities()))
+                .forEach(userDetailsManager::createUser);
 
         /*
         lambda is already created with a temporary password...
@@ -134,6 +129,8 @@ public class SecurityConfig {
     private UserDetails buildUserDetails(String username,
                                          String password,
                                          List<String> roles) {
+
+        log.info(" > Create the user details for username {}, and authorities are {}.", username, roles);
 
         final Optional<UserAccountEntity> entity = userAccountRepository.findByUsername(username);
         return entity.map(UserAccountEntity::asUser).orElseGet(() -> {

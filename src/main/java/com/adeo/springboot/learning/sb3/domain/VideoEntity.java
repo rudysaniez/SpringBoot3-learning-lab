@@ -6,7 +6,12 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.util.Objects;
 
 @Table("video")
-public record VideoEntity(@Id Long id, String name, String description) {
+public record VideoEntity(@Id Long id, String name, String description, String username) {
+
+    public VideoEntity {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(username);
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -5,6 +5,7 @@ import com.adeo.springboot.learning.sb3.mapper.VideoMapper;
 import com.adeo.springboot.learning.sb3.service.VideoService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -81,8 +82,9 @@ public class VideoRestController {
      * @return {@link Video}
      */
     @PostMapping(value = "/videos", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Video> create(@RequestBody Video video) {
-        return ResponseEntity.ok(videoMapper.toModel(videoService.save(video)));
+    public ResponseEntity<Video> create(@RequestBody Video video,
+                                        Authentication authentication) {
+        return ResponseEntity.ok(videoMapper.toModel(videoService.save(video, authentication.getName())));
     }
 
     /**
@@ -91,16 +93,13 @@ public class VideoRestController {
      * @return {@link List<Video>}
      */
     @DeleteMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> deleteByName(@RequestParam(name = "name") String name) {
+    public ResponseEntity<Void> deleteByName(@RequestParam(name = "name") String name,
+                                             Authentication authentication) {
 
-        final boolean result = videoService.delete(new VideoDeletion(name));
-
-        final ResponseEntity<Void> out;
-        if(result)
-            out = ResponseEntity.ok().build();
+        final boolean deleted = videoService.delete(new VideoDeletion(name), authentication);
+        if(deleted)
+            return ResponseEntity.ok().build();
         else
-            out = ResponseEntity.noContent().build();
-
-        return out;
+            return ResponseEntity.noContent().build();
     }
 }
