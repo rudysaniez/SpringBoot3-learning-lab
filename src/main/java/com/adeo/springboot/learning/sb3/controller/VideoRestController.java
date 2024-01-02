@@ -81,7 +81,9 @@ public class VideoRestController {
      * @param video : a video in the request body
      * @return {@link Video}
      */
-    @PostMapping(value = "/videos", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/videos",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Video> create(@RequestBody Video video,
                                         Authentication authentication) {
         return ResponseEntity.ok(videoMapper.toModel(videoService.save(video, authentication.getName())));

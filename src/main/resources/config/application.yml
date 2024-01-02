@@ -52,13 +52,6 @@ api:
     size: 20
 
 security:
-  user: user
-  user-password: ${USER_PASSWORD}
-  admin: admin
-  admin-password: ${ADMIN_PASSWORD}
-  writer: writer
-  writer-password: ${WRITER_PASSWORD}
-
   access:
     users:
       -
@@ -82,6 +75,3 @@ security:
           - READER
           - WRITER
           - ADMIN
-
-
-

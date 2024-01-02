@@ -17,7 +17,8 @@
 <br/>
 
 <h3>Create a video</h3>
-<form action="/new-video" method="post">
+<form action="/web/videos/:create" method="post">
+    <label for="name">Name:</label>
     <input type="text" name="name"/>
     <button type="submit">Submit</button>
 </form>
@@ -25,7 +26,7 @@
 <br/>
 
 <h3>Search many videos</h3>
-<form action="/search-video" method="post">
+<form action="/web/videos/:search" method="post">
     <label for="name">Name:</label>
     <input type="text" name="name"/>
     <button type="submit">Search</button>

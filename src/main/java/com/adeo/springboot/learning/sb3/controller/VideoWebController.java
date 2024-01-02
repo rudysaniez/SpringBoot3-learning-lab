@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.stream.StreamSupport;
-
 @Controller
 public class VideoWebController {
 
@@ -25,7 +23,11 @@ public class VideoWebController {
         this.videoMapper = videoMapper;
     }
 
-    @GetMapping("/")
+    /**
+     * @param model : the model
+     * @return {@link String mustache template}
+     */
+    @GetMapping(value = {"/", "/web", "/web/videos"})
     public String index(Model model) {
 
         model.addAttribute("videos", videoService.findAll(0, 10).getContent().stream()
@@ -34,22 +36,12 @@ public class VideoWebController {
         return "index";
     }
 
-    @GetMapping("/react")
-    public String react() {
-        return "react";
-    }
-
-    @PostMapping("/new-video")
-    public String newVideo(@ModelAttribute Video videoName, Authentication authentication) {
-
-        synchronized (this) {
-            videoService.save(videoName, authentication.getName());
-        }
-
-        return "redirect:/";
-    }
-
-    @PostMapping("/search-video")
+    /**
+     * @param videoSearched: the video searched
+     * @param model : the model
+     * @return {@link String mustache template}
+     */
+    @PostMapping("/web/videos/:search")
     public String searchVideo(@ModelAttribute VideoSearch videoSearched, Model model) {
 
         synchronized (this) {
@@ -60,5 +52,17 @@ public class VideoWebController {
             );
         }
         return "index";
+    }
+
+    /**
+     *
+     * @param video : the video to create
+     * @param authentication : the authentication user
+     * @return {@link String mustache template}
+     */
+    @PostMapping("/web/videos/:create")
+    public String newVideo(@ModelAttribute Video video, Authentication authentication) {
+        videoService.save(video, authentication.getName());
+        return "redirect:/web";
     }
 }
