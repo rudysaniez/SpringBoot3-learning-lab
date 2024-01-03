@@ -35,7 +35,7 @@ public class VideoRestController {
                          @RequestParam(value = "size", required = false) Integer size) {
 
         if(Objects.isNull(page)) page = 0;
-        if(Objects.isNull(size)) size = 10;
+        if(Objects.isNull(size)) size = 20;
         if(page < 0) page = 0;
         if(size > 20) size = 20;
 

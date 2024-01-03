@@ -1,0 +1,24 @@
+security:
+  access:
+    users:
+      -
+        username: user
+        password: user
+        authorities:
+          - READER
+          - WRITER
+
+      -
+        username: user_writer
+        password: user_writer
+        authorities:
+          - READER
+          - WRITER
+
+      -
+        username: admin
+        password: admin
+        authorities:
+          - READER
+          - WRITER
+          - ADMIN
