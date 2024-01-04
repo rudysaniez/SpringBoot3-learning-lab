@@ -61,6 +61,9 @@ class VideoRepositoryTest {
         Assertions.assertThat(entityList).hasSize(3);
     }
 
+    /**
+     * <a href="https://www.baeldung.com/spring-tests-override-properties">Properties for the tests</a>
+     */
     static class DataSourceInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         static final Logger log = LoggerFactory.getLogger(DataSourceInitializer.class);
@@ -70,8 +73,6 @@ class VideoRepositoryTest {
 
             List<String> datasource = new ArrayList<>();
             datasource.add(STR."spring.datasource.url=\{database.getJdbcUrl()}");
-            datasource.add(STR."spring.datasource.username=\{database.getUsername()}");
-            datasource.add(STR."spring.datasource.password=\{database.getPassword()}");
             log.info(" > datasource information {}.", datasource);
 
             TestPropertySourceUtils.addInlinedPropertiesToEnvironment(applicationContext, datasource.toArray(String[]::new));

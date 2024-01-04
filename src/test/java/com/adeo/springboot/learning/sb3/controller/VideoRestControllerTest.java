@@ -4,8 +4,6 @@ import com.adeo.springboot.learning.sb3.dto.PageVideo;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +12,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -25,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Testcontainers
 @ContextConfiguration(initializers = VideoRestControllerTest.DataSourceInitializer.class)
@@ -46,11 +43,15 @@ class VideoRestControllerTest {
 
     @Test
     void all() {
-        ResponseEntity<PageVideo> response = restTemplate.withBasicAuth("user", "${USER_PASSWORD}")
+        ResponseEntity<PageVideo> response = restTemplate.withBasicAuth("user", "user")
                 .getForEntity("/videos", PageVideo.class);
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Assertions.assertThat(Objects.requireNonNull(response.getBody()).content().getFirst().name()).contains("test");
     }
 
+    /**
+     * <a href="https://www.baeldung.com/spring-tests-override-properties">Properties for the tests</a>
+     */
     static class DataSourceInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         static final Logger log = LoggerFactory.getLogger(DataSourceInitializer.class);
@@ -60,8 +61,6 @@ class VideoRestControllerTest {
 
             List<String> datasource = new ArrayList<>();
             datasource.add(STR."spring.datasource.url=\{database.getJdbcUrl()}");
-            datasource.add(STR."spring.datasource.username=\{database.getUsername()}");
-            datasource.add(STR."spring.datasource.password=\{database.getPassword()}");
             log.info(" > datasource information {}.", datasource);
 
             TestPropertySourceUtils.addInlinedPropertiesToEnvironment(applicationContext, datasource.toArray(String[]::new));

@@ -10,9 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,7 +22,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @EnableMethodSecurity
 @Configuration
@@ -103,29 +100,6 @@ public class SecurityConfig {
         userSecurityAccessConfiguration.users().stream()
                 .map(user -> buildUserDetails(user.username(), user.password(), user.authorities()))
                 .forEach(userDetailsManager::createUser);
-
-        /*
-        lambda is already created with a temporary password...
-        The lambda user has only a READER role.
-         */
-        Optional<UserAccountEntity> lambdaEntity = userAccountRepository.findByUsername("lambda");
-        if(lambdaEntity.isPresent()) {
-
-            final var pass = passwordEncoder().encode(lambdaEntity.get().password());
-            UserAccountEntity entityUpdated = new UserAccountEntity(lambdaEntity.get().id(),
-                    lambdaEntity.get().username(),
-                    pass,
-                    lambdaEntity.get().authorities());
-
-            final var lambdaUpdated = userAccountRepository.save(entityUpdated);
-
-            UserDetails lambdaUserDetails = User.withUsername(lambdaUpdated.username())
-                    .password(lambdaUpdated.password())
-                    .roles(lambdaUpdated.authorities().toArray(String[]::new))
-                    .build();
-
-            userDetailsManager.createUser(lambdaUserDetails);
-        }
 
         return userDetailsManager;
     }

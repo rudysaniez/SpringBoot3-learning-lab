@@ -13,8 +13,11 @@ class Start {
 	@Bean
 	@RestartScope
 	@ServiceConnection
-	PostgreSQLContainer postgreSQLContainer() {
-		return new PostgreSQLContainer("postgres:15.5-alpine");
+	PostgreSQLContainer<?> postgreSQLContainer() {
+		return new PostgreSQLContainer("postgres:15.4-alpine")
+				.withUsername("michael")
+				.withPassword("jordan")
+				.withDatabaseName("videoDatabase");
 	}
 
 	public static void main(String[] args) {
@@ -22,5 +25,4 @@ class Start {
 				.with(Start.class)
 				.run(args);
 	}
-
 }

@@ -38,13 +38,17 @@ spring:
     virtual:
       enabled: true
 
+  datasource:
+    username: michael
+    password: jordan
+
   # More information is here :
   # https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.data-initialization.using-basic-sql-scripts
   sql:
     init:
       mode: always
-      data-locations: classpath*:sql/data.sql
-      schema-locations: classpath*:sql/schema.sql
+      data-locations: classpath*:sql-test/data.sql
+      schema-locations: classpath*:sql-test/schema.sql
       continue-on-error: false
 
 api:
@@ -57,21 +61,21 @@ security:
     users:
       -
         username: user
-        password: ${USER_PASSWORD}
+        password: user
         authorities:
           - READER
           - WRITER
 
       -
         username: user_writer
-        password: ${WRITER_PASSWORD}
+        password: user_writer
         authorities:
           - READER
           - WRITER
 
       -
         username: admin
-        password: ${ADMIN_PASSWORD}
+        password: admin
         authorities:
           - READER
           - WRITER

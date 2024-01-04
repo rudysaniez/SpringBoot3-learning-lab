@@ -1,0 +1,20 @@
+
+logging:
+  level:
+    root: INFO
+
+spring:
+  # More information is here :
+  # https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.data-initialization.using-basic-sql-scripts
+  # https://www.baeldung.com/spring-boot-data-sql-and-schema-sql
+  sql:
+    init:
+      mode: always
+      data-locations: optional:classpath*:sql-dev/data.sql
+      schema-locations: classpath*:sql/schema.sql
+      continue-on-error: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/videoDatabase?loggerLevel=OFF
+    username: ${PSQL_USERNAME}
+    password: ${PSQL_PASSWORD}
