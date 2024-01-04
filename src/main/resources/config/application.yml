@@ -47,6 +47,9 @@ spring:
       schema-locations: classpath*:sql/schema.sql
       continue-on-error: false
 
+  liquibase:
+    enabled: false
+
 api:
   pagination:
     page: 0

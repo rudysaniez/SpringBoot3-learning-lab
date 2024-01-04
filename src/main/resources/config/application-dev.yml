@@ -9,12 +9,19 @@ spring:
   # https://www.baeldung.com/spring-boot-data-sql-and-schema-sql
   sql:
     init:
-      mode: always
-      data-locations: optional:classpath*:sql-dev/data.sql
-      schema-locations: classpath*:sql/schema.sql
-      continue-on-error: true
+      mode: never
+      data-locations: optional:classpath*:sql/data.sql
+      schema-locations: optional:classpath*:sql/schema.sql
+      continue-on-error: false
 
   datasource:
     url: jdbc:postgresql://localhost:5432/videoDatabase?loggerLevel=OFF
     username: ${PSQL_USERNAME}
+    password: ${PSQL_PASSWORD}
+
+  liquibase:
+    enabled: true
+    change-log: classpath*:/liquibase/db.changelog-master.yaml
+    url: jdbc:postgresql://localhost:5432/videoDatabase
+    user: ${PSQL_USERNAME}
     password: ${PSQL_PASSWORD}

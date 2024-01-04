@@ -51,6 +51,9 @@ spring:
       schema-locations: classpath*:sql-test/schema.sql
       continue-on-error: false
 
+  liquibase:
+    enabled: false
+
 api:
   pagination:
     page: 0

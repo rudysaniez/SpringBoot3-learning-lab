@@ -63,6 +63,12 @@
 			<artifactId>postgresql</artifactId>
 		</dependency>
 
+		<!-- Liquibase -->
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+		</dependency>
+
 		<!-- Others -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
