@@ -53,3 +53,7 @@ target
 .history
 
 .DS_Store
+
+/node
+/node/**
+/.parcel-cache
