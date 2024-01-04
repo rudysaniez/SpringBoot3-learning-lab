@@ -72,7 +72,7 @@ class VideoRepositoryTest {
         public void initialize(ConfigurableApplicationContext applicationContext) {
 
             List<String> datasource = new ArrayList<>();
-            datasource.add(STR."spring.datasource.url=\{database.getJdbcUrl()}");
+            datasource.add("spring.datasource.url=" + database.getJdbcUrl());
             log.info(" > datasource information {}.", datasource);
 
             TestPropertySourceUtils.addInlinedPropertiesToEnvironment(applicationContext, datasource.toArray(String[]::new));

@@ -58,7 +58,7 @@ class VideoRestControllerSpringBootTest {
 
         //Launch a search
         ResponseEntity<List<Video>> listResponseEntity = restTemplate.withBasicAuth("user_writer", "user_writer")
-                .exchange(STR."/videos/:search?name=\{name}", HttpMethod.GET, null,
+                .exchange("/videos/:search?name=" + name, HttpMethod.GET, null,
                 new ParameterizedTypeReference<>() {});
 
         Assertions.assertThat(listResponseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -66,7 +66,7 @@ class VideoRestControllerSpringBootTest {
 
         //Delete
         ResponseEntity<Void> voidResponseEntity = restTemplate.withBasicAuth("user_writer", "user_writer")
-                .exchange(STR."/videos?name=\{name}", HttpMethod.DELETE, null, Void.class);
+                .exchange("/videos?name=" + name, HttpMethod.DELETE, null, Void.class);
 
         Assertions.assertThat(voidResponseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }

@@ -1,0 +1,10 @@
+
+#!/bin/bash
+
+set -e
+
+cd $(dirname $0)
+
+docker build -f src/main/docker/Dockerfile -t video-api .
+
+docker images | grep -i video-api
