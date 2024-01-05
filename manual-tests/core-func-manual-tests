@@ -253,7 +253,7 @@ function waitForService() {
 	local target_uri=$1
 	local port=$2
 
-    echo -n "Wait the service (retry=10, wait by retry=5s) : endpoint used for wait is management/info in $target_uri and the port is equal to $port "
+    echo -n " > [liveness] The endpoint used for waiting is <management/info> in <$target_uri> and the port is <$port>."
     n=0
 
     result=$(eval apiIsReady $target_uri $port)

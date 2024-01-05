@@ -7,9 +7,11 @@ cd $(dirname $0)
 . manual-tests/banner-func-manual-tests
 . manual-tests/core-func-manual-tests
 
-#waitForService localhost 8081
+waitForService localhost 8081
 
 begin_banner
+
+####################
 
 testNumber="GET HTTP status [endpoint=/videos] with [user:user]"
 result=$(eval getHttpStatus localhost 8081 videos user user)
@@ -19,6 +21,8 @@ else
   echo " > INCORRECT expected 200, we have $result"
 fi
 
+####################
+
 testNumber="GET HTTP status [endpoint=/videos/:search?name=spring] with [user:user]"
 result=$(eval getHttpStatusWithParam localhost 8081 videos/:search name=spring user user)
 if [[ $result == "200" ]]
@@ -26,6 +30,8 @@ then echo " > $testNumber : Http_status=$result."
 else
   echo " > INCORRECT expected 200, we have $result"
 fi
+
+####################
 
 testNumber="POST HTTP status [endpoint=/videos] with [user:user]"
 result=$(eval getHttpStatusWithHttpMethod localhost 8081 POST videos newVideo01.json)
@@ -35,11 +41,23 @@ else
   echo " > INCORRECT expected 200, we have $result"
 fi
 
+####################
+
 testNumber="GET data [endpoint=/videos] with [user:user]"
 result=$(eval get localhost 8081 videos)
 assertEqual "user" $(echo $result | jq ".content[0].username") " > $testNumber (/videos) :" "The username (index=0) is equal to user."
 assertEqual $(replaceSpace "Learn Spring boot 3 with Testing" "_") $(replaceSpace "$(echo $result | jq ".content[0].name")" "_" ) " > $testNumber (/videos) :" "The content[0].name is equal to <Learn Spring boot 3 with Testing>."
 assertEqual $(replaceSpace "Nice book on the tests" "_") $(replaceSpace "$(echo $result | jq ".content[0].description")" "_" ) " > $testNumber (/videos) :" "The content[0].description is equal to <Nice book on the tests>."
+
+####################
+
+testNumber="GET data [endpoint=/videos/:search] with [user:user]"
+result=$(eval get localhost 8081 videos/:search name=spring)
+assertEqual "user" $(echo $result | jq ".[0].username") " > $testNumber (/videos/:search) :" "The username (index=0) is equal to user."
+assertEqual $(replaceSpace "Learn Spring boot 3 with Testing" "_") $(replaceSpace "$(echo $result | jq ".[0].name")" "_" ) " > $testNumber (/videos/:search) :" "The content[0].name is equal to <Learn Spring boot 3 with Testing>."
+assertEqual $(replaceSpace "Nice book on the tests" "_") $(replaceSpace "$(echo $result | jq ".[0].description")" "_" ) " > $testNumber (/videos/:search) :" "The content[0].name is equal to <Nice book on the tests>."
+
+####################
 
 testNumber="GET HTTP status [endpoint=/videos] with bad identification"
 result=$(eval getHttpStatus localhost 8081 videos bad_user bad_user)
@@ -48,3 +66,5 @@ then echo " > $testNumber : Http_status=$result."
 else
   echo " > INCORRECT expected 401, we have $result"
 fi
+
+####################
