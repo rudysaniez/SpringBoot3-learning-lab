@@ -1,0 +1,129 @@
+#!/bin/bash
+
+#set -e
+
+#cd $(dirname $0)
+
+Help()
+{
+   # Display Help
+   echo "For the using of this script you need several parameters."
+   echo "The token is required (Ping connect, access_token is needed."
+   echo
+   echo "Syntax: [-u|-i|-e|-p|-s|-m|-f|-q|-P|-U|-W|-h]"
+   echo "options:"
+   echo "u     The uri [localhost(default)]."
+   echo "P     The port [8080(default)]"
+   echo "i     The resource identifier (required)."
+   echo "e     The endpoint name [suppliers(default)]."
+   echo "p     Page number for the pagination (0 is the default value)."
+   echo "s     Size parameter is the page size for the pagination (5 is the default value)."
+   echo "m     The request method [GET(default)|PUT]"
+   echo "f     The name of the file that contains the abilities to be added [supplier-src-01.json|supplier-src-01-update.json|supplier-src-02.json] (-m POST needed)."
+   echo "q     Query parameters (desc=ITA)."
+   echo "P     The Http port [8080(default)|7001(otherwise)]."
+   echo "U     The username."
+   echo "W     The user password."
+   echo "h     Print this Help."
+   echo
+}
+
+while getopts ":u:P:e:i:p:s:q:m:f:P:U:W:hSV" arg; do
+  case $arg in
+    h) 	Help
+    	exit;;
+    u)	TARGET_URI=$OPTARG;;
+    P)	PORT=$OPTARG;;
+    e)	ENDPOINT=$OPTARG;;
+    i) 	ID=$OPTARG;;
+    p)  PAGE=$OPTARG;;
+    s)	SIZE=$OPTARG;;
+    q)	QUERY=$OPTARG;;
+    m)  METHOD=$OPTARG;;
+    f)  FILE=$OPTARG;;
+    S)	STATUS=1;;
+    V)	VERBOSE=1;;
+    U)  USERNAME=$OPTARG;;
+    W)  PASSWORD=$OPTARG;;
+    \?)	#incorrect option
+    	echo "Error : invalid option"
+    	echo
+    	Help
+    	exit;;
+  esac
+done
+
+if [[ -z $TARGET_URI ]]
+then TARGET_URI="localhost"
+fi
+
+if [[ -z $PORT ]]
+then PORT="8080"
+fi
+
+if [ -z $ENDPOINT ]
+then ENDPOINT="videos"
+fi
+
+if [ -z $PAGE ]
+then PAGE=0
+fi
+
+if [ -z $SIZE ]
+then SIZE=5
+fi
+
+if [[ -n $FILE && -z $METHOD ]]
+then METHOD="POST"
+fi
+
+if [[ -z $USERNAME || -z $PASSWORD ]]
+then
+  USERNAME="user"
+  PASSWORD="user"
+fi
+
+if [[ -n $STATUS ]]
+then
+  if [[ -z $ID && -z $QUERY ]]
+  then
+    result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT\" | grep HTTP | cut -d ' ' -f 2")
+  elif [[ -n $ID ]]
+  then
+    result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT/$ID?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
+  elif [[ -n $QUERY ]]
+  then
+    result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
+  fi
+
+  if [[ -n $VERBOSE ]]
+      		then echo $result
+  fi
+
+	exit 0
+fi
+
+if [[ $ID == "info" || $ID == "health" ]]
+then
+	ENDPOINT="management"
+	http ":$PORT/$ENDPOINT/$ID"
+	exit 0
+fi
+
+if [[ -n $METHOD && $METHOD == "POST" && -n $QUERY ]]
+then http -a $USERNAME:$PASSWORD POST "$TARGET_URI:$PORT/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE
+elif [[ -n $METHOD && $METHOD == "POST" ]]
+then http -a $USERNAME:$PASSWORD POST "$TARGET_URI:$PORT/$ENDPOINT" < src/test/resources/json/$FILE
+elif [[ -n $METHOD && $METHOD == "PUT" ]]
+then http -a $USERNAME:$PASSWORD PUT "$TARGET_URI:$PORT/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE
+elif [[ -n $METHOD && $METHOD == "DELETE" ]]
+then http -a $USERNAME:$PASSWORD DELETE "$TARGET_URI:$PORT/$ENDPOINT?$QUERY"
+elif [[ -n $ID && -n $OPTION && $ENDPOINT == "management" ]]
+then http -a $USERNAME:$PASSWORD "$TARGET_URI:$PORT/$ENDPOINT/$ID/$OPTION"
+elif [[ -n $ID ]]
+then http -a $USERNAME:$PASSWORD "$TARGET_URI:$PORT/$ENDPOINT/$ID?page=$PAGE&size=$SIZE&$QUERY"
+else
+	http -a $USERNAME:$PASSWORD "$TARGET_URI:$PORT/$ENDPOINT?page=$PAGE&size=$SIZE&$QUERY"
+fi
+
+exit 0

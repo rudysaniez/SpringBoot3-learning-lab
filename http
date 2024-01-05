@@ -81,22 +81,22 @@ fi
 if [[ $ID == "info" || $ID == "health" ]]
 then
 	ENDPOINT="management"
-	http ":$PORT/api/v1/$ENDPOINT/$ID"
+	http ":$PORT/$ENDPOINT/$ID"
 	exit 0
 fi
 
 if [[ -n $METHOD && $METHOD == "POST" && -n $QUERY ]]
-then http POST ":$PORT/$ENDPOINT?$QUERY" < src/test/resources/$FILE -a $USERNAME:$PASSWORD
+then http -a $USERNAME:$PASSWORD POST ":$PORT/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE
 elif [[ -n $METHOD && $METHOD == "POST" ]]
 then http -a $USERNAME:$PASSWORD POST ":$PORT/$ENDPOINT" < src/test/resources/json/$FILE
 elif [[ -n $METHOD && $METHOD == "PUT" ]]
-then http PUT ":$PORT/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE -a $USERNAME:$PASSWORD
+then http -a $USERNAME:$PASSWORD PUT ":$PORT/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE
 elif [[ -n $METHOD && $METHOD == "DELETE" ]]
-then http DELETE ":$PORT/$ENDPOINT?$QUERY" -a $USERNAME:$PASSWORD
+then http -a $USERNAME:$PASSWORD DELETE ":$PORT/$ENDPOINT?$QUERY"
 elif [[ -n $ID && -n $OPTION && $ENDPOINT == "management" ]]
-then http ":$PORT/$ENDPOINT/$ID/$OPTION" -a $USERNAME:$PASSWORD
+then http -a $USERNAME:$PASSWORD ":$PORT/$ENDPOINT/$ID/$OPTION"
 elif [[ -n $ID ]]
-then http ":$PORT/$ENDPOINT/$ID?page=$PAGE&size=$SIZE&$QUERY" -a $USERNAME:$PASSWORD
+then http -a $USERNAME:$PASSWORD ":$PORT/$ENDPOINT/$ID?page=$PAGE&size=$SIZE&$QUERY"
 else 
 	http -a $USERNAME:$PASSWORD ":$PORT/$ENDPOINT?page=$PAGE&size=$SIZE&$QUERY"
 fi

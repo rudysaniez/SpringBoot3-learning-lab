@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+cd $(dirname $0)
+
+. manual-tests/banner-func-manual-tests
+. manual-tests/core-func-manual-tests
+
+waitForService localhost 8081
+
+begin_banner
+
+testNumber="GET HTTP status [endpoint=/videos] with [user:user]"
+result=$(eval getHttpStatus localhost 8081 videos user user)
+if [[ $result == "200" ]]
+then echo " > $testNumber : Http_status=$result."
+else
+  echo " > INCORRECT expected 200, we have $result"
+fi
+
+testNumber="GET HTTP status [endpoint=/videos/:search?name=spring] with [user:user]"
+result=$(eval getHttpStatusWithParam localhost 8081 videos/:search name=spring user user)
+if [[ $result == "200" ]]
+then echo " > $testNumber : Http_status=$result."
+else
+  echo " > INCORRECT expected 200, we have $result"
+fi
+
+testNumber="GET HTTP status [endpoint=/videos] with bad identification"
+result=$(eval getHttpStatus localhost 8081 videos bad_user bad_user)
+if [[ $result == "401" ]]
+then echo " > $testNumber : Http_status=$result."
+else
+  echo " > INCORRECT expected 401, we have $result"
+fi

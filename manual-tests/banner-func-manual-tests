@@ -1,0 +1,13 @@
+#!/bin/bash
+
+function complete_banner() {
+	echo
+	cat manual-banner-tests/banner-tests-completed.txt
+	echo
+}
+
+function begin_banner() {
+	echo
+	cat manual-banner-tests/banner-begin.txt
+	echo
+}

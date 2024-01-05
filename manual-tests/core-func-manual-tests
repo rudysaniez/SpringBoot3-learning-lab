@@ -1,0 +1,293 @@
+#!/bin/bash
+
+###
+# @param target_uri
+# @param port
+# @param endpoint
+# @param identifier
+# @param query
+###
+function getHttpStatusByIdentifier() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local identifier=$4
+	local query=$5
+
+	if [[ -n $query ]]
+	then
+		result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -i $identifier -q $query -S -V)
+	else
+		result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -i $identifier -S -V)
+	fi
+
+	if [[ $result == "200" ]]
+		then echo "${result}_OK"
+	elif [[ $result == "201" ]]
+		then echo "${result}_CREATED"
+	elif [[ $result == "400" ]]
+		then echo "${result}_BAD_REQUEST"
+	elif [[ $result == "401" ]]
+		then echo "${result}_UNAUTHORIZED"
+	elif [[ $result == "404" ]]
+		then echo "${result}_NOT_FOUND"
+	elif [[ $result == "422" ]]
+		then echo "${result}_UNPROCESSABLE_ENTITY"
+	fi
+}
+
+###
+# @param target_uri
+# @param port
+# @param endpoint
+###
+function getHttpStatus() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local username=$4
+	local password=$5
+
+	result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -U $username -W $password -S -V)
+  echo "${result}"
+
+	#if [[ $result == "200" ]]
+  #  then echo "${result}_OK"
+	#elif [[ $result == "201" ]]
+	#	then echo "${result}_CREATED"
+	#elif [[ $result == "400" ]]
+	#	then echo "${result}_BAD_REQUEST"
+	#elif [[ $result == "401" ]]
+	#	then echo "${result}_UNAUTHORIZED"
+	#elif [[ $result == "404" ]]
+	#	then echo "${result}_NOT_FOUND"
+	#elif [[ $result == "422" ]]
+	#	then echo "${result}_UNPROCESSABLE_ENTITY"
+	#fi
+}
+
+###
+# @param target_uri
+# @param port
+# @param endpoint
+# @param param
+# FIXME : Need to update this part, because for the moment only one parameter is managed.
+# FIXME : So, it is necessary to use several parameter for example : entityId=2&productId=1999
+###
+function getHttpStatusWithParam() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local param=$4
+	local username=$5
+  local password=$6
+
+	result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -q $param -U $username -W $password -S -V)
+  echo "${result}"
+
+	#if [[ $result == "200" ]]
+	#	then echo "${result}_OK"
+	#elif [[ $result == "201" ]]
+	#	then echo "${result}_CREATED"
+	#elif [[ $result == "400" ]]
+	#	then echo "${result}_BAD_REQUEST"
+	#elif [[ $result == "401" ]]
+	#	then echo "${result}_UNAUTHORIZED"
+	#elif [[ $result == "404" ]]
+	#	then echo "${result}_NOT_FOUND"
+	#elif [[ $result == "422" ]]
+	#	then echo "${result}_UNPROCESSABLE_ENTITY"
+	#fi
+}
+
+#
+# @param target_uri
+# @param port
+# @param endpoint
+# @param filename
+#
+function putHttpStatus() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local filename=$4
+
+	result=$(eval ./manual-tests/http-manual-test -u $target_uri -P $port -m PUT -e $endpoint -f $filename -S -V)
+
+	if [[ $result == "200" ]]
+		then echo "${result}_OK"
+	elif [[ $result == "201" ]]
+		then echo "${result}_CREATED"
+	elif [[ $result == "401" ]]
+		then echo "${result}_UNAUTHORIZED"
+	elif [[ $result == "403" ]]
+		then echo "${result}_FORBIDDEN"
+	elif [[ $result == "404" ]]
+		then echo "${result}_NOT_FOUND"
+	elif [[ $result == "422" ]]
+		then echo "${result}_UNPROCESSABLE_ENTITY"
+	fi
+}
+
+###
+# @param target_uri
+# @param port
+# @param endpoint
+# @param identifier
+# @param query
+###
+function getByIdentifier() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local identifier=$4
+	local query=$5
+
+	RESPONSE=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -i $identifier -q $query)
+	echo $RESPONSE
+}
+
+###
+# @param target_uri
+# @param port
+# @param endpoint
+# @param query
+###
+function get() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local query=$4
+
+	RESPONSE=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -q $query)
+	echo $RESPONSE
+}
+
+###
+# @param target_uri
+# @param port
+# @param endpoint
+# @param page
+# @param size
+# @param query
+###
+function getPage() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local page=$4
+	local size=$5
+	local query=$6
+
+	RESPONSE=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -p $page -s $size -q $query)
+	echo $RESPONSE
+}
+
+function put() {
+
+	local target_uri=$1
+	local port=$2
+	local endpoint=$3
+	local filename=$4
+	local testNumber=$5
+
+	RESPONSE=$(eval ./manual-tests/http-manual-test -u $target_uri -P $port -m PUT -e $filename -f $name)
+	echo $RESPONSE
+}
+
+function cleanDoubleQuote() {
+
+	local toclean=$1
+
+	if [ "${toclean:0:1}" = "\"" -a "${toclean:(-1)}" = "\"" ]
+	then
+		toclean=${toclean%\"}
+		toclean=${toclean#\"}
+	else
+
+		if [ "${toclean:0:1}" = "\"" ]
+		then
+			toclean=${toclean#\"}
+		else
+			if [ "${toclean:(-1)}" = "\"" ]
+			then
+				toclean=${toclean%\"}
+			fi
+		fi
+	fi
+
+	CLEAN=$toclean
+}
+
+function assertEqual() {
+
+  local expected=$1
+  local actual=$2
+  local testName=$3
+  local info=$4
+
+  cleanDoubleQuote $2
+
+  if [ $CLEAN = $expected ]
+  then
+    echo "$testName $info"
+  else
+    echo "Test FAILED, EXPECTED VALUE: $expected, ACTUAL VALUE: $CLEAN, WILL ABORT"
+    exit 1
+  fi
+}
+
+function apiIsReady() {
+
+	local target_uri=$1
+	local port=$2
+
+	RESPONSE=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e management/info -S -V)
+
+	echo $RESPONSE
+}
+
+function waitForService() {
+
+	local target_uri=$1
+	local port=$2
+
+    echo -n "Wait the service (retry=10, wait by retry=5s) : endpoint used for wait is management/info in $target_uri and the port is equal to $port "
+    n=0
+
+    result=$(eval apiIsReady $target_uri $port)
+    if [[ $result == "200" ]]
+    then wait=0
+    else
+    	wait=1
+    fi
+
+    while [ $wait -eq 1 ]
+    do
+        n=$((n + 1))
+        if [[ $n == 10 ]]
+        then
+            echo " Give up"
+            exit 1
+        else
+            sleep 5
+            echo -n ", retry #$n : Call the management/info endpoint for the target_uri=$target_uri and on the port=$port"
+
+            result=$(eval apiIsReady $target_uri $port)
+            if [[ $result == "200" ]]
+    		then wait=0
+    		fi
+        fi
+    done
+}
+
+function space() {
+echo
+}
