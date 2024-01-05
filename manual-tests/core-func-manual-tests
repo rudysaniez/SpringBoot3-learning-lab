@@ -163,6 +163,10 @@ function put() {
 	echo $RESPONSE
 }
 
+###
+# @deprecated(removal=true)
+# Use simpleCleanDoubleQuote
+###
 function cleanDoubleQuote() {
 
 	local toclean=$1
@@ -188,7 +192,9 @@ function cleanDoubleQuote() {
 }
 
 ###
-#
+# Clean the first parameter : remove the double quote
+# For example : "user" will become user
+# But if there are spaces, you will need use the replaceSpace function before using this function.
 ###
 function simpleCleanDoubleQuote() {
   local toClean=$1
@@ -196,7 +202,9 @@ function simpleCleanDoubleQuote() {
 }
 
 ###
-#
+# This function replace spaces by another character.
+# For example, "Learn Spring boot 3 with Testing", you will obtain "Learn_Spring_boot_3_with_Testing" (replaceBy="_").
+# After this replacement, you can use the simpleCleanDoubleQuote function and your string will not contain double quotes.
 ###
 function replaceSpace() {
   local source=$1
