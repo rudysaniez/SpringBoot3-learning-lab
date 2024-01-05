@@ -73,41 +73,42 @@ if [ -z $SIZE ]
 then SIZE=5
 fi
 
-if [[ -n $FILE && -z $METHOD ]]
-then METHOD="POST"
-fi
-
 if [[ -z $USERNAME || -z $PASSWORD ]]
 then
   USERNAME="user"
   PASSWORD="user"
 fi
 
-if [[ -n $STATUS ]]
+if [[ -n $STATUS && $METHOD == "GET" ]]
 then
-  if [[ -z $ID && -z $QUERY ]]
+    if [[ -z $ID && -z $QUERY ]]
+    then
+      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT\" | grep HTTP | cut -d ' ' -f 2")
+    elif [[ -n $ID ]]
+    then
+      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT/$ID?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
+    elif [[ -n $QUERY ]]
+    then
+      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
+    fi
+
+    if [[ -n $VERBOSE ]]
+      then echo $result
+    fi
+
+    exit 0
+elif [[ -n $STATUS ]]
+then
+  if [[ -n $FILE ]]
   then
-    result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT\" | grep HTTP | cut -d ' ' -f 2")
-  elif [[ -n $ID ]]
-  then
-    result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT/$ID?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
-  elif [[ -n $QUERY ]]
-  then
-    result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
+    result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers $METHOD \"$TARGET_URI:$PORT/$ENDPOINT\" < src/test/resources/json/$FILE | grep HTTP | cut -d ' ' -f 2")
+
+    if [[ -n $VERBOSE ]]
+      then echo $result
+    fi
   fi
 
-  if [[ -n $VERBOSE ]]
-      		then echo $result
-  fi
-
-	exit 0
-fi
-
-if [[ $ID == "info" || $ID == "health" ]]
-then
-	ENDPOINT="management"
-	http ":$PORT/$ENDPOINT/$ID"
-	exit 0
+  exit 0
 fi
 
 if [[ -n $METHOD && $METHOD == "POST" && -n $QUERY ]]

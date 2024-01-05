@@ -74,15 +74,6 @@ if [[ -z $USERNAME || -z $PASSWORD ]]
 then
   USERNAME="user"
   PASSWORD="user"
-  echo " > Use the default username [user:user]."
-  echo ""
-fi
-
-if [[ $ID == "info" || $ID == "health" ]]
-then
-	ENDPOINT="management"
-	http ":$PORT/$ENDPOINT/$ID"
-	exit 0
 fi
 
 if [[ -n $METHOD && $METHOD == "POST" && -n $QUERY ]]

@@ -52,20 +52,6 @@ function getHttpStatus() {
 
 	result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -U $username -W $password -S -V)
   echo "${result}"
-
-	#if [[ $result == "200" ]]
-  #  then echo "${result}_OK"
-	#elif [[ $result == "201" ]]
-	#	then echo "${result}_CREATED"
-	#elif [[ $result == "400" ]]
-	#	then echo "${result}_BAD_REQUEST"
-	#elif [[ $result == "401" ]]
-	#	then echo "${result}_UNAUTHORIZED"
-	#elif [[ $result == "404" ]]
-	#	then echo "${result}_NOT_FOUND"
-	#elif [[ $result == "422" ]]
-	#	then echo "${result}_UNPROCESSABLE_ENTITY"
-	#fi
 }
 
 ###
@@ -87,50 +73,25 @@ function getHttpStatusWithParam() {
 
 	result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -m GET -e $endpoint -q $param -U $username -W $password -S -V)
   echo "${result}"
-
-	#if [[ $result == "200" ]]
-	#	then echo "${result}_OK"
-	#elif [[ $result == "201" ]]
-	#	then echo "${result}_CREATED"
-	#elif [[ $result == "400" ]]
-	#	then echo "${result}_BAD_REQUEST"
-	#elif [[ $result == "401" ]]
-	#	then echo "${result}_UNAUTHORIZED"
-	#elif [[ $result == "404" ]]
-	#	then echo "${result}_NOT_FOUND"
-	#elif [[ $result == "422" ]]
-	#	then echo "${result}_UNPROCESSABLE_ENTITY"
-	#fi
 }
 
-#
+###
 # @param target_uri
 # @param port
+# @param method
 # @param endpoint
 # @param filename
-#
-function putHttpStatus() {
+###
+function getHttpStatusWithHttpMethod() {
 
 	local target_uri=$1
 	local port=$2
-	local endpoint=$3
-	local filename=$4
+	local method=$3
+	local endpoint=$4
+	local filename=$5
 
-	result=$(eval ./manual-tests/http-manual-test -u $target_uri -P $port -m PUT -e $endpoint -f $filename -S -V)
-
-	if [[ $result == "200" ]]
-		then echo "${result}_OK"
-	elif [[ $result == "201" ]]
-		then echo "${result}_CREATED"
-	elif [[ $result == "401" ]]
-		then echo "${result}_UNAUTHORIZED"
-	elif [[ $result == "403" ]]
-		then echo "${result}_FORBIDDEN"
-	elif [[ $result == "404" ]]
-		then echo "${result}_NOT_FOUND"
-	elif [[ $result == "422" ]]
-		then echo "${result}_UNPROCESSABLE_ENTITY"
-	fi
+	result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -e $endpoint -m $method -f $filename -S -V)
+  echo "${result}"
 }
 
 ###
@@ -226,6 +187,31 @@ function cleanDoubleQuote() {
 	CLEAN=$toclean
 }
 
+###
+#
+###
+function simpleCleanDoubleQuote() {
+  local toClean=$1
+  echo $toClean | tr -d '"'
+}
+
+###
+#
+###
+function replaceSpace() {
+  local source=$1
+  local replaceBy=$2
+
+  echo $source | tr " " $replaceBy
+}
+
+###
+# Simple assert function
+# @param expected
+# @param actual
+# @param testName
+# @param info
+###
 function assertEqual() {
 
   local expected=$1
@@ -233,9 +219,9 @@ function assertEqual() {
   local testName=$3
   local info=$4
 
-  cleanDoubleQuote $2
+  actualWithoutDoubleQuote=$(simpleCleanDoubleQuote $2)
 
-  if [ $CLEAN = $expected ]
+  if [ $actualWithoutDoubleQuote = $expected ]
   then
     echo "$testName $info"
   else
