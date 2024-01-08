@@ -25,6 +25,7 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.avroSchemas.directory>src/main/resources/avro/</project.avroSchemas.directory>
+		<start-class>com.springboot.learning.sb3.Application</start-class>
 	</properties>
 
 	<dependencies>
@@ -257,8 +258,16 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.graalvm.buildtools</groupId>
+				<artifactId>native-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.springboot.learning.sb3.Application</mainClass>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
