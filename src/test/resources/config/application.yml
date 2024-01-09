@@ -54,6 +54,9 @@ spring:
   liquibase:
     enabled: false
 
+  main:
+    allow-bean-definition-overriding: true
+
 api:
   pagination:
     page: 0

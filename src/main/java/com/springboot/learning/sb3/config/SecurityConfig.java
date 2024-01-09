@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 @EnableMethodSecurity
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
 
     public static final String ROLE_WRITER = "WRITER";

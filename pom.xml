@@ -154,6 +154,33 @@
 		</dependency>
 	</dependencies>
 
+	<profiles>
+		<profile>
+			<id>native</id>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-maven-plugin</artifactId>
+							<configuration>
+								<mainClass>com.springboot.learning.sb3.Application</mainClass>
+							</configuration>
+							<executions>
+								<execution>
+									<id>process-aot</id>
+									<configuration>
+										<profiles>dev</profiles>
+									</configuration>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
 			<plugin>
