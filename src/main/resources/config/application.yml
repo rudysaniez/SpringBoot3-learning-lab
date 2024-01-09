@@ -36,16 +36,7 @@ spring:
 
   threads:
     virtual:
-      enabled: true
-
-  # More information is here :
-  # https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.data-initialization.using-basic-sql-scripts
-  sql:
-    init:
-      mode: always
-      data-locations: classpath*:sql/data.sql
-      schema-locations: classpath*:sql/schema.sql
-      continue-on-error: false
+      enabled: false
 
   liquibase:
     enabled: false

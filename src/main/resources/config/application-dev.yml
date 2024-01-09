@@ -4,20 +4,12 @@ logging:
     root: INFO
 
 spring:
-  # More information is here :
-  # https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.data-initialization.using-basic-sql-scripts
-  # https://www.baeldung.com/spring-boot-data-sql-and-schema-sql
-  sql:
-    init:
-      mode: never
-      data-locations: optional:classpath*:sql/data.sql
-      schema-locations: optional:classpath*:sql/schema.sql
-      continue-on-error: false
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/videoDatabase?loggerLevel=OFF
+  r2dbc:
+    url: r2dbc:pool:postgresql://localhost:5432/videoDatabase?loggerLevel=OFF
     username: ${PSQL_USERNAME}
     password: ${PSQL_PASSWORD}
+    properties:
+      validationQuery: select 1
 
   liquibase:
     enabled: true

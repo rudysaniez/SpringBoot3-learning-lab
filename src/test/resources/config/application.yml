@@ -36,23 +36,17 @@ spring:
 
   threads:
     virtual:
-      enabled: true
+      enabled: false
 
-  datasource:
+  r2dbc:
     username: michael
     password: jordan
 
-  # More information is here :
-  # https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.data-initialization.using-basic-sql-scripts
-  sql:
-    init:
-      mode: always
-      data-locations: classpath*:sql-test/data.sql
-      schema-locations: classpath*:sql-test/schema.sql
-      continue-on-error: false
-
   liquibase:
-    enabled: false
+    enabled: true
+    user: michael
+    password: jordan
+    change-log: classpath*:/liquibase-test/db.changelog-master.yaml
 
 api:
   pagination:
@@ -83,3 +77,8 @@ security:
           - READER
           - WRITER
           - ADMIN
+
+      - username: bob
+        password: bob
+        authorities:
+          - READER

@@ -5,8 +5,9 @@ import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.service.VideoService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,26 +32,16 @@ public class VideoRestController {
      * @return list of {@link Video}
      */
     @GetMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PageVideo> all(@RequestParam(value = "page", required = false) Integer page,
-                                         @RequestParam(value = "size", required = false) Integer size) {
+    public Flux<Video> all(@RequestParam(value = "page", required = false) Integer page,
+                                              @RequestParam(value = "size", required = false) Integer size) {
 
         if(Objects.isNull(page)) page = 0;
         if(Objects.isNull(size)) size = 20;
         if(page < 0) page = 0;
         if(size > 20) size = 20;
 
-        var pagination = videoService.findAll(page, size);
-
-        var videoModelList = StreamSupport.stream(videoService.findAll(page, size).spliterator(), false)
-                .map(videoMapper::toModel)
-                .toList();
-
-        var pageMetadata = new PageMetadata(pagination.getNumber(),
-                pagination.getSize(),
-                pagination.getTotalElements(),
-                pagination.getTotalPages());
-
-        return ResponseEntity.ok(new PageVideo(videoModelList, pageMetadata));
+        return videoService.findAll(page, size)
+                        .map(videoMapper::toModel);
     }
 
     /**
@@ -58,8 +49,11 @@ public class VideoRestController {
      * @return number of {@link Video}
      */
     @GetMapping(value = "/videos/:count", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> count() {
-        return ResponseEntity.ok(videoService.count());
+    public Mono<ResponseEntity<Long>> count() {
+
+        return videoService.count()
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     /**
@@ -68,12 +62,10 @@ public class VideoRestController {
      * @return list of {@link Video}
      */
     @GetMapping(value = "/videos/:search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Video>> search(@RequestParam(name = "name") String name) {
-        return ResponseEntity.ok(
-                    videoService.search(new VideoSearch(name, Optional.empty())).stream()
-                        .map(videoMapper::toModel)
-                        .toList()
-        );
+    public Flux<Video> search(@RequestParam(name = "name") String name) {
+
+        return videoService.search(new VideoSearch(name, Optional.empty()))
+                .map(videoMapper::toModel);
     }
 
     /**
@@ -84,9 +76,12 @@ public class VideoRestController {
     @PostMapping(value = "/videos",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Video> create(@RequestBody Video video,
-                                        Authentication authentication) {
-        return ResponseEntity.ok(videoMapper.toModel(videoService.save(video, authentication.getName())));
+    public Mono<ResponseEntity<Video>> create(@RequestBody Video video) {
+
+        return Mono.just(video)
+                .flatMap(v -> videoService.save(v, "authentication.getName()"))
+                .map(videoMapper::toModel)
+                .map(ResponseEntity::ok);
     }
 
     /**
@@ -95,13 +90,15 @@ public class VideoRestController {
      * @return {@link List<Video>}
      */
     @DeleteMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> deleteByName(@RequestParam(name = "name") String name,
-                                             Authentication authentication) {
+    public Mono<ResponseEntity<Void>> deleteByName(@RequestParam(name = "name") String name) {
 
-        final boolean deleted = videoService.delete(new VideoDeletion(name), authentication);
-        if(deleted)
-            return ResponseEntity.ok().build();
-        else
-            return ResponseEntity.noContent().build();
+        return videoService.delete(new VideoDeletion(name))
+                .map(result -> {
+
+                    if(result)
+                        return ResponseEntity.ok().build();
+                    else
+                        return ResponseEntity.noContent().build();
+                });
     }
 }

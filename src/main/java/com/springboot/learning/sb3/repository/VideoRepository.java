@@ -1,27 +1,26 @@
 package com.springboot.learning.sb3.repository;
 
 import com.springboot.learning.sb3.domain.VideoEntity;
-import org.springframework.data.jdbc.repository.query.Modifying;
-import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.r2dbc.repository.Modifying;
+import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
+public interface VideoRepository extends ReactiveCrudRepository<VideoEntity, Long> {
 
-public interface VideoRepository extends CrudRepository<VideoEntity, Long> {
+    Flux<VideoEntity> findTop3ByNameContainsIgnoreCaseOrderByName(String name);
 
-    List<VideoEntity> findTop3ByNameContainsIgnoreCaseOrderByName(String name);
+    Flux<VideoEntity> findTop3ByDescriptionContainingIgnoreCaseOrderByName(String description);
 
-    List<VideoEntity> findTop3ByDescriptionContainingIgnoreCaseOrderByName(String description);
+    Flux<VideoEntity> findByName(String name);
 
-    List<VideoEntity> findByName(String name);
-
-    @PreAuthorize(value = "#entity.username == authentication.name")
+    //@PreAuthorize(value = "#entity.username == authentication.name")
     @Override
-    void delete(VideoEntity entity);
+    Mono<Void> delete(VideoEntity entity);
 
     @Modifying
     @Query(value = "delete from video where name=:name")
-    int deleteByName(@Param("name") String name);
+    Mono<Integer> deleteByName(@Param("name") String name);
 }

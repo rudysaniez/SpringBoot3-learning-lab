@@ -19,6 +19,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -38,10 +39,7 @@ class VideoRestControllerMockMvcTest {
         final var video2 = new VideoEntity(null, "Learn Spring-data-jpa", "Java persistence API", "user");
 
         Mockito.when(videoService.findAll(0, 20))
-                .thenReturn(new PageImpl<>(
-                        List.of(video1, video2),
-                        PageRequest.of(0, 20),
-                        2L));
+                .thenReturn(Flux.fromIterable(List.of(video1, video2)));
 
         Mockito.when(videoMapper.toModel(video1))
                 .thenReturn(new Video(video1.name(), video1.description(), video1.username()));

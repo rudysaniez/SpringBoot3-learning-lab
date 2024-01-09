@@ -10,9 +10,6 @@ import java.util.List;
 @Table("user_account")
 public record UserAccountEntity(@Id Long id, String username, String password, List<String> authorities) {
 
-    /**
-     * @return {@link UserDetails}
-     */
     public UserDetails asUser() {
         return User.withUsername(username)
                 .password(password)
