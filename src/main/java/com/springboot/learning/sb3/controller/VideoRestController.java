@@ -3,6 +3,7 @@ package com.springboot.learning.sb3.controller;
 import com.springboot.learning.sb3.dto.*;
 import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.service.VideoService;
+import org.mapstruct.factory.Mappers;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +19,10 @@ import java.util.stream.StreamSupport;
 public class VideoRestController {
 
     private final VideoService videoService;
-    private final VideoMapper videoMapper;
+    private static final VideoMapper videoMapper = Mappers.getMapper(VideoMapper.class);
 
-    public VideoRestController(VideoService videoService,
-                               VideoMapper videoMapper) {
-
+    public VideoRestController(VideoService videoService) {
         this.videoService = videoService;
-        this.videoMapper = videoMapper;
     }
 
     /**
@@ -41,7 +39,7 @@ public class VideoRestController {
         if(size > 20) size = 20;
 
         return videoService.findAll(page, size)
-                        .map(videoMapper::toModel);
+                .map(videoMapper::toModel);
     }
 
     /**

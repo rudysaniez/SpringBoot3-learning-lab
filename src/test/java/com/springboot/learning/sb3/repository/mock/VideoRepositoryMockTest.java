@@ -18,8 +18,7 @@ import java.util.List;
 @ExtendWith(MockitoExtension.class)
 class VideoRepositoryMockTest {
 
-    @Mock
-    VideoRepository videoRepository;
+    @Mock VideoRepository videoRepository;
     @Mock VideoMapper videoMapper;
 
     VideoService videoService;
@@ -33,7 +32,7 @@ class VideoRepositoryMockTest {
         Mockito.when(videoRepository.findAll())
                 .thenReturn(Flux.fromIterable(List.of(video1, video2)));
 
-        videoService = new VideoService(videoRepository, videoMapper);
+        videoService = new VideoService(videoRepository);
     }
 
     @Test

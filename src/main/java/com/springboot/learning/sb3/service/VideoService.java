@@ -20,16 +20,11 @@ import java.util.List;
 public class VideoService {
 
     private final VideoRepository videoRepository;
-    private final VideoMapper videoMapper;
 
     private static final Logger log = LoggerFactory.getLogger(VideoService.class);
 
-    public VideoService(
-            VideoRepository videoRepository,
-            VideoMapper videoMapper) {
-
+    public VideoService(VideoRepository videoRepository) {
         this.videoRepository = videoRepository;
-        this.videoMapper = videoMapper;
     }
 
     /**
