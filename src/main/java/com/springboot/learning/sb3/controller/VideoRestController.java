@@ -26,6 +26,19 @@ public class VideoRestController {
     }
 
     /**
+     * @param name : the name
+     * @return Mono of {@link ResponseEntity<Video>}
+     */
+    @GetMapping(value = "/videos/{videoName}")
+    public Mono<ResponseEntity<Video>> getById(@PathVariable(value = "videoName") String name) {
+        return videoService.findByName(name)
+                .next()
+                .map(videoMapper::toModel)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    /**
      * Get me all !
      * @return list of {@link Video}
      */

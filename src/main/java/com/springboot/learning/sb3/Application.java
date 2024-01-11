@@ -6,7 +6,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.hateoas.config.EnableHypermediaSupport;
 
+@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 @EnableConfigurationProperties(value = {PropertiesConfig.UserSecurityAccessConfiguration.class,
 										PropertiesConfig.Pagination.class
 								})
