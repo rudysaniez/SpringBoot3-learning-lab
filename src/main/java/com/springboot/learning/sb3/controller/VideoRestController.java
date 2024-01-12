@@ -4,8 +4,11 @@ import com.springboot.learning.sb3.dto.*;
 import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.service.VideoService;
 import org.mapstruct.factory.Mappers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,6 +23,8 @@ public class VideoRestController {
 
     private final VideoService videoService;
     private static final VideoMapper videoMapper = Mappers.getMapper(VideoMapper.class);
+
+    private static final Logger log = LoggerFactory.getLogger(VideoRestController.class);
 
     public VideoRestController(VideoService videoService) {
         this.videoService = videoService;
@@ -44,12 +49,15 @@ public class VideoRestController {
      */
     @GetMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<Video> all(@RequestParam(value = "page", required = false) Integer page,
-                                              @RequestParam(value = "size", required = false) Integer size) {
+                           @RequestParam(value = "size", required = false) Integer size,
+                           Authentication authentication) {
 
         if(Objects.isNull(page)) page = 0;
         if(Objects.isNull(size)) size = 20;
         if(page < 0) page = 0;
         if(size > 20) size = 20;
+
+        log.info(" > All videos by the user {}.", authentication.getName());
 
         return videoService.findAll(page, size)
                 .map(videoMapper::toModel);
