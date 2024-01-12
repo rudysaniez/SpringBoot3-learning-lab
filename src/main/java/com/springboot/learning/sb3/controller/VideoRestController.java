@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -95,10 +97,11 @@ public class VideoRestController {
     @PostMapping(value = "/videos",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<Video>> create(@RequestBody Video video) {
+    public Mono<ResponseEntity<Video>> create(@RequestBody Video video,
+                                              Authentication authentication) {
 
         return Mono.just(video)
-                .flatMap(v -> videoService.save(v, "authentication.getName()"))
+                .flatMap(v -> videoService.save(v, authentication.getName()))
                 .map(videoMapper::toModel)
                 .map(ResponseEntity::ok);
     }
@@ -111,13 +114,13 @@ public class VideoRestController {
     @DeleteMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<Void>> deleteByName(@RequestParam(name = "name") String name) {
 
-        return videoService.delete(new VideoDeletion(name))
-                .map(result -> {
+        if(!StringUtils.hasText(name))
+            throw new IllegalArgumentException(" > The query parameter name is mandatory");
 
-                    if(result)
-                        return ResponseEntity.ok().build();
-                    else
-                        return ResponseEntity.noContent().build();
-                });
+        return videoService.delete(new VideoDeletion(name))
+                .collectList()
+                .filter(videoEntities -> !videoEntities.isEmpty())
+                .map(data -> ResponseEntity.ok().<Void>build())
+                .switchIfEmpty(Mono.just(ResponseEntity.noContent().build()));
     }
 }

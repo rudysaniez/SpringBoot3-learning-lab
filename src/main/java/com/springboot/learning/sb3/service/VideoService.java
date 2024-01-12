@@ -83,14 +83,11 @@ public class VideoService {
      * Delete by {@link VideoDeletion}.
      * @param videoDeletion : the video deletion
      */
-    public Mono<Boolean> delete(@NotNull VideoDeletion videoDeletion) {
+    public Flux<VideoEntity> delete(@NotNull VideoDeletion videoDeletion) {
 
-        //log.info(" > Delete this video {}, by {}.", videoDeletion, authentication.getName());
-
-        Flux<VideoEntity> data = this.findByName(videoDeletion.name());
-
-        return data.flatMap(videoRepository::delete)
-                .collectList()
-                .map(resultList -> !resultList.isEmpty());
+        return this.findByName(videoDeletion.name())
+                .flatMap(videoEntity -> videoRepository.delete(videoEntity)
+                                        .thenReturn(videoEntity)
+                );
     }
 }

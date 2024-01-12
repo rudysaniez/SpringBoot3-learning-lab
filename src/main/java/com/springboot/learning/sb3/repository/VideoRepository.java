@@ -1,10 +1,12 @@
 package com.springboot.learning.sb3.repository;
 
 import com.springboot.learning.sb3.domain.VideoEntity;
+import com.springboot.learning.sb3.dto.Video;
 import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -16,11 +18,14 @@ public interface VideoRepository extends ReactiveCrudRepository<VideoEntity, Lon
 
     Flux<VideoEntity> findByName(String name);
 
-    //@PreAuthorize(value = "#entity.username == authentication.name")
+    @PreAuthorize(value = "#entity.username == authentication.name")
     @Override
     Mono<Void> delete(VideoEntity entity);
 
     @Modifying
     @Query(value = "delete from video where name=:name")
     Mono<Integer> deleteByName(@Param("name") String name);
+
+    @Query(value = "select v.* from video v offset :offset limit :limit")
+    Flux<VideoEntity> findAllAsPage(int pageNumber, int pageSize);
 }

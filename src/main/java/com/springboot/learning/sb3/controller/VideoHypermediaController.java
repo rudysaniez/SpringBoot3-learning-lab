@@ -1,21 +1,22 @@
 package com.springboot.learning.sb3.controller;
 
-import com.springboot.learning.sb3.domain.VideoEntity;
 import com.springboot.learning.sb3.dto.Video;
 import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.repository.VideoRepository;
 import org.mapstruct.factory.Mappers;
 import org.springframework.hateoas.*;
-import org.springframework.hateoas.mediatype.hal.HalLinkRelation;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 @RestController
@@ -32,16 +33,21 @@ public class VideoHypermediaController {
      * @param videoName : the video name
      * @return Mono of {@link EntityModel<Video>}
      */
-    @GetMapping(value = "/hal/videos/{videoName}")
-    public Mono<EntityModel<Video>> getVideoById(@PathVariable(value = "videoName") String videoName) {
+    @GetMapping(value = "/hypermedia/videos/{videoName}")
+    public Mono<EntityModel<Video>> getVideoById(@PathVariable(value = "videoName") String videoName,
+                                                 Authentication authentication) {
 
-        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(VideoHypermediaController.class).getVideoById(videoName))
-                .withSelfRel()
-                .toMono();
+        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                                        .methodOn(VideoHypermediaController.class)
+                                        .getVideoById(videoName, authentication))
+                                    .withSelfRel()
+                                    .toMono();
 
-        final Mono<Link> otherLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(VideoHypermediaController.class).all())
-                .withRel(LinkRelation.of("all"))
-                .toMono();
+        final Mono<Link> otherLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                                        .methodOn(VideoHypermediaController.class)
+                                        .all(authentication))
+                                    .withRel(LinkRelation.of("all"))
+                                    .toMono();
 
         return Mono.zip(selfLink, otherLink)
                 .flatMap(links -> videoRepository.findByName(videoName)
@@ -52,30 +58,100 @@ public class VideoHypermediaController {
     }
 
     /**
-     * @return
+     * @return Mono of collection of {@link EntityModel<Video>}
      */
-    @GetMapping(value = "/hal/videos")
-    public Mono<CollectionModel<EntityModel<Video>>> all() {
+    @GetMapping(value = "/hypermedia/videos")
+    public Mono<CollectionModel<EntityModel<Video>>> all(Authentication authentication) {
 
-        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(VideoHypermediaController.class).all())
-                .withSelfRel()
-                .toMono();
+        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                                        .methodOn(VideoHypermediaController.class)
+                                        .all(authentication))
+                                    .withSelfRel()
+                                    .toMono();
 
         return selfLink.zipWith(videoRepository.findAll()
                                 .map(videoMapper::toModel)
-                                .flatMap(video -> Flux.just(
-                                        WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(VideoHypermediaController.class).getVideoById(video.name()))
-                                            .withSelfRel()
-                                            .toMono(),
-                                        WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(VideoRestController.class).deleteByName(video.name()))
-                                            .withRel(LinkRelation.of("delete"))
-                                            .toMono()
-                                        )
-                                        .flatMap(Function.identity())
-                                        .collectList()
-                                        .map(links -> EntityModel.of(video, links))
+                                .flatMap(video -> buildVideoLinks(video, authentication)
+                                    .collectList()
+                                    .map(links -> EntityModel.of(video, links))
                                 )
                                 .collectList())
                 .map(tuple2 -> CollectionModel.of(tuple2.getT2(), tuple2.getT1()));
     }
+
+    /**
+     * @param page : the page number
+     * @param size : the page size
+     * @return flow of page of {@link EntityModel<Video>}
+     */
+    @GetMapping(value = "/hypermedia/videos/:asPage")
+    public Mono<PagedModel<EntityModel<Video>>> allAsPage(@RequestParam(value = "page") Integer page,
+                                                          @RequestParam(value = "size") Integer size,
+                                                          Authentication authentication) {
+
+        final int p;
+        if(Objects.isNull(page))
+            p = 0;
+        else
+            p = page;
+
+        final int s;
+        if(Objects.isNull(size))
+            s = 10;
+        else
+            s = size;
+
+        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                                        .methodOn(VideoHypermediaController.class)
+                                        .allAsPage(p, s, authentication))
+                                    .withSelfRel()
+                                    .toMono();
+
+        return selfLink.zipWith(videoRepository.findAllAsPage(page, size)
+                            .map(videoMapper::toModel)
+                            .flatMap(video -> buildVideoLinks(video, authentication)
+                                .collectList()
+                                .map(links -> EntityModel.of(video, links))
+                            )
+                            .collectList()
+                            .zipWith(videoRepository.count())
+                            .map(tuple2 -> new VideoPageGlue(tuple2.getT1(), tuple2.getT2()))
+                )
+                .map(tuple2 -> PagedModel.of(tuple2.getT2().videos(),
+                                    new PagedModel.PageMetadata(s,
+                                                    p,
+                                                    tuple2.getT2().totalElements(),
+                                          3),
+                                    tuple2.getT1()))
+        ;
+    }
+
+    /**
+     * @param video : the video model
+     * @return flow of {@link Link}
+     */
+    private Flux<Link> buildVideoLinks(Video video,
+                                       Authentication authentication) {
+
+        return Flux.just(
+                    WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                                    .methodOn(VideoHypermediaController.class)
+                                    .getVideoById(video.name(), authentication))
+                                .withSelfRel()
+                                .toMono(),
+                    WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                                    .methodOn(VideoRestController.class)
+                                    .deleteByName(video.name()))
+                                .withRel(LinkRelation.of("delete"))
+                                .toMono(),
+                    WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                                    .methodOn(VideoRestController.class)
+                                    .create(video, authentication))
+                                .withRel(LinkRelation.of("create"))
+                                .toMono()
+                )
+                .flatMap(Function.identity());
+    }
+
+    record VideoPageGlue(List<EntityModel<Video>> videos, long totalElements) {}
 }
