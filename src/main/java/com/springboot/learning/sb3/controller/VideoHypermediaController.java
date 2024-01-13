@@ -107,7 +107,7 @@ public class VideoHypermediaController {
                                     .withSelfRel()
                                     .toMono();
 
-        return selfLink.zipWith(videoRepository.findAllAsPage(page, size)
+        return selfLink.zipWith(videoRepository.findAllAsPage(page * size, size)
                             .map(videoMapper::toModel)
                             .flatMap(video -> buildVideoLinks(video, authentication)
                                 .collectList()
@@ -119,9 +119,10 @@ public class VideoHypermediaController {
                 )
                 .map(tuple2 -> PagedModel.of(tuple2.getT2().videos(),
                                     new PagedModel.PageMetadata(s,
-                                                    p,
-                                                    tuple2.getT2().totalElements(),
-                                          3),
+                                            p,
+                                            tuple2.getT2().totalElements(),
+                                            tuple2.getT2().totalElements() > s ? Math.ceilDiv(tuple2.getT2().totalElements(), s) : 1
+                                    ),
                                     tuple2.getT1()))
         ;
     }
