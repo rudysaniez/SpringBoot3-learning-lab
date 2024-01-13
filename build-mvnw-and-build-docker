@@ -4,8 +4,8 @@ set -e
 
 cd $(dirname $0)
 
-./mvnw clean install
+./mvnw clean package
 
-docker build -f src/main/docker/Dockerfile -t video-api .
+docker build -f src/main/docker/Dockerfile -t video-reactive-api .
 
-docker images | grep -i video-api
+docker images | grep -i video-reactive-api

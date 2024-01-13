@@ -45,9 +45,9 @@ fi
 
 testNumber="GET data [endpoint=/videos] with [user:user]"
 result=$(eval get localhost 8081 videos)
-assertEqual "user" $(echo $result | jq ".content[0].username") " > $testNumber (/videos) :" "The username (index=0) is equal to user."
-assertEqual $(replaceSpace "Learn Spring boot 3 with Testing" "_") $(replaceSpace "$(echo $result | jq ".content[0].name")" "_" ) " > $testNumber (/videos) :" "The content[0].name is equal to <Learn Spring boot 3 with Testing>."
-assertEqual $(replaceSpace "Nice book on the tests" "_") $(replaceSpace "$(echo $result | jq ".content[0].description")" "_" ) " > $testNumber (/videos) :" "The content[0].description is equal to <Nice book on the tests>."
+assertEqual "user" $(echo $result | jq ".[0].username") " > $testNumber (/videos) :" "The username (index=0) is equal to user."
+assertEqual $(replaceSpace "Learn Spring boot 3 with Testing" "_") $(replaceSpace "$(echo $result | jq ".[0].name")" "_" ) " > $testNumber (/videos) :" "The content[0].name is equal to <Learn Spring boot 3 with Testing>."
+assertEqual $(replaceSpace "Nice book on the tests" "_") $(replaceSpace "$(echo $result | jq ".[0].description")" "_" ) " > $testNumber (/videos) :" "The content[0].description is equal to <Nice book on the tests>."
 
 ####################
 
