@@ -5,7 +5,6 @@ import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.repository.VideoRepository;
 import org.mapstruct.factory.Mappers;
 import org.springframework.hateoas.*;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,13 +36,13 @@ public class VideoHypermediaController {
     public Mono<EntityModel<Video>> getVideoById(@PathVariable(value = "videoName") String videoName,
                                                  Authentication authentication) {
 
-        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                         .methodOn(VideoHypermediaController.class)
                                         .getVideoById(videoName, authentication))
                                     .withSelfRel()
                                     .toMono();
 
-        final Mono<Link> otherLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+        final Mono<Link> otherLink = WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                         .methodOn(VideoHypermediaController.class)
                                         .all(authentication))
                                     .withRel(LinkRelation.of("all"))
@@ -63,7 +62,7 @@ public class VideoHypermediaController {
     @GetMapping(value = "/hypermedia/videos")
     public Mono<CollectionModel<EntityModel<Video>>> all(Authentication authentication) {
 
-        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                         .methodOn(VideoHypermediaController.class)
                                         .all(authentication))
                                     .withSelfRel()
@@ -101,7 +100,7 @@ public class VideoHypermediaController {
         else
             s = size;
 
-        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+        final Mono<Link> selfLink = WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                         .methodOn(VideoHypermediaController.class)
                                         .allAsPage(p, s, authentication))
                                     .withSelfRel()
@@ -135,17 +134,17 @@ public class VideoHypermediaController {
                                        Authentication authentication) {
 
         return Flux.just(
-                    WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                    WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                     .methodOn(VideoHypermediaController.class)
                                     .getVideoById(video.name(), authentication))
                                 .withSelfRel()
                                 .toMono(),
-                    WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                    WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                     .methodOn(VideoRestController.class)
                                     .deleteByName(video.name()))
                                 .withRel(LinkRelation.of("delete"))
                                 .toMono(),
-                    WebFluxLinkBuilder.linkTo(WebMvcLinkBuilder
+                    WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                     .methodOn(VideoRestController.class)
                                     .create(video, authentication))
                                 .withRel(LinkRelation.of("create"))

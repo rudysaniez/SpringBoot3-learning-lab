@@ -6,6 +6,10 @@ import com.springboot.learning.sb3.service.VideoService;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 @RestController
@@ -46,24 +51,116 @@ public class VideoRestController {
     }
 
     /**
-     * Get me all !
-     * @return list of {@link Video}
+     *
+     * @param page : page number
+     * @param size : page size
+     * @return flux of {@link Video}
      */
     @GetMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<Video> all(@RequestParam(value = "page", required = false) Integer page,
-                           @RequestParam(value = "size", required = false) Integer size,
-                           Authentication authentication) {
+                           @RequestParam(value = "size", required = false) Integer size) {
 
-        if(Objects.isNull(page)) page = 0;
-        if(Objects.isNull(size)) size = 20;
-        if(page < 0) page = 0;
-        if(size > 20) size = 20;
+        final int p;
+        final int s;
 
-        log.info(" > All videos by the user {}.", authentication.getName());
+        if(Objects.isNull(page))
+            p = 0;
+        else
+            p = page;
 
-        return videoService.findAll(page, size)
+        if(Objects.isNull(size))
+            s = 20;
+        else
+            s = size;
+
+        return videoService.findAll(p, s)
                 .map(videoMapper::toModel);
     }
+
+    /**
+     * Get me all !
+     * @return list of {@link Video}
+     */
+    @GetMapping(value = "/videos/:asPage")
+    public Mono<ResponseEntity<PagedModel<EntityModel<Video>>>> allAsPage(@RequestParam(value = "page", required = false) Integer page,
+                                                    @RequestParam(value = "size", required = false) Integer size,
+                                                    Authentication authentication) {
+
+        final int p;
+        final int s;
+
+        if(Objects.isNull(page))
+            p = 0;
+        else
+            p = page;
+
+        if(Objects.isNull(size))
+            s = 20;
+        else
+            s = size;
+
+        log.info(" > All videos with page by the user {}.", authentication.getName());
+
+        final Mono<Link> linkSelf = WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
+                                    .allAsPage(p, s, authentication))
+                                    .withSelfRel()
+                                    .toMono();
+
+        return videoService.findAll(page, size)
+                .map(videoMapper::toModel)
+                .flatMap(video -> buildVideoLinks(video, authentication)
+                        .collectList()
+                        .map(links -> EntityModel.of(video, links))
+                )
+                .collectList()
+                .zipWith(videoService.count())
+                .map(tuple2 -> new VideoPageGlue(tuple2.getT1(), tuple2.getT2()))
+                .zipWith(linkSelf)
+                .map(tuple2 -> PagedModel.of(tuple2.getT1().content,
+                        new PagedModel.PageMetadata(
+                                s,
+                                p,
+                                tuple2.getT1().totalElements(), tuple2.getT1().totalElements() > s
+                                                            ? Math.ceilDiv(tuple2.getT1().totalElements(), s)
+                                                            : 1),
+                        tuple2.getT2()
+                        )
+                )
+                .map(ResponseEntity::ok);
+    }
+
+    /**
+     *
+     * @param video
+     * @param authentication
+     * @return flow of {@link Link}
+     */
+    private Flux<Link> buildVideoLinks(Video video, Authentication authentication) {
+
+        return Flux.just(
+                WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
+                                .getById(video.name()))
+                        .withRel("getById")
+                        .toMono(),
+                WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
+                                .deleteByName(video.name()))
+                        .withRel("deleteById")
+                        .toMono(),
+                WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
+                                .create(video, authentication))
+                        .withRel("creation")
+                        .toMono(),
+                WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
+                                .search(video.name()))
+                        .withRel("searchByName")
+                        .toMono()
+        )
+        .flatMap(Function.identity());
+    }
+
+    record VideoPageGlue(List<EntityModel<Video>> content, long totalElements) {}
+
+    record VideoLinksPageGlue(VideoPageGlue pageGlue, List<Link> links) {}
 
     /**
      * Count {@link Video}

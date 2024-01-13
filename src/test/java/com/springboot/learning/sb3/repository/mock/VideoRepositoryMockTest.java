@@ -1,7 +1,6 @@
 package com.springboot.learning.sb3.repository.mock;
 
 import com.springboot.learning.sb3.domain.VideoEntity;
-import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.repository.VideoRepository;
 import com.springboot.learning.sb3.service.VideoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +18,6 @@ import java.util.List;
 class VideoRepositoryMockTest {
 
     @Mock VideoRepository videoRepository;
-    @Mock VideoMapper videoMapper;
 
     VideoService videoService;
 

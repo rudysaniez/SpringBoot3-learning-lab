@@ -4,7 +4,6 @@ import com.springboot.learning.sb3.domain.VideoEntity;
 import com.springboot.learning.sb3.dto.Video;
 import com.springboot.learning.sb3.dto.VideoDeletion;
 import com.springboot.learning.sb3.dto.VideoSearch;
-import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.repository.VideoRepository;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -28,12 +27,13 @@ public class VideoService {
     }
 
     /**
-     * @param page : the page number
-     * @param size : the size
+     * @param pageNumber : the page number
+     * @param pageSize : the size
      * @return page of {@link VideoEntity}
      */
-    public Flux<VideoEntity> findAll(int page, int size) {
-        return videoRepository.findAll();
+    public Flux<VideoEntity> findAll(int pageNumber, int pageSize) {
+        final int offset = pageNumber * pageSize;
+        return videoRepository.findAllAsPage(offset, pageSize);
     }
 
     /**
@@ -57,10 +57,11 @@ public class VideoService {
      * @return {@link VideoEntity}
      */
     public Mono<VideoEntity> save(@NotNull Video video,
-                            @NotNull String username) {
+                                  @NotNull String username) {
 
-        final VideoEntity entity = new VideoEntity(null, video.name(), video.description(), username);
-        return videoRepository.save(entity);
+        log.info(" > Create a video with {} by username {}.", video,username);
+
+        return videoRepository.save(new VideoEntity(null, video.name(), video.description(), username));
     }
 
     /**
@@ -84,6 +85,8 @@ public class VideoService {
      * @param videoDeletion : the video deletion
      */
     public Flux<VideoEntity> delete(@NotNull VideoDeletion videoDeletion) {
+
+        log.info(" > Delete many videos by name {}.", videoDeletion);
 
         return this.findByName(videoDeletion.name())
                 .flatMap(videoEntity -> videoRepository.delete(videoEntity)

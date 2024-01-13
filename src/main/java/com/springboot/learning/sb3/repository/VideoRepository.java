@@ -1,7 +1,6 @@
 package com.springboot.learning.sb3.repository;
 
 import com.springboot.learning.sb3.domain.VideoEntity;
-import com.springboot.learning.sb3.dto.Video;
 import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,5 +26,5 @@ public interface VideoRepository extends ReactiveCrudRepository<VideoEntity, Lon
     Mono<Integer> deleteByName(@Param("name") String name);
 
     @Query(value = "select v.* from video v offset :offset limit :limit")
-    Flux<VideoEntity> findAllAsPage(int pageNumber, int pageSize);
+    Flux<VideoEntity> findAllAsPage(int offset, int limit);
 }
