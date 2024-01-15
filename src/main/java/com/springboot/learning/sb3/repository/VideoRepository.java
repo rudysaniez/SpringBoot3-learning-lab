@@ -17,6 +17,8 @@ public interface VideoRepository extends ReactiveCrudRepository<VideoEntity, Lon
 
     Flux<VideoEntity> findByName(String name);
 
+    Mono<VideoEntity> findByNameAndUsername(String name, String username);
+
     @PreAuthorize(value = "#entity.username == authentication.name")
     @Override
     Mono<Void> delete(VideoEntity entity);

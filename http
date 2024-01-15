@@ -82,8 +82,10 @@ elif [[ -n $METHOD && $METHOD == "POST" ]]
 then http -a $USERNAME:$PASSWORD POST ":$PORT/$ENDPOINT" < src/test/resources/json/$FILE
 elif [[ -n $METHOD && $METHOD == "PUT" ]]
 then http -a $USERNAME:$PASSWORD PUT ":$PORT/$ENDPOINT?$QUERY" < src/test/resources/json/$FILE
-elif [[ -n $METHOD && $METHOD == "DELETE" ]]
+elif [[ -n $METHOD && $METHOD == "DELETE" && -z $ID ]]
 then http -a $USERNAME:$PASSWORD DELETE ":$PORT/$ENDPOINT?$QUERY"
+elif [[ -n $METHOD && $METHOD == "DELETE" && -n $ID ]]
+then http -a $USERNAME:$PASSWORD DELETE ":$PORT/$ENDPOINT/$ID"
 elif [[ -n $ID && -n $OPTION && $ENDPOINT == "management" ]]
 then http -a $USERNAME:$PASSWORD ":$PORT/$ENDPOINT/$ID/$OPTION"
 elif [[ -n $ID ]]

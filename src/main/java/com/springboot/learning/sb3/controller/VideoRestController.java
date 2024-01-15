@@ -112,7 +112,7 @@ public class VideoRestController {
 
         return videoService.findAll(page, size)
                 .map(videoMapper::toModel)
-                .flatMap(video -> buildVideoLinks(video)
+                .flatMap(video -> buildVideoLinks(video, authentication)
                         .collectList()
                         .map(links -> EntityModel.of(video, links))
                 )
@@ -134,11 +134,11 @@ public class VideoRestController {
     }
 
     /**
-     *
      * @param video : the video
+     * @param authentication : the authentication
      * @return flow of {@link Link}
      */
-    private Flux<Link> buildVideoLinks(Video video) {
+    private Flux<Link> buildVideoLinks(Video video, Authentication authentication) {
 
         return Flux.just(
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
@@ -146,7 +146,7 @@ public class VideoRestController {
                         .withRel(LinkRelation.of("get"))
                         .toMono(),
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
-                                .deleteByName(video.name()))
+                                .deleteByName(video.name(), authentication))
                         .withRel(LinkRelation.of("delete"))
                         .toMono(),
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
@@ -215,15 +215,30 @@ public class VideoRestController {
      * @return {@link List<Video>}
      */
     @DeleteMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<Void>> deleteByName(@RequestParam(name = "name") String name) {
+    public Mono<ResponseEntity<Video>> deleteByName(@RequestParam(name = "name") String name,
+                                                    Authentication authentication) {
 
         if(!StringUtils.hasText(name))
             throw new IllegalArgumentException(" > The query parameter name is mandatory");
 
-        return videoService.delete(new VideoDeletion(name))
-                .collectList()
-                .filter(videoEntities -> !videoEntities.isEmpty())
-                .map(data -> ResponseEntity.ok().<Void>build())
+        return videoService.delete(new VideoDeletion(name), authentication)
+                .map(videoMapper::toModel)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.noContent().build()));
+    }
+
+    /**
+     * Delete videos.
+     * @param videoId : The name of videos to deleted
+     * @return {@link List<Video>}
+     */
+    @DeleteMapping(value = "/videos/{videoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Video>> deleteById(@PathVariable(name = "videoId") String videoId,
+                                                 Authentication authentication) {
+
+        return videoService.delete(new VideoDeletion(videoId), authentication)
+                .map(videoMapper::toModel)
+                .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.noContent().build()));
     }
 }

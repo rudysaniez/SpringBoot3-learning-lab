@@ -8,6 +8,7 @@ import com.springboot.learning.sb3.repository.VideoRepository;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
@@ -42,6 +43,15 @@ public class VideoService {
      */
     public Flux<VideoEntity> findByName(String name) {
         return videoRepository.findByName(name);
+    }
+
+    /**
+     * @param name : the name
+     * @param username : the username
+     * @return flow of {@link VideoEntity}
+     */
+    public Mono<VideoEntity> findByNameAndUsername(String name, String username) {
+        return videoRepository.findByNameAndUsername(name, username);
     }
 
     /**
@@ -84,13 +94,14 @@ public class VideoService {
      * Delete by {@link VideoDeletion}.
      * @param videoDeletion : the video deletion
      */
-    public Flux<VideoEntity> delete(@NotNull VideoDeletion videoDeletion) {
+    public Mono<VideoEntity> delete(@NotNull VideoDeletion videoDeletion, Authentication authentication) {
 
-        log.info(" > Delete many videos by name {}.", videoDeletion);
+        log.info(" > Delete video by name={} and by username={}.",
+                videoDeletion,
+                authentication.getName());
 
-        return this.findByName(videoDeletion.name())
+        return this.findByNameAndUsername(videoDeletion.name(), authentication.getName())
                 .flatMap(videoEntity -> videoRepository.delete(videoEntity)
-                                        .thenReturn(videoEntity)
-                );
+                                            .thenReturn(videoEntity));
     }
 }

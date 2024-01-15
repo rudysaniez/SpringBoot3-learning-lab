@@ -144,7 +144,7 @@ public class VideoHypermediaController {
                                 .toMono(),
                     WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
                                     .methodOn(VideoRestController.class)
-                                    .deleteByName(video.name()))
+                                    .deleteById(video.name(), authentication))
                                 .withRel(LinkRelation.of("delete"))
                                 .toMono(),
                     WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder
