@@ -1,5 +1,6 @@
 package com.springboot.learning.sb3.controller;
 
+import com.springboot.learning.sb3.dto.Video;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,30 @@ class VideoRestControllerSpringBootTest {
                 .jsonPath("$.[0].name").isEqualTo("Learn Spring boot 3 (test)")
                 .jsonPath("$.[1].name").isEqualTo("Learn Spring boot data jdbc (test)")
                 .jsonPath("$.[2].name").isEqualTo("Learn Spring boot data jpa (test)");
+    }
+
+    @Test
+    void create() {
+
+        webTestClient.post()
+                .uri(uriBuilder -> uriBuilder.pathSegment("videos").build())
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(new Video("My video", "My nice vide", "user"))
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CREATED);
+    }
+
+    @Test
+    void incorrectCreation() {
+
+        webTestClient.post()
+                .uri(uriBuilder -> uriBuilder.pathSegment("videos").build())
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(new Video("", "My nice vide", "user"))
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @Test

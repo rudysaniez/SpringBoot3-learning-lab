@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+/**
+ * <a href="https://docs.spring.io/spring-hateoas/docs/current/reference/html/#fundamentals.link-relations">Hypermedia as the engine of app state</a>
+ */
 @RestController
 public class VideoHypermediaController {
 

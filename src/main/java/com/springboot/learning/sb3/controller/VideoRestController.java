@@ -1,6 +1,9 @@
 package com.springboot.learning.sb3.controller;
 
-import com.springboot.learning.sb3.dto.*;
+import com.springboot.learning.sb3.dto.Video;
+import com.springboot.learning.sb3.dto.VideoDeletion;
+import com.springboot.learning.sb3.dto.VideoSearch;
+import com.springboot.learning.sb3.exception.InvalidInputException;
 import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.service.VideoService;
 import org.mapstruct.factory.Mappers;
@@ -8,14 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +27,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
 
 @RestController
 public class VideoRestController {
@@ -47,7 +50,7 @@ public class VideoRestController {
                 .next()
                 .map(videoMapper::toModel)
                 .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .defaultIfEmpty(ResponseEntity.noContent().build());
     }
 
     /**
@@ -66,12 +69,12 @@ public class VideoRestController {
         if(Objects.isNull(page))
             p = 0;
         else
-            p = page;
+            p = page < 0 ? 0 : page;
 
         if(Objects.isNull(size))
-            s = 20;
+            s = 10;
         else
-            s = size;
+            s = size > 10 ? 10 : size;
 
         return videoService.findAll(p, s)
                 .map(videoMapper::toModel);
@@ -82,9 +85,10 @@ public class VideoRestController {
      * @return list of {@link Video}
      */
     @GetMapping(value = "/videos/:asPage")
-    public Mono<ResponseEntity<PagedModel<EntityModel<Video>>>> allAsPage(@RequestParam(value = "page", required = false) Integer page,
-                                                    @RequestParam(value = "size", required = false) Integer size,
-                                                    Authentication authentication) {
+    public Mono<ResponseEntity<PagedModel<EntityModel<Video>>>> allAsPage(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            Authentication authentication) {
 
         final int p;
         final int s;
@@ -92,12 +96,12 @@ public class VideoRestController {
         if(Objects.isNull(page))
             p = 0;
         else
-            p = page;
+            p = page < 0 ? 0 : page;
 
         if(Objects.isNull(size))
             s = 20;
         else
-            s = size;
+            s = size > 10 ? 10 : size;
 
         log.info(" > All videos with page by the user {}.", authentication.getName());
 
@@ -108,7 +112,7 @@ public class VideoRestController {
 
         return videoService.findAll(page, size)
                 .map(videoMapper::toModel)
-                .flatMap(video -> buildVideoLinks(video, authentication)
+                .flatMap(video -> buildVideoLinks(video)
                         .collectList()
                         .map(links -> EntityModel.of(video, links))
                 )
@@ -131,36 +135,29 @@ public class VideoRestController {
 
     /**
      *
-     * @param video
-     * @param authentication
+     * @param video : the video
      * @return flow of {@link Link}
      */
-    private Flux<Link> buildVideoLinks(Video video, Authentication authentication) {
+    private Flux<Link> buildVideoLinks(Video video) {
 
         return Flux.just(
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
                                 .getById(video.name()))
-                        .withRel("getById")
+                        .withRel(LinkRelation.of("get"))
                         .toMono(),
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
                                 .deleteByName(video.name()))
-                        .withRel("deleteById")
-                        .toMono(),
-                WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
-                                .create(video, authentication))
-                        .withRel("creation")
+                        .withRel(LinkRelation.of("delete"))
                         .toMono(),
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
                                 .search(video.name()))
-                        .withRel("searchByName")
+                        .withRel(LinkRelation.of("searchByName"))
                         .toMono()
         )
         .flatMap(Function.identity());
     }
 
     record VideoPageGlue(List<EntityModel<Video>> content, long totalElements) {}
-
-    record VideoLinksPageGlue(VideoPageGlue pageGlue, List<Link> links) {}
 
     /**
      * Count {@link Video}
@@ -197,10 +194,19 @@ public class VideoRestController {
     public Mono<ResponseEntity<Video>> create(@RequestBody Video video,
                                               Authentication authentication) {
 
-        return Mono.just(video)
+        if(!StringUtils.hasText(video.name()))
+            throw new InvalidInputException("The video is incorrect, the video name is missing.");
+
+        return videoService.findByName(video.name())
+                .collectList()
+                .<Video>handle((videos, sink) -> {
+                    if(videos.isEmpty())
+                        sink.next(video);
+                })
+                .switchIfEmpty(Mono.error(new InvalidInputException("The video already exist.")))
                 .flatMap(v -> videoService.save(v, authentication.getName()))
                 .map(videoMapper::toModel)
-                .map(ResponseEntity::ok);
+                .map(v -> new ResponseEntity<>(v, HttpStatus.CREATED));
     }
 
     /**

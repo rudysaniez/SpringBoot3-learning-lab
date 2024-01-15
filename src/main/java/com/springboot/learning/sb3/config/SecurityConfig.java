@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -39,13 +38,21 @@ public class SecurityConfig {
         this.userAccountRepository = userAccountRepository;
     }
 
+    /**
+     * @param http : the http security
+     * @return {@link SecurityWebFilterChain}
+     */
     @Bean
     SecurityWebFilterChain defaultSecurity(ServerHttpSecurity http) {
 
         http.authorizeExchange(exchange -> exchange
             .pathMatchers("/management/info", "management/health").permitAll()
-            .pathMatchers(HttpMethod.GET, "/videos")
-                .hasAnyRole(ROLE_READER)
+            .pathMatchers(HttpMethod.GET, "/videos", "/videos/:asPage", "/videos/:count", "/videos/:search")
+                .hasAnyRole(ROLE_READER, ROLE_WRITER)
+            .pathMatchers(HttpMethod.POST, "/videos")
+                .hasAnyRole(ROLE_WRITER)
+            .pathMatchers(HttpMethod.DELETE, "/videos")
+                .hasAnyRole(ROLE_WRITER)
             .anyExchange().authenticated())
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .httpBasic(Customizer.withDefaults());
@@ -60,7 +67,7 @@ public class SecurityConfig {
 
     /**
      * <a href="https://www.baeldung.com/spring-security-5-reactive">...</a>
-     * @param userSecurityAccessConfiguration
+     * @param userSecurityAccessConfiguration : The user security access configuration
      * @return {@link MapReactiveUserDetailsService}
      */
     @Bean
