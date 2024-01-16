@@ -2,9 +2,9 @@ package com.springboot.learning.sb3.dto;
 
 import java.util.Objects;
 
-public record Video(String name, String description, String username) {
+public record Video(String videoName, String description, String username) {
 
     public Video {
-        Objects.requireNonNull(name);
+        Objects.requireNonNull(videoName);
     }
 }

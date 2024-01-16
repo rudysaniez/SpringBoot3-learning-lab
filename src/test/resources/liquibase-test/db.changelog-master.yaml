@@ -1,5 +1,0 @@
-databaseChangeLog:
-  - include:
-      file: liquibase-test/db.changelog-create-tables.sql
-  - include:
-      file: liquibase-test/db.changelog-insert-data.sql

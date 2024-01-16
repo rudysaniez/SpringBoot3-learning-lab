@@ -38,9 +38,6 @@ spring:
     virtual:
       enabled: false
 
-  liquibase:
-    enabled: false
-
 api:
   pagination:
     page: 0

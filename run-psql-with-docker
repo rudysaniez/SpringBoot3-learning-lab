@@ -1,5 +1,0 @@
-#!/bin/bash
-
-set -e 
-
-docker run -d --name postgresql-videos-db -p 5432:5432 -e POSTGRES_USER="michael" -e POSTGRES_PASSWORD="jordan" -e POSTGRES_DB="videoDatabase" postgres:latest

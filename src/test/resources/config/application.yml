@@ -38,10 +38,6 @@ spring:
     virtual:
       enabled: false
 
-  liquibase:
-    enabled: true
-    change-log: classpath*:/liquibase-test/db.changelog-master.yaml
-
 api:
   pagination:
     page: 0

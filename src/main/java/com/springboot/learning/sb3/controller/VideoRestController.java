@@ -142,15 +142,15 @@ public class VideoRestController {
 
         return Flux.just(
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
-                                .getById(video.name()))
+                                .getById(video.videoName()))
                         .withRel(LinkRelation.of("get"))
                         .toMono(),
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
-                                .deleteByName(video.name(), authentication))
+                                .deleteByName(video.videoName(), authentication))
                         .withRel(LinkRelation.of("delete"))
                         .toMono(),
                 WebFluxLinkBuilder.linkTo(WebFluxLinkBuilder.methodOn(VideoRestController.class)
-                                .search(video.name()))
+                                .search(video.videoName()))
                         .withRel(LinkRelation.of("searchByName"))
                         .toMono()
         )
@@ -194,10 +194,10 @@ public class VideoRestController {
     public Mono<ResponseEntity<Video>> create(@RequestBody Video video,
                                               Authentication authentication) {
 
-        if(!StringUtils.hasText(video.name()))
+        if(!StringUtils.hasText(video.videoName()))
             throw new InvalidInputException("The video is incorrect, the video name is missing.");
 
-        return videoService.findByName(video.name())
+        return videoService.findByName(video.videoName())
                 .collectList()
                 .<Video>handle((videos, sink) -> {
                     if(videos.isEmpty())

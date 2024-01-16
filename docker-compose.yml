@@ -1,39 +1,15 @@
-version: "2.1"
+version: "3"
 
 #
 # https://github.com/peter-evans/docker-compose-healthcheck
 #
 services:
 
-  videos-db:
-    image: postgres:15.4-alpine
-    container_name: video-db
-    mem_limit: 350m
+  opensearch-attr-db:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-attr-node
     ports:
-      - 5432:5432
+      - 9200:9200
+      - 9600:9600
     environment:
-      - POSTGRES_USER=michael
-      - POSTGRES_PASSWORD=jordan
-      - POSTGRES_DB=videoDatabase
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  videos:
-    image: video-reactive-api:latest
-    mem_limit: 350M
-    ports:
-      - 8081:8080
-    depends_on:
-      videos-db:
-        condition: service_healthy
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - PSQL_USERNAME=michael
-      - PSQL_PASSWORD=jordan
-      - USER_PASSWORD=user
-      - WRITER_PASSWORD=writer
-      - ADMIN_PASSWORD=admin
-      - JAVA_OPTS=-Xms512M -Xmx512M
+      - discovery.type=single-node

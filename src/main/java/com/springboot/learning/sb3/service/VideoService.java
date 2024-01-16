@@ -15,6 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 @Service
 public class VideoService {
@@ -33,8 +34,7 @@ public class VideoService {
      * @return page of {@link VideoEntity}
      */
     public Flux<VideoEntity> findAll(int pageNumber, int pageSize) {
-        final int offset = pageNumber * pageSize;
-        return videoRepository.findAllAsPage(offset, pageSize);
+        return Flux.fromIterable(StreamSupport.stream(videoRepository.findAll().spliterator(), false).toList());
     }
 
     /**
@@ -42,7 +42,7 @@ public class VideoService {
      * @return {@link List<VideoEntity>}
      */
     public Flux<VideoEntity> findByName(String name) {
-        return videoRepository.findByName(name);
+        return Flux.empty();
     }
 
     /**
@@ -51,14 +51,16 @@ public class VideoService {
      * @return flow of {@link VideoEntity}
      */
     public Mono<VideoEntity> findByNameAndUsername(String name, String username) {
-        return videoRepository.findByNameAndUsername(name, username);
+        //return Mono.just(videoRepository.findByNameAndUsername(name, username));
+        return Mono.empty();
     }
 
     /**
      * @return number of {@link VideoEntity}
      */
     public Mono<Long> count() {
-        return videoRepository.count();
+        //return videoRepository.count();
+        return Mono.just(0L);
     }
 
     /**
@@ -71,7 +73,9 @@ public class VideoService {
 
         log.info(" > Create a video with {} by username {}.", video,username);
 
-        return videoRepository.save(new VideoEntity(null, video.name(), video.description(), username));
+        VideoEntity v = videoRepository.save(new VideoEntity(null, video.videoName(), video.description(), username));
+
+        return Mono.just(v);
     }
 
     /**
@@ -82,11 +86,12 @@ public class VideoService {
 
         log.info(" > Search many videos by {}.", videoSearch);
 
+        /*
         if(StringUtils.hasText(videoSearch.name()))
             return videoRepository.findTop3ByNameContainsIgnoreCaseOrderByName(videoSearch.name());
         else if (videoSearch.description().isPresent() && StringUtils.hasText(videoSearch.description().get()))
             return videoRepository.findTop3ByDescriptionContainingIgnoreCaseOrderByName(videoSearch.description().get());
-
+         */
         return Flux.empty();
     }
 
@@ -100,8 +105,11 @@ public class VideoService {
                 videoDeletion,
                 authentication.getName());
 
+        /*
         return this.findByNameAndUsername(videoDeletion.name(), authentication.getName())
                 .flatMap(videoEntity -> videoRepository.delete(videoEntity)
                                             .thenReturn(videoEntity));
+         */
+        return Mono.empty();
     }
 }

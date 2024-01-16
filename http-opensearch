@@ -12,25 +12,23 @@ Help()
    # Display Help
    echo "For the using of this script you need several parameters."
    echo
-   echo "Syntax: [-e|-t|-m|-f|-P|-U|-W|-h]"
+   echo "Syntax: [-e|-m|-P|-U|-W|-h]"
    echo "options:"
-   echo "e     The endpoint name [management|videos]."
-   echo "t     The token (required)."
-   echo "m     The request method [GET(default)|POST]"
-   echo "f     The name of the file that contains the restaurant to be added [newVideo01.json]."
+   echo "e     The endpoint name [_cat/nodes?v|_cat/plugins?v]."
+   echo "m     The request method [GET(default)|POST|PUT|DELETE]"
    echo "P     The Http port [8080(default)|7001(otherwise)]."
    echo "U     The username."
    echo "W     The user password."
    echo "h     Print this Help."
+   echo "Visit https://hub.docker.com/r/opensearchproject/opensearch"
    echo
 }
 
-while getopts ":e:t:m:f:P:U:W:h" arg; do
+while getopts ":e:m:f:P:U:W:h" arg; do
   case $arg in
     h) 	Help
     	exit;;
     e)	ENDPOINT=$OPTARG;;
-    t)	TOKEN=$OPTARG;;
     P)  PORT=$OPTARG;;
     m)  METHOD=$OPTARG;;
     U)  USERNAME=$OPTARG;;
@@ -45,17 +43,17 @@ while getopts ":e:t:m:f:P:U:W:h" arg; do
 done
 
 if [ -z $ENDPOINT ]
-then ENDPOINT="videos"
+then ENDPOINT=""
 fi
 
 if [ -z $PORT ]
-then PORT="8080"
+then PORT="9200"
 fi
 
 if [[ -z $USERNAME || -z $PASSWORD ]]
 then
-  USERNAME="user"
-  PASSWORD="user"
+  USERNAME="admin"
+  PASSWORD="admin"
 fi
 
 if [[ -z $METHOD ]]
@@ -63,17 +61,17 @@ then METHOD="GET"
 fi
 
 if [[ -n $METHOD && $METHOD == "POST" ]]
-then http -a $USERNAME:$PASSWORD POST ":$PORT/$ENDPOINT" < src/test/resources/json/$FILE
+then http -a $USERNAME:$PASSWORD POST "https://localhost:$PORT/$ENDPOINT" < src/test/resources/json/$FILE --verify=no
 elif [[ -n $METHOD && $METHOD == "PUT" ]]
-then http -a $USERNAME:$PASSWORD PUT ":$PORT/$ENDPOINT" < src/test/resources/json/$FILE
+then http -a $USERNAME:$PASSWORD PUT "https://localhost:$PORT/$ENDPOINT" < src/test/resources/json/$FILE --verify=no
 elif [[ -n $METHOD && $METHOD == "DELETE" && -z $ID ]]
-then http -a $USERNAME:$PASSWORD DELETE ":$PORT/$ENDPOINT"
+then http -a $USERNAME:$PASSWORD DELETE "https://localhost:$PORT/$ENDPOINT" --verify=no
 elif [[ -n $METHOD && $METHOD == "DELETE" && -n $ID ]]
-then http -a $USERNAME:$PASSWORD DELETE ":$PORT/$ENDPOINT/$ID"
+then http -a $USERNAME:$PASSWORD DELETE "https://localhost:$PORT/$ENDPOINT/$ID" --verify=no
 elif [[ -n $ID ]]
-then http -a $USERNAME:$PASSWORD ":$PORT/$ENDPOINT/$ID"
+then http -a $USERNAME:$PASSWORD "https://localhost:$PORT/$ENDPOINT/$ID" --verify=no
 else 
-	http -a $USERNAME:$PASSWORD ":$PORT/$ENDPOINT"
+	http -a $USERNAME:$PASSWORD "https://localhost:$PORT/$ENDPOINT" --verify=no
 fi
 
 exit 0
