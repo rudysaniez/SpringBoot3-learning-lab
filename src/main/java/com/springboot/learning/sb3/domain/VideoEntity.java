@@ -5,6 +5,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.Objects;
+
 @Document(indexName = "videos")
 public class VideoEntity {
 
@@ -27,6 +29,29 @@ public class VideoEntity {
         this.videoName = videoName;
         this.description = description;
         this.username = username;
+    }
+
+    @Override
+    public String toString() {
+        return "VideoEntity{" +
+               "id='" + id + '\'' +
+               ", videoName='" + videoName + '\'' +
+               ", description='" + description + '\'' +
+               ", username='" + username + '\'' +
+               '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VideoEntity that = (VideoEntity) o;
+        return Objects.equals(videoName, that.videoName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(videoName);
     }
 
     public String getId() {

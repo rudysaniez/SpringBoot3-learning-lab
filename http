@@ -25,11 +25,12 @@ Help()
    echo
 }
 
-while getopts ":e:t:m:f:P:U:W:h" arg; do
+while getopts ":e:i:t:m:f:P:U:W:h" arg; do
   case $arg in
     h) 	Help
     	exit;;
     e)	ENDPOINT=$OPTARG;;
+    i)	ID=$OPTARG;;
     t)	TOKEN=$OPTARG;;
     P)  PORT=$OPTARG;;
     m)  METHOD=$OPTARG;;

@@ -1,15 +1,29 @@
 version: "3"
 
-#
-# https://github.com/peter-evans/docker-compose-healthcheck
-#
 services:
-
-  opensearch-attr-db:
+  opensearch-node1:
     image: opensearchproject/opensearch:latest
-    container_name: opensearch-attr-node
+    container_name: opensearch-node1
     ports:
       - 9200:9200
       - 9600:9600
     environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
       - discovery.type=single-node
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    networks:
+      - opensearch-net
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch-node1:9200"]'
+    networks:
+      - opensearch-net
+
+networks:
+  opensearch-net:

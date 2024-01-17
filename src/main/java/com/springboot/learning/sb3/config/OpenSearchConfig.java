@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 
 @Configuration
 @EnableElasticsearchRepositories
-public class OpenSearchConfig extends AbstractOpenSearchConfiguration {
+public class OpenSearchConfig {
 
     /**
      * Allow to connect to the OpenSearch instance which uses self-signed certificates
@@ -51,15 +51,5 @@ public class OpenSearchConfig extends AbstractOpenSearchConfiguration {
         };
     }
 
-    @Override
-    @Bean
-    public RestHighLevelClient opensearchClient() {
 
-        final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-                .connectedTo("localhost:9200")
-                .usingSsl()
-                .build();
-
-        return RestClients.create(clientConfiguration).rest();
-    }
 }
