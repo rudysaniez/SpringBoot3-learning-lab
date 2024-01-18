@@ -2,7 +2,6 @@ package com.springboot.learning.sb3.controller;
 
 import com.springboot.learning.sb3.dto.Video;
 import com.springboot.learning.sb3.dto.VideoDeletion;
-import com.springboot.learning.sb3.dto.VideoSearch;
 import com.springboot.learning.sb3.exception.InvalidInputException;
 import com.springboot.learning.sb3.mapper.VideoMapper;
 import com.springboot.learning.sb3.service.VideoService;
@@ -14,7 +13,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,7 +23,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 
 @RestController
