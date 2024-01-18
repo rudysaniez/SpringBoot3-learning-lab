@@ -2,11 +2,8 @@ package com.springboot.learning.sb3.repository.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.sb3.service.VideoService;
 import jakarta.validation.constraints.NotNull;
-import org.opensearch.action.DocWriteRequest;
 import org.opensearch.action.bulk.BulkRequest;
-import org.opensearch.action.bulk.BulkRequestBuilder;
 import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.get.GetRequest;
 import org.opensearch.action.get.GetResponse;
@@ -14,24 +11,22 @@ import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.index.IndexResponse;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
-import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.core.CountRequest;
 import org.opensearch.client.core.CountResponse;
 import org.opensearch.core.action.ActionListener;
+import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.search.SearchHit;
+import org.opensearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,10 +47,29 @@ public class ReactiveOpensearchRepository {
 
     /**
      *
+     * @param fieldName : the field name
+     * @param value : the value
+     * @param type : the entity class type
+     * @return {@link Mono}
+     * @param <T> : the parameter type
+     */
+    public <T> Mono<T> findOne(@NotNull String fieldName, @NotNull String value, @NotNull Class<T> type) {
+
+        final var request = new SearchRequest();
+        final var builder = new SearchSourceBuilder();
+        builder.query(QueryBuilders.matchPhraseQuery(fieldName, value));
+        request.source(builder);
+
+        return search(request, type)
+                .next();
+    }
+
+    /**
+     *
      * @param searchRequest : the search request
      * @param type : the entity Class type
      * @return {@link Flux}
-     * @param <T> : the entity type
+     * @param <T> : the parameter type
      */
     public <T> Flux<T> search(@NotNull SearchRequest searchRequest, @NotNull Class<T> type) {
 
@@ -81,7 +95,7 @@ public class ReactiveOpensearchRepository {
     public Mono<Long> count(@NotNull CountRequest countRequest) {
 
         return Mono.create(sink ->
-            highLevelClient.countAsync(countRequest, RequestOptions.DEFAULT, new ActionListener<CountResponse>() {
+            highLevelClient.countAsync(countRequest, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(CountResponse countResponse) {
                     sink.success(countResponse.getCount());
@@ -98,10 +112,10 @@ public class ReactiveOpensearchRepository {
     /**
      * @param indexName : the index name
      * @param entity : the entity
-     * @return {@link Mono of rest status}
+     * @return flow of {@link String that is the ID}
      * @param <T> : the parameter type
      */
-    public <T> Mono<Integer> insert(@NotNull String indexName, @NotNull T entity) {
+    public <T> Mono<String> insert(@NotNull String indexName, @NotNull T entity) {
 
         return Mono.create(sink -> {
             final Map<String, Object> data = jack.convertValue(entity, new TypeReference<>() {});
@@ -110,7 +124,7 @@ public class ReactiveOpensearchRepository {
             highLevelClient.indexAsync(indexRequest, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(IndexResponse indexResponse) {
-                    sink.success(indexResponse.status().getStatus());
+                    sink.success(indexResponse.getId());
                 }
 
                 @Override
@@ -123,13 +137,13 @@ public class ReactiveOpensearchRepository {
 
     /**
      *
-     * @param indexName
-     * @param entity
-     * @param type
-     * @return
-     * @param <T>
+     * @param indexName : the index name
+     * @param entity : the entity that need to created
+     * @param type : the entity class type
+     * @return flow of {@link T}
+     * @param <T> : the parameter type
      */
-    public <T> Mono<T> save(@NotNull String indexName, @NotNull T entity, Class<T> type) {
+    public <T> Mono<T> save(@NotNull String indexName, @NotNull T entity, @NotNull Class<T> type) {
 
         return Mono.<String>create(sink -> {
             final Map<String, Object> data = jack.convertValue(entity, new TypeReference<>() {});
@@ -179,9 +193,9 @@ public class ReactiveOpensearchRepository {
      */
     public <T> Flux<Integer> bulk(@NotNull List<T> entities, @NotNull String indexName) {
 
-       var bulk = new BulkRequest();
+        final var bulk = new BulkRequest();
 
-        var indexRequest = new IndexRequest(indexName);
+        final var indexRequest = new IndexRequest(indexName);
         entities.stream()
             .map(e -> jack.convertValue(e, new TypeReference<Map<String, Object>>() {}))
             .forEach(indexRequest::source);

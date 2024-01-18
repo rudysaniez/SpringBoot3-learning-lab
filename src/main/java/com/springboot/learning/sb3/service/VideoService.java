@@ -24,21 +24,11 @@ import java.util.List;
 @Service
 public class VideoService {
 
-    private final VideoRepository videoRepository;
-    private final RestHighLevelClient highLevelClient;
-    private final ObjectMapper jack;
     private final ReactiveOpensearchRepository opensearchRepository;
 
     private static final Logger log = LoggerFactory.getLogger(VideoService.class);
 
-    public VideoService(VideoRepository videoRepository,
-                        RestHighLevelClient highLevelClient,
-                        ObjectMapper jack,
-                        ReactiveOpensearchRepository opensearchRepository) {
-
-        this.videoRepository = videoRepository;
-        this.highLevelClient = highLevelClient;
-        this.jack = jack;
+    public VideoService(ReactiveOpensearchRepository opensearchRepository) {
         this.opensearchRepository = opensearchRepository;
     }
 
@@ -94,11 +84,7 @@ public class VideoService {
         log.info(" > Create a video with {} by username {}.", video,username);
 
         var videoEntity = new VideoEntity(null, video.videoName(), video.description(), username);
-
         return opensearchRepository.save("videos", videoEntity, VideoEntity.class);
-
-//        return opensearchRepository.insert("videos", videoEntity)
-//                .thenReturn(videoEntity);
     }
 
     /**
@@ -111,11 +97,6 @@ public class VideoService {
                 videoDeletion,
                 authentication.getName());
 
-        /*
-        return this.findByNameAndUsername(videoDeletion.name(), authentication.getName())
-                .flatMap(videoEntity -> videoRepository.delete(videoEntity)
-                                            .thenReturn(videoEntity));
-         */
-        return Mono.empty();
+        return Mono.error(new UnsupportedOperationException());
     }
 }

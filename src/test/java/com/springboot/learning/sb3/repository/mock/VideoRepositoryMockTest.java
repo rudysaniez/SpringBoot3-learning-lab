@@ -12,10 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opensearch.client.RestHighLevelClient;
-import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
-
-import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class VideoRepositoryMockTest {
@@ -36,7 +32,7 @@ class VideoRepositoryMockTest {
         Mockito.when(videoRepository.findAll())
                 .thenReturn(null);
 
-        videoService = new VideoService(videoRepository, highLevelClient, jack, opensearchRepository);
+        videoService = new VideoService(opensearchRepository);
     }
 
     @Test
