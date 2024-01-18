@@ -76,7 +76,7 @@ public class VideoRestController {
         else
             s = size > 10 ? 10 : size;
 
-        return videoService.findAll(p, s)
+        return videoService.findAll()
                 .map(videoMapper::toModel);
     }
 
@@ -110,7 +110,7 @@ public class VideoRestController {
                                     .withSelfRel()
                                     .toMono();
 
-        return videoService.findAll(page, size)
+        return videoService.findAll()
                 .map(videoMapper::toModel)
                 .flatMap(video -> buildVideoLinks(video, authentication)
                         .collectList()
@@ -179,7 +179,7 @@ public class VideoRestController {
     @GetMapping(value = "/videos/:search", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<Video> search(@RequestParam(name = "name") String name) {
 
-        return videoService.search(new VideoSearch(name, Optional.empty()))
+        return videoService.searchByNameContaining(name)
                 .map(videoMapper::toModel);
     }
 
@@ -197,6 +197,10 @@ public class VideoRestController {
         if(!StringUtils.hasText(video.videoName()))
             throw new InvalidInputException("The video is incorrect, the video name is missing.");
 
+        return videoService.save(video, authentication.getName())
+                .map(videoMapper::toModel)
+                .map(ResponseEntity::ok);
+        /*
         return videoService.findByName(video.videoName())
                 .collectList()
                 .<Video>handle((videos, sink) -> {
@@ -207,6 +211,7 @@ public class VideoRestController {
                 .flatMap(v -> videoService.save(v, authentication.getName()))
                 .map(videoMapper::toModel)
                 .map(v -> new ResponseEntity<>(v, HttpStatus.CREATED));
+         */
     }
 
     /**

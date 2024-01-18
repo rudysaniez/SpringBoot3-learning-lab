@@ -3,6 +3,7 @@ package com.springboot.learning.sb3.repository.mock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.sb3.domain.VideoEntity;
 import com.springboot.learning.sb3.repository.VideoRepository;
+import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import com.springboot.learning.sb3.service.VideoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ class VideoRepositoryMockTest {
     @Mock VideoRepository videoRepository;
     @Mock RestHighLevelClient highLevelClient;
     @Mock ObjectMapper jack;
+    @Mock ReactiveOpensearchRepository opensearchRepository;
 
     VideoService videoService;
 
@@ -34,7 +36,7 @@ class VideoRepositoryMockTest {
         Mockito.when(videoRepository.findAll())
                 .thenReturn(null);
 
-        videoService = new VideoService(videoRepository, highLevelClient, jack);
+        videoService = new VideoService(videoRepository, highLevelClient, jack, opensearchRepository);
     }
 
     @Test
