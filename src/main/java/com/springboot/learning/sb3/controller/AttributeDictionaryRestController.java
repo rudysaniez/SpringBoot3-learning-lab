@@ -3,11 +3,17 @@ package com.springboot.learning.sb3.controller;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import org.opensearch.action.search.SearchRequest;
+import org.opensearch.index.query.QueryBuilders;
+import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.stream.Stream;
 
 @RestController
 public class AttributeDictionaryRestController {
@@ -37,6 +43,23 @@ public class AttributeDictionaryRestController {
     @GetMapping(value = "/attributes", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<AttributeDictionaryEntity> getAll() {
         return opensearchRepository.search(new SearchRequest(IDX), AttributeDictionaryEntity.class);
+    }
+
+    /**
+     * @param q
+     * @return
+     */
+    @GetMapping(value = "/attributes/:search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<AttributeDictionaryEntity> search(@RequestParam(value = "q") String q) {
+
+        final var query = q.split("=");
+        Map.Entry<String, String> entry = new AbstractMap.SimpleImmutableEntry<>(query[0], query[1]);
+
+        final var request = new SearchRequest(IDX);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.query(QueryBuilders.matchPhraseQuery(entry.getKey(), entry.getValue()));
+        request.source(sourceBuilder);
+        return opensearchRepository.search(request, AttributeDictionaryEntity.class);
     }
 
     /**

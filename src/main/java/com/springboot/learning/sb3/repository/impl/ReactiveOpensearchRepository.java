@@ -45,10 +45,10 @@ public class ReactiveOpensearchRepository {
 
     /**
      * @param indexName : the index name
-     * @param id
-     * @param type
+     * @param id : the identifier
+     * @param type : the entity type
      * @return {@link Mono}
-     * @param <T>
+     * @param <T> : the parameter type
      */
     public <T> Mono<T> getById(@NotNull String indexName,
                                @NotNull String id,
@@ -76,17 +76,17 @@ public class ReactiveOpensearchRepository {
      * @param value : the value
      * @param type : the entity class type
      * @return {@link Mono}
-     * @param <T> : the parameter type
+     * @param <T> : the parameter return type
+     * @param <V> : the parameter value type
      */
-    public <T> Mono<T> findOne(@NotNull String fieldName, @NotNull String value, @NotNull Class<T> type) {
+    public <T,V> Mono<T> findOne(@NotNull String fieldName, @NotNull V value, @NotNull Class<T> type) {
 
         final var request = new SearchRequest();
         final var builder = new SearchSourceBuilder();
         builder.query(QueryBuilders.matchPhraseQuery(fieldName, value));
         request.source(builder);
 
-        return search(request, type)
-                .next();
+        return search(request, type).next();
     }
 
     /**
@@ -192,13 +192,12 @@ public class ReactiveOpensearchRepository {
             highLevelClient.getAsync(getRequest, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(GetResponse documentFields) {
-
-                    log.info(" > The entity created has been find and the content is {}", documentFields.getSourceAsString());
-                    final Optional<T> entity = OpensearchEngineHelper.getFromJson(jack, documentFields.getSourceAsString(), type);
-                    if(entity.isPresent())
-                        sink.success(entity.get());
-                    else
-                        sink.success();
+                    log.info(" > The entity created has been find, the id is {}, and the content is {}.",
+                            documentFields.getId(),
+                            documentFields.getSourceAsMap());
+                    final Map<String, Object> data = documentFields.getSourceAsMap();
+                    OpensearchEngineHelper.mergeIdInMap(documentFields.getId(), data);
+                    sink.success(OpensearchEngineHelper.mapToObject(jack, data, type));
                 }
 
                 @Override

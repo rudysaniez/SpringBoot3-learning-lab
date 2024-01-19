@@ -23,62 +23,6 @@ public abstract class OpensearchEngineHelper {
     private static final Logger log = LoggerFactory.getLogger(OpensearchEngineHelper.class);
 
     /**
-     * @param searchResponse : the search response
-     * @param type : the entity Class type
-     * @param <T> : the entity type
-     * @deprecated
-     */
-    @Deprecated(forRemoval = true)
-    public static <T> void fillsFlow(@NotNull ObjectMapper jack,
-                                     @NotNull SearchResponse searchResponse,
-                                     @NotNull Class<T> type,
-                                     @NotNull MonoSink<T> sink) {
-
-        Stream.of(searchResponse.getHits().getHits())
-                .limit(1)
-                .map(SearchHit::getSourceAsString)
-                .map(json -> getFromJson(jack, json, type))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(t -> {
-
-                    sink.success(t);
-                    return t;
-                })
-                .forEach(t -> {
-                    log.info(" > Data is read t={}", t);
-                    sink.success(t);
-                });
-    }
-
-    /**
-     * @param jack
-     * @param searchResponse
-     * @param type
-     * @param sink
-     * @param <T> : the entity type
-     * @deprecated
-     */
-    @Deprecated(forRemoval = true)
-    public static <T> void fillsFlow(@NotNull ObjectMapper jack,
-                                     @NotNull SearchResponse searchResponse,
-                                     @NotNull Class<T> type,
-                                     @NotNull FluxSink<T> sink) {
-
-        Stream.of(searchResponse.getHits().getHits())
-                .map(SearchHit::getSourceAsString)
-                .map(json -> getFromJson(jack, json, type))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(t -> {
-                    sink.next(t);
-                    return t;
-                })
-                .forEach(t -> log.info(" > Data is read t={}", t));
-        sink.complete();
-    }
-
-    /**
      * @param jack : Jack !
      * @param searchResponse : the get response
      * @param type : The entity type
@@ -91,10 +35,8 @@ public abstract class OpensearchEngineHelper {
                                            @NotNull FluxSink<T> sink) {
 
         Stream.of(searchResponse.getHits().getHits())
-                .map(hit -> new Glue<>(hit.getId(), hit.getSourceAsString()))
-                .map(glue -> new Glue<>(glue.t1(), getMapFromJson(jack, glue.t2())))
-                .map(glue -> mergeIdInMap(glue.t1(), glue.t2()))
-                .map(data -> mapToObject(jack, data, type))
+                .map(hit -> OpensearchEngineHelper.mergeIdInMap(hit.getId(), hit.getSourceAsMap()))
+                .map(data -> OpensearchEngineHelper.mapToObject(jack, data, type))
                 .forEach(t -> {
                     sink.next(t);
                     log.info(" > Data is read t={}", t);
@@ -115,62 +57,19 @@ public abstract class OpensearchEngineHelper {
                                            @NotNull MonoSink<T> sink) {
 
         Stream.of(response.getSourceAsMap())
+                .map(data -> OpensearchEngineHelper.mergeIdInMap(response.getId(), data))
                 .map(data -> mapToObject(jack, data, type))
                 .forEach(t -> {
                     log.info(" > Data is read t={}", t);
                     sink.success(t);});
     }
 
-    public record Glue<T1,T2>(T1 t1, T2 t2) {}
-
     /**
-     * @param jack : Jack !
-     * @param json : the input
-     * @param type : the object type
-     * @return {@link Optional of T}
-     * @param <T> : the type
-     * @deprecated
-     */
-    @Deprecated(forRemoval = true)
-    public static <T> Optional<T> getFromJson(@NotNull ObjectMapper jack,
-                                              @NotNull String json,
-                                              @NotNull Class<T> type) {
-
-        try {
-            return Optional.ofNullable(jack.readValue(json, type));
-        }
-        catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * @param jack : Jack !
-     * @param sourceJson : the entity
+     * @param id : the identifier
+     * @param data : the data in a {@link Map}
      * @return {@link Map}
      */
-    private static Map<String, Object> getMapFromJson(@NotNull ObjectMapper jack, @NotNull String sourceJson) {
-
-        try {
-            final Map<String, Object> data = jack.readValue(sourceJson, new TypeReference<>() {});
-            log.info(" > This json {} has been transformed in this Map {}.", sourceJson, data);
-            return data;
-        }
-        catch(Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        return new HashMap<>();
-    }
-
-    /**
-     * @param id
-     * @param data
-     * @return {@link Map}
-     */
-    private static Map<String, Object> mergeIdInMap(@NotNull String id, @NotNull Map<String, Object> data) {
+    public static Map<String, Object> mergeIdInMap(@NotNull String id, @NotNull Map<String, Object> data) {
         data.putIfAbsent("id", id);
         return data;
     }
@@ -178,11 +77,11 @@ public abstract class OpensearchEngineHelper {
     /**
      * @param jack : Jack !
      * @param data : the data from {@link Map}
-     * @param type
+     * @param type : the entity class type
      * @return {@link T}
      * @param <T> : the parameter type
      */
-    private static <T> T mapToObject(@NotNull ObjectMapper jack,
+    public static <T> T mapToObject(@NotNull ObjectMapper jack,
                                     @NotNull Map<String, Object> data,
                                     @NotNull Class<T> type) {
         return jack.convertValue(data, type);
