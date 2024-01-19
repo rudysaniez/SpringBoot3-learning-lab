@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotNull;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.bulk.BulkResponse;
+import org.opensearch.action.delete.DeleteRequest;
+import org.opensearch.action.delete.DeleteResponse;
 import org.opensearch.action.get.GetRequest;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.index.IndexRequest;
@@ -27,6 +29,7 @@ import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,6 +46,24 @@ public class ReactiveOpensearchRepository {
     public ReactiveOpensearchRepository(RestHighLevelClient highLevelClient, ObjectMapper jack) {
         this.highLevelClient = highLevelClient;
         this.jack = jack;
+    }
+
+    public <T> Mono<T> getById(@NotNull String indexName, @NotNull String id) {
+
+        Mono.create(sink -> {
+            final var request = new GetRequest(indexName, id);
+            highLevelClient.getAsync(request, RequestOptions.DEFAULT, new ActionListener<GetResponse>() {
+                @Override
+                public void onResponse(GetResponse documentFields) {
+
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+
+                }
+            });
+        });
     }
 
     /**
@@ -77,7 +98,7 @@ public class ReactiveOpensearchRepository {
             highLevelClient.searchAsync(searchRequest, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(SearchResponse searchResponse) {
-                    fillsFlow(searchResponse, type, fluxSink);
+                    ReactiveOpensearchEngineHelper.fillsFlowWithId(jack, searchResponse, type, fluxSink);
                 }
 
                 @Override
@@ -169,7 +190,7 @@ public class ReactiveOpensearchRepository {
                 public void onResponse(GetResponse documentFields) {
 
                     log.info(" > The entity created has been find and the content is {}", documentFields.getSourceAsString());
-                    final Optional<T> entity = getFromJson(documentFields.getSourceAsString(), type);
+                    final Optional<T> entity = ReactiveOpensearchEngineHelper.getFromJson(jack, documentFields.getSourceAsString(), type);
                     if(entity.isPresent())
                         sink.success(entity.get());
                     else
@@ -219,66 +240,26 @@ public class ReactiveOpensearchRepository {
     }
 
     /**
-     * @param searchResponse : the search response
-     * @param type : the entity Class type
-     * @param <T> : the entity type
+     *
+     * @param indexName
+     * @param id
+     * @return
      */
-    protected <T> void fillsFlow(@NotNull SearchResponse searchResponse,
-                                 @NotNull Class<T> type,
-                                 @NotNull MonoSink<T> sink) {
+    public Mono<Integer> delete(String indexName, String id) {
 
-        Stream.of(searchResponse.getHits().getHits())
-                .limit(1)
-                .map(SearchHit::getSourceAsString)
-                .map(json -> getFromJson(json, type))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(t -> {
+        return  Mono.create(sink -> {
+            final var request = new DeleteRequest(indexName, id);
+            highLevelClient.deleteAsync(request, RequestOptions.DEFAULT, new ActionListener<>() {
+                @Override
+                public void onResponse(DeleteResponse deleteResponse) {
+                    sink.success(deleteResponse.status().getStatus());
+                }
 
-                    sink.success(t);
-                    return t;
-                })
-                .forEach(t -> log.info(" > Data is read t={}", t));
-    }
-
-    /**
-     * @param searchResponse
-     * @param type
-     * @param sink
-     * @param <T> : the entity type
-     */
-    protected <T> void fillsFlow(@NotNull SearchResponse searchResponse,
-                                 @NotNull Class<T> type,
-                                 @NotNull FluxSink<T> sink) {
-
-        Stream.of(searchResponse.getHits().getHits())
-                .map(SearchHit::getSourceAsString)
-                .map(json -> getFromJson(json, type))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(t -> {
-                    sink.next(t);
-                    return t;
-                })
-                .forEach(t -> log.info(" > Data is read t={}", t));
-        sink.complete();
-    }
-
-    /**
-     * @param json : the input
-     * @param type : the object type
-     * @return {@link Optional of T}
-     * @param <T> : the type
-     */
-    protected <T> Optional<T> getFromJson(@NotNull String json, Class<T> type) {
-
-        try {
-            return Optional.ofNullable(jack.readValue(json, type));
-        }
-        catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        return Optional.empty();
+                @Override
+                public void onFailure(Exception e) {
+                    sink.error(e);
+                }
+            });
+        });
     }
 }

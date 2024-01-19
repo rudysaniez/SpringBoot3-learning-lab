@@ -3,17 +3,7 @@ logging:
   level:
     root: INFO
 
-spring:
-  r2dbc:
-    url: r2dbc:pool:postgresql://videos-db:5432/videoDatabase?loggerLevel=OFF
-    username: ${PSQL_USERNAME}
-    password: ${PSQL_PASSWORD}
-    properties:
-      validationQuery: select 1
-
-  liquibase:
-    enabled: true
-    change-log: classpath*:/liquibase/db.changelog-master.yaml
-    url: jdbc:postgresql://videos-db:5432/videoDatabase
-    user: ${PSQL_USERNAME}
-    password: ${PSQL_PASSWORD}
+opensearch:
+  uris: https://opensearch-cluster:9200
+  username: admin
+  password: admin

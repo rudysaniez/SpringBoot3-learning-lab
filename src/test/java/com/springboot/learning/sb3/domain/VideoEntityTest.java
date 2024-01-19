@@ -12,10 +12,10 @@ class VideoEntityTest {
                 "The powerful framework",
                 "user");
 
-        Assertions.assertThat(video.id()).isNull();
-        Assertions.assertThat(video.name()).isEqualTo("Learn Spring boot 3");
-        Assertions.assertThat(video.description()).isEqualTo("The powerful framework");
-        Assertions.assertThat(video.username()).isEqualTo("user");
+        Assertions.assertThat(video.getId()).isNull();
+        Assertions.assertThat(video.getVideoName()).isEqualTo("Learn Spring boot 3");
+        Assertions.assertThat(video.getDescription()).isEqualTo("The powerful framework");
+        Assertions.assertThat(video.getUsername()).isEqualTo("user");
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.springboot.learning.sb3.domain;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -9,6 +10,9 @@ import java.util.Map;
 
 @Document(indexName = "attributs_dictionnary_v1")
 public class AttributeDictionaryEntity {
+
+    @Id
+    private String id;
 
     @Field(type = FieldType.Text, name = "code")
     private String code;
@@ -102,7 +106,8 @@ public class AttributeDictionaryEntity {
 
     public AttributeDictionaryEntity() {}
 
-    public AttributeDictionaryEntity(String code,
+    public AttributeDictionaryEntity(String id,
+                                     String code,
                                      String type,
                                      String group,
                                      boolean unique,
@@ -132,6 +137,7 @@ public class AttributeDictionaryEntity {
                                      Boolean autoOptionSorting,
                                      String defaultValue,
                                      boolean isReadOnly) {
+        this.id = id;
         this.code = code;
         this.type = type;
         this.group = group;
@@ -162,6 +168,10 @@ public class AttributeDictionaryEntity {
         this.autoOptionSorting = autoOptionSorting;
         this.defaultValue = defaultValue;
         this.isReadOnly = isReadOnly;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getCode() {
@@ -282,6 +292,10 @@ public class AttributeDictionaryEntity {
 
     public boolean isReadOnly() {
         return isReadOnly;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setCode(String code) {

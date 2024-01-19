@@ -5,12 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
@@ -18,13 +15,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class VideoRestControllerTest {
 
     @Autowired WebTestClient webTestClient;
-
-    @ServiceConnection
-    @Container
-    static final PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:15.5-alpine")
-            .withUsername("michael")
-            .withPassword("jordan")
-            .withDatabaseName("videoDatabase");
 
     @BeforeEach
     void setup() {

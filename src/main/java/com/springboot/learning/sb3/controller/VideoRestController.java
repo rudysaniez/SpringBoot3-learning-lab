@@ -1,5 +1,6 @@
 package com.springboot.learning.sb3.controller;
 
+import com.springboot.learning.sb3.domain.VideoEntity;
 import com.springboot.learning.sb3.dto.Video;
 import com.springboot.learning.sb3.dto.VideoDeletion;
 import com.springboot.learning.sb3.exception.InvalidInputException;
@@ -57,8 +58,8 @@ public class VideoRestController {
      * @return flux of {@link Video}
      */
     @GetMapping(value = "/videos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<Video> all(@RequestParam(value = "page", required = false) Integer page,
-                           @RequestParam(value = "size", required = false) Integer size) {
+    public Flux<VideoEntity> all(@RequestParam(value = "page", required = false) Integer page,
+                                 @RequestParam(value = "size", required = false) Integer size) {
 
         final int p;
         final int s;
@@ -73,8 +74,7 @@ public class VideoRestController {
         else
             s = size > 10 ? 10 : size;
 
-        return videoService.findAll()
-                .map(videoMapper::toModel);
+        return videoService.findAll();
     }
 
     /**
