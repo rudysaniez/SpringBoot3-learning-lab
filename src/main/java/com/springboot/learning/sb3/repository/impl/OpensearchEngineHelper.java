@@ -16,17 +16,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public abstract class ReactiveOpensearchEngineHelper {
+public abstract class OpensearchEngineHelper {
 
-    private ReactiveOpensearchEngineHelper() {}
+    private OpensearchEngineHelper() {}
 
-    private static final Logger log = LoggerFactory.getLogger(ReactiveOpensearchEngineHelper.class);
+    private static final Logger log = LoggerFactory.getLogger(OpensearchEngineHelper.class);
 
     /**
      * @param searchResponse : the search response
      * @param type : the entity Class type
      * @param <T> : the entity type
+     * @deprecated
      */
+    @Deprecated(forRemoval = true)
     public static <T> void fillsFlow(@NotNull ObjectMapper jack,
                                      @NotNull SearchResponse searchResponse,
                                      @NotNull Class<T> type,
@@ -55,7 +57,9 @@ public abstract class ReactiveOpensearchEngineHelper {
      * @param type
      * @param sink
      * @param <T> : the entity type
+     * @deprecated
      */
+    @Deprecated(forRemoval = true)
     public static <T> void fillsFlow(@NotNull ObjectMapper jack,
                                      @NotNull SearchResponse searchResponse,
                                      @NotNull Class<T> type,
@@ -75,11 +79,11 @@ public abstract class ReactiveOpensearchEngineHelper {
     }
 
     /**
-     *
-     * @param searchResponse
-     * @param type
-     * @param sink
-     * @param <T>
+     * @param jack : Jack !
+     * @param searchResponse : the get response
+     * @param type : The entity type
+     * @param sink : The sink
+     * @param <T> : the parameter type
      */
     public static <T> void fillsFlowWithId(@NotNull ObjectMapper jack,
                                            @NotNull SearchResponse searchResponse,
@@ -98,6 +102,13 @@ public abstract class ReactiveOpensearchEngineHelper {
         sink.complete();
     }
 
+    /**
+     * @param jack : Jack !
+     * @param response : the get response
+     * @param type : The entity type
+     * @param sink : The sink
+     * @param <T> : the parameter type
+     */
     public static <T> void fillsFlowWithId(@NotNull ObjectMapper jack,
                                            @NotNull GetResponse response,
                                            @NotNull Class<T> type,
@@ -118,8 +129,12 @@ public abstract class ReactiveOpensearchEngineHelper {
      * @param type : the object type
      * @return {@link Optional of T}
      * @param <T> : the type
+     * @deprecated
      */
-    public static <T> Optional<T> getFromJson(@NotNull ObjectMapper jack, @NotNull String json, Class<T> type) {
+    @Deprecated(forRemoval = true)
+    public static <T> Optional<T> getFromJson(@NotNull ObjectMapper jack,
+                                              @NotNull String json,
+                                              @NotNull Class<T> type) {
 
         try {
             return Optional.ofNullable(jack.readValue(json, type));
@@ -136,7 +151,7 @@ public abstract class ReactiveOpensearchEngineHelper {
      * @param sourceJson : the entity
      * @return {@link Map}
      */
-    public static Map<String, Object> getMapFromJson(@NotNull ObjectMapper jack, String sourceJson) {
+    private static Map<String, Object> getMapFromJson(@NotNull ObjectMapper jack, @NotNull String sourceJson) {
 
         try {
             final Map<String, Object> data = jack.readValue(sourceJson, new TypeReference<>() {});
@@ -155,7 +170,7 @@ public abstract class ReactiveOpensearchEngineHelper {
      * @param data
      * @return {@link Map}
      */
-    public static Map<String, Object> mergeIdInMap(String id, Map<String, Object> data) {
+    private static Map<String, Object> mergeIdInMap(@NotNull String id, @NotNull Map<String, Object> data) {
         data.putIfAbsent("id", id);
         return data;
     }
@@ -167,7 +182,7 @@ public abstract class ReactiveOpensearchEngineHelper {
      * @return {@link T}
      * @param <T> : the parameter type
      */
-    public static <T> T mapToObject(@NotNull ObjectMapper jack,
+    private static <T> T mapToObject(@NotNull ObjectMapper jack,
                                     @NotNull Map<String, Object> data,
                                     @NotNull Class<T> type) {
         return jack.convertValue(data, type);

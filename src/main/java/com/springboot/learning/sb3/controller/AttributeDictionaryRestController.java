@@ -3,8 +3,6 @@ package com.springboot.learning.sb3.controller;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import org.opensearch.action.search.SearchRequest;
-import org.opensearch.index.query.QueryBuilders;
-import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,18 +21,13 @@ public class AttributeDictionaryRestController {
     }
 
     /**
-     * @param code : the code
+     * @param id : the id
      * @return flow of {@link AttributeDictionaryEntity}
      */
-    @GetMapping(value = "/attributes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<AttributeDictionaryEntity>> getById(@PathVariable(value = "code") String code) {
+    @GetMapping(value = "/attributes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<AttributeDictionaryEntity>> getById(@PathVariable(value = "id") String id) {
 
-        final var request = new SearchRequest(IDX);
-        final var builder = new SearchSourceBuilder();
-        builder.query(QueryBuilders.matchPhraseQuery("code", code));
-        request.source(builder);
-
-        return opensearchRepository.findOne("code", code, AttributeDictionaryEntity.class)
+        return opensearchRepository.getById(IDX, id, AttributeDictionaryEntity.class)
                 .map(ResponseEntity::ok);
     }
 

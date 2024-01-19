@@ -19,21 +19,16 @@ import org.opensearch.client.core.CountRequest;
 import org.opensearch.client.core.CountResponse;
 import org.opensearch.core.action.ActionListener;
 import org.opensearch.index.query.QueryBuilders;
-import org.opensearch.search.SearchHit;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoSink;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Repository
 public class ReactiveOpensearchRepository {
@@ -48,19 +43,28 @@ public class ReactiveOpensearchRepository {
         this.jack = jack;
     }
 
-    public <T> Mono<T> getById(@NotNull String indexName, @NotNull String id) {
+    /**
+     * @param indexName : the index name
+     * @param id
+     * @param type
+     * @return {@link Mono}
+     * @param <T>
+     */
+    public <T> Mono<T> getById(@NotNull String indexName,
+                               @NotNull String id,
+                               @NotNull Class<T> type) {
 
-        Mono.create(sink -> {
+        return Mono.create(sink -> {
             final var request = new GetRequest(indexName, id);
-            highLevelClient.getAsync(request, RequestOptions.DEFAULT, new ActionListener<GetResponse>() {
+            highLevelClient.getAsync(request, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
-                public void onResponse(GetResponse documentFields) {
-
+                public void onResponse(GetResponse getResponse) {
+                    OpensearchEngineHelper.fillsFlowWithId(jack, getResponse, type, sink);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-
+                    sink.error(e);
                 }
             });
         });
@@ -98,7 +102,7 @@ public class ReactiveOpensearchRepository {
             highLevelClient.searchAsync(searchRequest, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(SearchResponse searchResponse) {
-                    ReactiveOpensearchEngineHelper.fillsFlowWithId(jack, searchResponse, type, fluxSink);
+                    OpensearchEngineHelper.fillsFlowWithId(jack, searchResponse, type, fluxSink);
                 }
 
                 @Override
@@ -190,7 +194,7 @@ public class ReactiveOpensearchRepository {
                 public void onResponse(GetResponse documentFields) {
 
                     log.info(" > The entity created has been find and the content is {}", documentFields.getSourceAsString());
-                    final Optional<T> entity = ReactiveOpensearchEngineHelper.getFromJson(jack, documentFields.getSourceAsString(), type);
+                    final Optional<T> entity = OpensearchEngineHelper.getFromJson(jack, documentFields.getSourceAsString(), type);
                     if(entity.isPresent())
                         sink.success(entity.get());
                     else
