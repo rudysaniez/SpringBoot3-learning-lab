@@ -170,6 +170,43 @@ public class AttributeDictionaryEntity {
         this.isReadOnly = isReadOnly;
     }
 
+    @Override
+    public String toString() {
+        return "AttributeDictionaryEntity{" +
+               "id='" + id + '\'' +
+               ", code='" + code + '\'' +
+               ", type='" + type + '\'' +
+               ", group='" + group + '\'' +
+               ", unique=" + unique +
+               ", useableAsGridFilter=" + useableAsGridFilter +
+               ", allowedExtensions=" + allowedExtensions +
+               ", metricFamily='" + metricFamily + '\'' +
+               ", defaultMetricUnit='" + defaultMetricUnit + '\'' +
+               ", referenceDataName='" + referenceDataName + '\'' +
+               ", availableLocales=" + availableLocales +
+               ", maxCharacters=" + maxCharacters +
+               ", validationRule='" + validationRule + '\'' +
+               ", validationRegexp='" + validationRegexp + '\'' +
+               ", wysiwygEnabled=" + wysiwygEnabled +
+               ", numberMin=" + numberMin +
+               ", numberMax=" + numberMax +
+               ", decimalsAllowed=" + decimalsAllowed +
+               ", negativeAllowed=" + negativeAllowed +
+               ", dateMin='" + dateMin + '\'' +
+               ", dateMax='" + dateMax + '\'' +
+               ", maxFileSize=" + maxFileSize +
+               ", minimumInputLength=" + minimumInputLength +
+               ", sortOrder=" + sortOrder +
+               ", localizable=" + localizable +
+               ", scopable=" + scopable +
+               ", labels=" + labels +
+               ", guidelines=" + guidelines +
+               ", autoOptionSorting=" + autoOptionSorting +
+               ", defaultValue='" + defaultValue + '\'' +
+               ", isReadOnly=" + isReadOnly +
+               '}';
+    }
+
     public String getId() {
         return id;
     }

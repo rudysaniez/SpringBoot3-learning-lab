@@ -3,6 +3,7 @@ package com.springboot.learning.sb3.repository.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotNull;
+import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.delete.DeleteRequest;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,25 +74,6 @@ public class ReactiveOpensearchRepository {
 
     /**
      *
-     * @param fieldName : the field name
-     * @param value : the value
-     * @param type : the entity class type
-     * @return {@link Mono}
-     * @param <T> : the parameter return type
-     * @param <V> : the parameter value type
-     */
-    public <T,V> Mono<T> findOne(@NotNull String fieldName, @NotNull V value, @NotNull Class<T> type) {
-
-        final var request = new SearchRequest();
-        final var builder = new SearchSourceBuilder();
-        builder.query(QueryBuilders.matchPhraseQuery(fieldName, value));
-        request.source(builder);
-
-        return search(request, type).next();
-    }
-
-    /**
-     *
      * @param searchRequest : the search request
      * @param type : the entity Class type
      * @return {@link Flux}
@@ -112,6 +95,30 @@ public class ReactiveOpensearchRepository {
             })
         );
     }
+
+    /**
+     *
+     * @param searchRequest : the search request
+     * @param countRequest : the count request
+     * @param type : the entity type
+     * @return flow of {@link Page}
+     * @param <T> : the parameter type
+     */
+    public <T> Mono<Page<T>> searchAsPage(@NotNull SearchRequest searchRequest,
+                                          @NotNull CountRequest countRequest,
+                                          @NotNull Class<T> type) {
+
+        final SearchSourceBuilder query = searchRequest.source();
+
+        return this.search(searchRequest, type)
+                .collectList()
+                .zipWith(this.count(countRequest))
+                .map(tuple2 -> new Page<>(tuple2.getT1(), new PageMetadata(query.from(), query.size(), tuple2.getT2(),
+                                                    tuple2.getT2() > query.size() ? Math.ceilDiv(tuple2.getT2(), query.size()) : 1)));
+    }
+
+    public record Page<T>(List<T> content, PageMetadata pageMetadata) {}
+    public record PageMetadata(int number, int size, long totalElements, long totalPages) {}
 
     /**
      * @param countRequest : the count request
@@ -168,7 +175,9 @@ public class ReactiveOpensearchRepository {
      * @return flow of {@link T}
      * @param <T> : the parameter type
      */
-    public <T> Mono<T> save(@NotNull String indexName, @NotNull T entity, @NotNull Class<T> type) {
+    public <T> Mono<T> save(@NotNull String indexName,
+                            @NotNull T entity,
+                            @NotNull Class<T> type) {
 
         return Mono.<String>create(sink -> {
             final Map<String, Object> data = jack.convertValue(entity, new TypeReference<>() {});
@@ -188,8 +197,8 @@ public class ReactiveOpensearchRepository {
         })
         .map(id -> new GetRequest(indexName, id))
         .doOnNext(id -> log.info(" > The id of entity created is {}.", id.id()))
-        .flatMap(getRequest -> Mono.<T>create(sink ->
-            highLevelClient.getAsync(getRequest, RequestOptions.DEFAULT, new ActionListener<>() {
+        .flatMap(getRequestById -> Mono.<T>create(sink ->
+            highLevelClient.getAsync(getRequestById, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(GetResponse documentFields) {
                     log.info(" > The entity created has been find, the id is {}, and the content is {}.",
@@ -212,26 +221,26 @@ public class ReactiveOpensearchRepository {
     /**
      * @param entities : the list of entity
      * @param indexName : the index name
-     * @return {@link Flux of rest status}
+     * @return {@link Flux of crud result that contain the identifier and the status code}
      * @param <T> : the parameter type
      */
-    public <T> Flux<Integer> bulk(@NotNull List<T> entities, @NotNull String indexName) {
+    public <T> Flux<CrudResult> bulk(@NotNull List<T> entities, @NotNull String indexName) {
 
         final var bulk = new BulkRequest();
 
-        final var indexRequest = new IndexRequest(indexName);
         entities.stream()
             .map(e -> jack.convertValue(e, new TypeReference<Map<String, Object>>() {}))
-            .forEach(indexRequest::source);
+            .map(dataAsMap -> new IndexRequest(indexName).source(dataAsMap))
+            .forEach(bulk::add);
 
-        bulk.add(indexRequest);
-
-        return Flux.create(sink ->
+        return Mono.<List<CrudResult>>create(sink ->
             highLevelClient.bulkAsync(bulk, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(BulkResponse bulkItemResponses) {
-                    sink.next(bulkItemResponses.status().getStatus());
-                    sink.complete();
+                    final List<CrudResult> crudResult = Arrays.stream(bulkItemResponses.getItems())
+                                    .map(bulkItem -> new CrudResult(bulkItem.getId(), bulkItem.status().getStatus()))
+                                    .toList();
+                    sink.success(crudResult);
                 }
 
                 @Override
@@ -239,16 +248,16 @@ public class ReactiveOpensearchRepository {
                     sink.error(e);
                 }
             })
-        );
+        )
+        .flatMapIterable(results -> results);
     }
 
     /**
-     *
-     * @param indexName
-     * @param id
-     * @return
+     * @param indexName : the index name
+     * @param id : the identifier
+     * @return flow of {@link Integer that is the status}
      */
-    public Mono<Integer> delete(String indexName, String id) {
+    public Mono<Integer> delete(@NotNull String indexName, @NotNull String id) {
 
         return  Mono.create(sink -> {
             final var request = new DeleteRequest(indexName, id);
@@ -265,4 +274,22 @@ public class ReactiveOpensearchRepository {
             });
         });
     }
+
+    /**
+     *
+     * @param indexName : the index name
+     * @param ids : the list of identifiers
+     * @return flow of {@link List<CrudResult>}
+     */
+    public Mono<List<CrudResult>> deleteAll(@NotNull String indexName,
+                                            @NotNull List<String> ids) {
+
+        return Flux.fromIterable(ids)
+                .flatMap(id -> delete(indexName, id)
+                        .map(status -> new CrudResult(id, status))
+                )
+                .collectList();
+    }
+
+    public record CrudResult(String id, int status) {}
 }

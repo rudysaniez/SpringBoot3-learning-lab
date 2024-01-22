@@ -21,6 +21,10 @@
 - [terms](#terms)
 - [exists](#exists)
 - [range](#range)
+- [ids queries](#ids-queries)
+- [prefix queries](#prefix-queries)
+- [wildcard queries](#wildcard-queries)
+- [regex queries](#regex-queries)
 
 ## match
 
@@ -391,4 +395,70 @@ You can find :
 - gt
 - lte
 - lt
+
+```
+
+```
+
+### ids queries
+
+```
+GET attributs_dictionnary_v1/_search
+{
+  "query": {
+    "ids": {
+      "values": ["f2OhHY0BQpatIpF0093b", "tGOuHY0BQpatIpF0-90o"]
+    }
+  }  
+}
+
+I obtain two documents.
+```
+
+### prefix queries
+
+The prefix query is used to fetch documents that contain the given search string as the prefix in the specified field.
+
+```
+GET attributs_dictionnary_v1/_search
+{
+  "query": {
+    "prefix": {
+      "code": "cod"
+    }
+  }
+}
+```
+
+### wildcard queries
+
+Will fetch the documents that have terms that match the given wildcard pattern.
+
+```
+GET attributs_dictionnary_v1/_search
+{
+  "query": {
+    "wildcard": {
+      "defaultMetricUnit": {
+        "value": "metric*"
+      }
+    }
+  }
+}
+```
+
+### regex queries
+
+```
+GET attributs_dictionnary_v1/_search
+{
+  "query": {
+    "regexp": {
+      "code": {
+        "value": "code[0-9]+"
+      }
+    }
+  }
+}
+```
 
