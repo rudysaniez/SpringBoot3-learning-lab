@@ -45,8 +45,7 @@ class AttributeRepositoryTest {
 
     ReactiveOpensearchRepository opensearchRepository;
 
-
-    @Value("${classpath:json/attribute01.json}")
+    @Value("classpath:json/attribute01.json")
     Resource attribute01;
 
     private static final String IDX_TARGET = "attributs_dictionnary_v1";

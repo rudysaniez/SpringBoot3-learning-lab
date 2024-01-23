@@ -6,6 +6,9 @@ import org.opensearch.action.search.SearchRequest;
 import org.opensearch.client.core.CountRequest;
 import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.search.builder.SearchSourceBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,8 @@ public class AttributeDictionaryRestController {
 
     private static final String IDX_TARGET = "attributs_dictionnary_v1";
 
+    private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryRestController.class);
+
     public AttributeDictionaryRestController(ReactiveOpensearchRepository opensearchRepository) {
         this.opensearchRepository = opensearchRepository;
     }
@@ -34,7 +39,10 @@ public class AttributeDictionaryRestController {
     @GetMapping(value = "/attributes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<AttributeDictionaryEntity>> getById(@PathVariable(value = "id") String id) {
 
+        log.info(" > Get attributes V1 by id is {}", id);
+
         return opensearchRepository.getById(IDX_TARGET, id, AttributeDictionaryEntity.class)
+                .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.noContent().build());
@@ -44,11 +52,17 @@ public class AttributeDictionaryRestController {
      * @return flow of {@link AttributeDictionaryEntity}
      */
     @GetMapping(value = "/attributes", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ReactiveOpensearchRepository.Page<AttributeDictionaryEntity>> getAll() {
+    public Mono<ResponseEntity<ReactiveOpensearchRepository.Page<AttributeDictionaryEntity>>> getAll() {
+
+        log.info(" > Get attributes as page.");
 
         final var search = SearchSourceBuilder.searchSource().from(0).size(5);
         final var request = new SearchRequest(new String[]{IDX_TARGET}, search);
-        return opensearchRepository.searchAsPage(request, new CountRequest(IDX_TARGET), AttributeDictionaryEntity.class);
+        return opensearchRepository.searchAsPage(request, new CountRequest(IDX_TARGET), AttributeDictionaryEntity.class)
+                .doOnError(t -> log.error(t.getMessage(), t))
+                .onErrorResume(t -> Mono.empty())
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.noContent().build());
     }
 
     /**
@@ -66,7 +80,9 @@ public class AttributeDictionaryRestController {
                 .from(0)
                 .size(5);
         final var request = new SearchRequest(new String[]{IDX_TARGET}, search);
-        return opensearchRepository.search(request, AttributeDictionaryEntity.class);
+        return opensearchRepository.search(request, AttributeDictionaryEntity.class)
+                .doOnError(t -> log.error(t.getMessage(), t))
+                .onErrorResume(t -> Flux.empty());
     }
 
     /**
@@ -79,11 +95,14 @@ public class AttributeDictionaryRestController {
     public Mono<ResponseEntity<AttributeDictionaryEntity>> save(@RequestBody AttributeDictionaryEntity attr) {
 
         return opensearchRepository.save(IDX_TARGET, attr, AttributeDictionaryEntity.class)
-                .map(ResponseEntity::ok);
+                .doOnError(t -> log.error(t.getMessage(), t))
+                .onErrorResume(t -> Mono.empty())
+                .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))
+                .defaultIfEmpty(ResponseEntity.unprocessableEntity().build());
     }
 
     /**
-     * @param attrs
+     * @param attrs : attributes
      * @return flow of list of {@link ReactiveOpensearchRepository.CrudResult}
      */
     @PostMapping(value = "/attributes/:bulk",
@@ -92,8 +111,10 @@ public class AttributeDictionaryRestController {
     public Mono<ResponseEntity<List<ReactiveOpensearchRepository.CrudResult>>> saveAll(@RequestBody List<AttributeDictionaryEntity> attrs) {
 
         return opensearchRepository.bulk(attrs, IDX_TARGET)
+                .doOnError(t -> log.error(t.getMessage(), t))
                 .collectList()
-                .map(ResponseEntity::ok);
+                .map(ResponseEntity::ok)
+                .onErrorResume(t -> Mono.just(ResponseEntity.noContent().build()));
     }
 
     /**
@@ -103,6 +124,8 @@ public class AttributeDictionaryRestController {
     public Mono<ResponseEntity<Void>> deleteOne(@PathVariable(value = "id") String id) {
 
         return opensearchRepository.delete(IDX_TARGET, id)
+                .doOnError(t -> log.error(t.getMessage(), t))
+                .onErrorResume(t -> Mono.empty())
                 .filter(result -> result.equals(200))
                 .map(status -> ResponseEntity.ok().<Void>build())
                 .defaultIfEmpty(ResponseEntity.noContent().build());
@@ -115,9 +138,11 @@ public class AttributeDictionaryRestController {
     public Mono<ResponseEntity<List<ReactiveOpensearchRepository.CrudResult>>> deleteAll() {
 
         return opensearchRepository.search(new SearchRequest(IDX_TARGET), AttributeDictionaryEntity.class)
+                .doOnError(t -> log.error(t.getMessage(), t))
                 .map(AttributeDictionaryEntity::getId)
                 .collectList()
                 .flatMap(ids -> opensearchRepository.deleteAll(IDX_TARGET, ids))
-                .map(ResponseEntity::ok);
+                .map(ResponseEntity::ok)
+                .onErrorResume(t -> Mono.just(ResponseEntity.noContent().build()));
     }
 }
