@@ -118,6 +118,24 @@ public class AttributeDictionaryRestController {
     }
 
     /**
+     *
+     * @param id
+     * @param attr
+     * @return
+     */
+    @PutMapping(value = "/attributes/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<AttributeDictionaryEntity>> update(@PathVariable(value = "id") String id,
+                                                                  @RequestBody AttributeDictionaryEntity attr) {
+
+        log.info(" > Update attribute {} with id {}", attr, id);
+
+        return opensearchRepository.update(IDX_TARGET, id, attr, AttributeDictionaryEntity.class)
+                .map(ResponseEntity::ok);
+    }
+
+    /**
      * @return {@link Integer}
      */
     @DeleteMapping(value = "/attributes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

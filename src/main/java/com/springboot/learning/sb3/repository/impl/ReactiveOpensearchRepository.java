@@ -14,6 +14,8 @@ import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.index.IndexResponse;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
+import org.opensearch.action.update.UpdateRequest;
+import org.opensearch.action.update.UpdateResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.core.CountRequest;
@@ -250,6 +252,40 @@ public class ReactiveOpensearchRepository {
             })
         )
         .flatMapIterable(results -> results);
+    }
+
+    /**
+     *
+     * @param indexName
+     * @param id
+     * @param entity
+     * @param type
+     * @return {@link T}
+     * @param <T> : the parameter type
+     */
+    public <T> Mono<T> update(@NotNull String indexName,
+                              @NotNull String id,
+                              @NotNull T entity,
+                              @NotNull Class<T> type) {
+
+        final var update = new UpdateRequest(indexName, id);
+        update.doc(jack.convertValue(entity, new TypeReference<Map<String, Object>>() {}));
+
+        return Mono.create(sink ->
+            highLevelClient.updateAsync(update, RequestOptions.DEFAULT, new ActionListener<>() {
+                @Override
+                public void onResponse(UpdateResponse updateResponse) {
+                    sink.success(updateResponse.status().getStatus());
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    sink.error(e);
+                }
+            })
+        )
+        .filter(status -> status.equals(200))
+        .flatMap(useless -> getById(indexName, id, type));
     }
 
     /**
