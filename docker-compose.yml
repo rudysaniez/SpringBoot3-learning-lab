@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  opensearch:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch
+    environment:
+      - cluster.name=opensearch-cluster
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - node.name=opensearch
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    healthcheck:
+      interval: 10s
+      retries: 80
+      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:9200/
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - opensearch-net
+
+  attributes-api:
+    image: attributes-os-rx-api:latest
+    ports:
+      - 8081:8080
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - USER_PASSWORD=user
+      - WRITER_PASSWORD=writer
+      - ADMIN_PASSWORD=admin
+      - JAVA_OPTS=-Xms512M -Xmx512M
+    networks:
+      - opensearch-net
+
+networks:
+  opensearch-net:

@@ -89,8 +89,10 @@ function getHttpStatusWithHttpMethod() {
 	local method=$3
 	local endpoint=$4
 	local filename=$5
+	local username=$6
+	local password=$7
 
-	result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -e $endpoint -m $method -f $filename -S -V)
+	result=$(eval ./manual-tests/http-manual-tests -u $target_uri -P $port -e $endpoint -m $method -f $filename -U $username -W $password -S -V)
   echo "${result}"
 }
 

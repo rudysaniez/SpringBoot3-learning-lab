@@ -14,7 +14,7 @@ Help()
    echo
    echo "Syntax: [-e|-t|-m|-f|-P|-U|-W|-h]"
    echo "options:"
-   echo "e     The endpoint name [management|videos]."
+   echo "e     The endpoint name [management|v1/attributes]."
    echo "t     The token (required)."
    echo "m     The request method [GET(default)|POST]"
    echo "f     The name of the file that contains the restaurant to be added [newVideo01.json]."
@@ -46,7 +46,7 @@ while getopts ":e:i:t:m:f:P:U:W:h" arg; do
 done
 
 if [ -z $ENDPOINT ]
-then ENDPOINT="videos"
+then ENDPOINT="v1/attributes"
 fi
 
 if [ -z $PORT ]

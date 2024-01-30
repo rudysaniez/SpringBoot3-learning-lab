@@ -12,7 +12,7 @@ waitForService localhost 8081
 begin_banner
 
 testNumber="GET HTTP status [endpoint=/management/info] without user"
-result=$(eval getHttpStatus localhost 8081 videos)
+result=$(eval getHttpStatus localhost 8081 management/info)
 if [[ $result == "200" ]]
 then echo " > $testNumber : Http_status=$result."
 else
@@ -20,7 +20,7 @@ else
 fi
 
 testNumber="GET HTTP status [endpoint=/management/health] without user"
-result=$(eval getHttpStatus localhost 8081 videos)
+result=$(eval getHttpStatus localhost 8081 management/info)
 if [[ $result == "200" ]]
 then echo " > $testNumber : Http_status=$result."
 else

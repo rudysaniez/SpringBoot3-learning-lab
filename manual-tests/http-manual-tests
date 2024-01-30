@@ -79,17 +79,17 @@ then
   PASSWORD="user"
 fi
 
-if [[ -n $STATUS && $METHOD == "GET" ]]
+if [[ -n $STATUS && $METHOD == "GET" || $METHOD == "DELETE" ]]
 then
     if [[ -z $ID && -z $QUERY ]]
     then
-      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT\" | grep HTTP | cut -d ' ' -f 2")
+      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers $METHOD \"$TARGET_URI:$PORT/$ENDPOINT\" | grep HTTP | cut -d ' ' -f 2")
     elif [[ -n $ID ]]
     then
-      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT/$ID?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
+      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers $METHOD \"$TARGET_URI:$PORT/$ENDPOINT/$ID?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
     elif [[ -n $QUERY ]]
     then
-      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers \"$TARGET_URI:$PORT/$ENDPOINT?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
+      result=$(eval "http -a $USERNAME:$PASSWORD --check-status --headers $METHOD \"$TARGET_URI:$PORT/$ENDPOINT?$QUERY\" | grep HTTP | cut -d ' ' -f 2")
     fi
 
     if [[ -n $VERBOSE ]]
