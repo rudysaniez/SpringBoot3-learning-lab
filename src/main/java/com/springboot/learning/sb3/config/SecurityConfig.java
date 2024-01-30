@@ -27,6 +27,9 @@ public class SecurityConfig {
     public static final String ROLE_WRITER = "WRITER";
     public static final String ROLE_READER = "READER";
 
+    private static final String ATTR_BASE_PATH = "/v1/attributes";
+    private static final String ATTR_BASE_PATH_AND_MORE = ATTR_BASE_PATH.concat("/**");
+
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     /**
@@ -38,11 +41,11 @@ public class SecurityConfig {
 
         http.authorizeExchange(exchange -> exchange
             .pathMatchers("/management/info", "management/health").permitAll()
-            .pathMatchers(HttpMethod.GET, "/videos", "/videos/:asPage", "/videos/:count", "/videos/:search")
+            .pathMatchers(HttpMethod.GET, ATTR_BASE_PATH, ATTR_BASE_PATH_AND_MORE)
                 .hasAnyRole(ROLE_READER, ROLE_WRITER)
-            .pathMatchers(HttpMethod.POST, "/videos")
+            .pathMatchers(HttpMethod.POST, ATTR_BASE_PATH, ATTR_BASE_PATH_AND_MORE)
                 .hasAnyRole(ROLE_WRITER)
-            .pathMatchers(HttpMethod.DELETE, "/videos")
+            .pathMatchers(HttpMethod.DELETE, ATTR_BASE_PATH, ATTR_BASE_PATH_AND_MORE)
                 .hasAnyRole(ROLE_WRITER)
             .anyExchange().authenticated())
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
