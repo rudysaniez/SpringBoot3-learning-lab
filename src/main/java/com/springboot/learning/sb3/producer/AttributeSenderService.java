@@ -63,9 +63,12 @@ public class AttributeSenderService {
     /**
      * @param bindingName : the binding name
      * @param entity : the attribute entity
+     * @return flow of {@link AttributeDictionaryEntity}
      */
-    public Mono<AttributeDictionaryEntity> sendMessage(@NotNull String bindingName,
-                                                       @NotNull AttributeDictionaryEntity entity) {
+    public Mono<AttributeDictionaryEntity> send(@NotNull String bindingName,
+                                                @NotNull AttributeDictionaryEntity entity) {
+
+        log.info(" > Send by Stream-bridge, attribute is {}", entity);
 
         return Mono.just(entity)
                 .map(mapper::toAvro)

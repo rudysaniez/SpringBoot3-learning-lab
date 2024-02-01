@@ -99,7 +99,7 @@ public class AttributeDictionaryRestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<AttributeDictionaryEntity>> save(@RequestBody AttributeDictionaryEntity attr) {
 
-        return attributeSenderService.send(attr)
+        return attributeSenderService.send("attributeDictionarySyncEventConsume-out-0", attr)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
                 .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))
@@ -113,9 +113,10 @@ public class AttributeDictionaryRestController {
     @PostMapping(value = "/attributes/:bulk",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<List<ReactiveOpensearchRepository.CrudResult>>> saveAll(@RequestBody List<AttributeDictionaryEntity> attrs) {
+    public Mono<ResponseEntity<List<AttributeDictionaryEntity>>> saveAll(@RequestBody List<AttributeDictionaryEntity> attrs) {
 
-        return opensearchRepository.bulk(attrs, IDX_TARGET)
+        return Flux.fromIterable(attrs)
+                .flatMap(attributeSenderService::send)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .collectList()
                 .map(ResponseEntity::ok)

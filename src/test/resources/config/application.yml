@@ -38,6 +38,48 @@ spring:
     virtual:
       enabled: false
 
+  cloud:
+    function:
+      definition: attributeDictionarySyncEventConsume
+    stream:
+      default-binder: kafka
+
+      bindings:
+        attributeDictionarySyncEventConsume-in-0:
+          destination: adeo-dev-europe-west1-APP-ARBOLPIM-BM-ES-P1-C1-BONSAI-DICTIONNARY-ATTRIBUTE-SYNC-V1
+          group: svc-arbolpim-app-dev-BM-ES-SCS
+          content-type: application/*+avro
+
+          consumer:
+            batch-mode: false
+            partitioned: false
+            max-attempts: 3
+            back-off-initial-interval: 500
+            back-off-max-interval: 1000
+            back-off-multiplier: 2.0
+
+        attributeDictionarySyncEventConsume-out-0:
+          destination: adeo-dev-europe-west1-APP-ARBOLPIM-BM-ES-P1-C1-BONSAI-DICTIONNARY-ATTRIBUTE-SYNC-V1
+          content-type: application/*+avro
+
+          producer:
+            use-native-encoding: true
+            required-groups:
+              - auditGroup
+
+kafka:
+  brokers: ${KAFKA_CLUSTER}
+  ssl-endpoint-identification-algorithm: https
+  sasl-jaas-config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
+  schema-registry-url: ${SCHEMA_REGISTRY_URL}
+  schema-registry-basic-auth-user-info: ${KAFKA_SCHEMA_USERNAME}:${KAFKA_SCHEMA_PASSWORD}
+  security-protocol: SASL_SSL
+  sasl-mechanism: PLAIN
+  schema-auto-register: false
+  basic-auth-credentials-source: USER_INFO
+  topic:
+    attribute-topic: ${KAFKA_TOPIC}
+
 api:
   pagination:
     page: 0
