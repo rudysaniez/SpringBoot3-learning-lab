@@ -6,14 +6,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
  * <a href="https://github.com/opensearch-project/spring-data-opensearch/tree/main/spring-data-opensearch-examples/spring-boot-gradle">...</a>
  */
 @EnableConfigurationProperties(value = {PropertiesConfig.UserSecurityAccessConfiguration.class,
-										PropertiesConfig.Pagination.class
-								})
+										PropertiesConfig.Pagination.class,
+										PropertiesConfig.KafkaProducerConfiguration.class,
+										PropertiesConfig.TopicConfiguration.class})
 @SpringBootApplication(exclude = ElasticsearchDataAutoConfiguration.class)
 public class Application {
 

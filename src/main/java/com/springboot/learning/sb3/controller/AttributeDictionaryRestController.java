@@ -1,6 +1,7 @@
 package com.springboot.learning.sb3.controller;
 
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
+import com.springboot.learning.sb3.producer.AttributeSenderService;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.client.core.CountRequest;
@@ -23,13 +24,17 @@ import java.util.List;
 public class AttributeDictionaryRestController {
 
     private final ReactiveOpensearchRepository opensearchRepository;
+    private final AttributeSenderService attributeSenderService;
 
     private static final String IDX_TARGET = "attributs_dictionnary_v1";
 
     private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryRestController.class);
 
-    public AttributeDictionaryRestController(ReactiveOpensearchRepository opensearchRepository) {
+    public AttributeDictionaryRestController(ReactiveOpensearchRepository opensearchRepository,
+                                             AttributeSenderService attributeSenderService) {
+
         this.opensearchRepository = opensearchRepository;
+        this.attributeSenderService = attributeSenderService;
     }
 
     /**
@@ -94,7 +99,7 @@ public class AttributeDictionaryRestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<AttributeDictionaryEntity>> save(@RequestBody AttributeDictionaryEntity attr) {
 
-        return opensearchRepository.save(IDX_TARGET, attr, AttributeDictionaryEntity.class)
+        return attributeSenderService.send(attr)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
                 .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))

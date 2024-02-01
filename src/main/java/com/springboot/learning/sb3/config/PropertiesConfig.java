@@ -15,4 +15,20 @@ public class PropertiesConfig {
 
     @ConfigurationProperties(prefix = "api.pagination")
     public record Pagination(int page, int size) {}
+
+    @ConfigurationProperties(prefix = "kafka")
+    public record KafkaProducerConfiguration(
+            String brokers,
+            String sslEndpointIdentificationAlgorithm,
+            String securityProtocol,
+            String saslMechanism,
+            String saslJaasConfig,
+            String schemaRegistryUrl,
+            String schemaAutoRegister,
+            String basicAuthCredentialsSource,
+            String schemaRegistryBasicAuthUserInfo) {}
+
+    @ConfigurationProperties(prefix = "kafka.topic")
+    public record TopicConfiguration(
+            String attributeTopic) {}
 }
