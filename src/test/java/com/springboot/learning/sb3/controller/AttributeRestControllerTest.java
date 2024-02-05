@@ -2,7 +2,9 @@ package com.springboot.learning.sb3.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
+import com.springboot.learning.sb3.helper.TestHelper;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,21 +77,21 @@ class AttributeRestControllerTest {
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(5);
 
-        clean();
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Save one attribute")
     @Test
-    void save() throws IOException, InterruptedException {
+    void save() throws IOException {
 
         // Get an attribute.
-        final AttributeDictionaryEntity entity = getAttributeCandidate(attribute01);
-        Assertions.assertThat(entity).isNotNull();
+        final var attr = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionary.class);
+        Assertions.assertThat(attr).isNotNull();
 
         webTestClient.post()
                 .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes").build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(entity), AttributeDictionaryEntity.class)
+                .bodyValue(attr)
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -99,8 +101,8 @@ class AttributeRestControllerTest {
                 .jsonPath("$.group").isEqualTo("GROUP01")
                 .jsonPath("$.metricFamily").isEqualTo("METRIC01");
 
-        waitOneSecond();
-        clean();
+        TestHelper.waitInSecond(1);
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Save on attribute asynchronously")
@@ -108,27 +110,27 @@ class AttributeRestControllerTest {
     void saveAsync() throws IOException {
 
         // Get an attribute.
-        final AttributeDictionaryEntity entity = getAttributeCandidate(attribute01);
-        Assertions.assertThat(entity).isNotNull();
+        final var attr = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionary.class);
+        Assertions.assertThat(attr).isNotNull();
 
         webTestClient.post()
                 .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", ":async").build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(entity), AttributeDictionaryEntity.class)
+                .bodyValue(attr)
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
 
-        waitOneSecond();
-        clean();
+        TestHelper.waitInSecond(1);
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Save many attributes")
     @Test
     void bulk() throws IOException {
 
-        final List<AttributeDictionaryEntity> entities = getManyAttributeCandidates(attributes);
+        final List<AttributeDictionary> entities = getManyAttributeCandidates(jack, attributes);
         Assertions.assertThat(entities).isNotEmpty();
 
         webTestClient.post()
@@ -147,15 +149,15 @@ class AttributeRestControllerTest {
                 .jsonPath("$.[3].status").isEqualTo(201)
                 .jsonPath("$.[4].status").isEqualTo(201);
 
-        waitOneSecond();
-        clean();
+        TestHelper.waitInSecond(1);
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Save many attributes asynchronously")
     @Test
     void bulkAsync() throws IOException {
 
-        final List<AttributeDictionaryEntity> entities = getManyAttributeCandidates(attributes);
+        final List<AttributeDictionary> entities = getManyAttributeCandidates(jack, attributes);
         Assertions.assertThat(entities).isNotEmpty();
 
         webTestClient.post()
@@ -167,8 +169,8 @@ class AttributeRestControllerTest {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
 
-        waitOneSecond();
-        clean();
+        TestHelper.waitInSecond(1);
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Update an attribute")
@@ -176,8 +178,6 @@ class AttributeRestControllerTest {
     void update() throws IOException {
 
         filling(attributes);
-
-        waitOneSecond();
 
         // Launch a search by the code
         final var query = SearchSourceBuilder.searchSource()
@@ -204,46 +204,12 @@ class AttributeRestControllerTest {
                 .expectBody()
                 .jsonPath("$.group").isEqualTo("GROUP_10");
 
-        clean();
-    }
-
-    private void clean() {
-        webTestClient.delete()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", ":empty").build())
-                .headers(header -> header.setBasicAuth("user", "user"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.OK);
-    }
-
-    private void searchStatusOk() {
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes").build())
-                .headers(header -> header.setBasicAuth("user", "user"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.OK);
-    }
-
-    private List<AttributeDictionaryEntity> getManyAttributeCandidates(Resource input) throws IOException {
-        return jack.readValue(input.getContentAsByteArray(), new TypeReference<>() {});
-    }
-
-    private AttributeDictionaryEntity getAttributeCandidate(Resource input) throws IOException {
-        return jack.readValue(input.getInputStream(), AttributeDictionaryEntity.class);
-    }
-
-    private void waitOneSecond() {
-
-        try {
-            Thread.sleep(Duration.ofSeconds(1));
-        }
-        catch (InterruptedException e) {}
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     private void filling(Resource input) throws IOException {
 
-        final List<AttributeDictionaryEntity> entities = getManyAttributeCandidates(input);
+        final List<AttributeDictionary> entities = getManyAttributeCandidates(jack, input);
         Assertions.assertThat(entities).isNotEmpty();
 
         webTestClient.post()
@@ -255,6 +221,10 @@ class AttributeRestControllerTest {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
 
-        waitOneSecond();
+        TestHelper.waitInSecond(2);
+    }
+
+    private List<AttributeDictionary> getManyAttributeCandidates(ObjectMapper jack, Resource input) throws IOException {
+        return jack.readValue(input.getContentAsByteArray(), new TypeReference<>() {});
     }
 }

@@ -1,9 +1,8 @@
 package com.springboot.learning.sb3.producer;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
-import com.springboot.learning.sb3.config.PropertiesConfig;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
-import com.springboot.learning.sb3.mapper.AttributeMapper;
+import com.springboot.learning.sb3.mapper.AttributeAvroMapper;
 import jakarta.validation.constraints.NotNull;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
@@ -17,47 +16,21 @@ import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class AttributeSenderService {
 
     private final StreamBridge streamBridge;
-    private final ReactiveAttributeSenderService reactiveAttributeSenderService;
-    private final PropertiesConfig.TopicConfiguration topicConfiguration;
+    private final Executor taskExecutor;
 
-    private final Executor taskExecutor = Executors.newVirtualThreadPerTaskExecutor();
-    private static final AttributeMapper mapper = Mappers.getMapper(AttributeMapper.class);
+    private static final AttributeAvroMapper mapper = Mappers.getMapper(AttributeAvroMapper.class);
 
     private static final Logger log = LoggerFactory.getLogger(AttributeSenderService.class);
 
-    public AttributeSenderService(StreamBridge streamBridge,
-                                  ReactiveAttributeSenderService reactiveAttributeSenderService,
-                                  PropertiesConfig.TopicConfiguration topicConfiguration) {
+    public AttributeSenderService(StreamBridge streamBridge, Executor taskExecutor) {
         this.streamBridge = streamBridge;
-        this.reactiveAttributeSenderService = reactiveAttributeSenderService;
-        this.topicConfiguration = topicConfiguration;
-    }
-
-    /**
-     * @param entity : the entity
-     * @return flow of {@link AttributeDictionaryEntity}
-     */
-    public Mono<AttributeDictionaryEntity> send(@NotNull AttributeDictionaryEntity entity) {
-
-        log.info(" > Send this attribute={}", entity);
-
-        return Mono.just(entity)
-                .map(mapper::toAvro)
-                .flatMap(attributeDictionnary -> reactiveAttributeSenderService.send(
-                            new AttributeDictionnaryKey(ThreadLocalRandom.current().nextInt(20),
-                                    UUID.randomUUID().toString()),
-                            attributeDictionnary,
-                            topicConfiguration.attributeTopic()
-                        )
-                )
-                .thenReturn(entity);
+        this.taskExecutor = taskExecutor;
     }
 
     /**

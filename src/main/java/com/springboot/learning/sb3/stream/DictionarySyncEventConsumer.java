@@ -2,7 +2,7 @@ package com.springboot.learning.sb3.stream;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
-import com.springboot.learning.sb3.mapper.AttributeMapper;
+import com.springboot.learning.sb3.mapper.AttributeAvroMapper;
 import com.springboot.learning.sb3.service.AttributeDictionaryService;
 import org.awaitility.Awaitility;
 import org.mapstruct.factory.Mappers;
@@ -21,7 +21,7 @@ public class DictionarySyncEventConsumer {
 
     private final AttributeDictionaryService attributeDictionaryService;
 
-    private static final AttributeMapper mapper = Mappers.getMapper(AttributeMapper.class);
+    private static final AttributeAvroMapper mapper = Mappers.getMapper(AttributeAvroMapper.class);
     private static final Logger log = LoggerFactory.getLogger(DictionarySyncEventConsumer.class);
 
     public DictionarySyncEventConsumer(AttributeDictionaryService attributeDictionaryService) {
