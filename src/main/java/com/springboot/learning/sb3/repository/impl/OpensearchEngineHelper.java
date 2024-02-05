@@ -1,19 +1,15 @@
 package com.springboot.learning.sb3.repository.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotNull;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.search.SearchResponse;
-import org.opensearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.MonoSink;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public abstract class OpensearchEngineHelper {
@@ -39,7 +35,7 @@ public abstract class OpensearchEngineHelper {
                 .map(data -> OpensearchEngineHelper.mapToObject(jack, data, type))
                 .forEach(t -> {
                     sink.next(t);
-                    log.info(" > Data is read t={}", t);
+                    log.debug(" > Data is read t={}", t);
                 });
         sink.complete();
     }
@@ -60,7 +56,7 @@ public abstract class OpensearchEngineHelper {
                 .map(data -> OpensearchEngineHelper.mergeIdInMap(response.getId(), data))
                 .map(data -> mapToObject(jack, data, type))
                 .forEach(t -> {
-                    log.info(" > Data is read t={}", t);
+                    log.debug(" > Data is read t={}", t);
                     sink.success(t);});
     }
 
