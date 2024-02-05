@@ -26,7 +26,8 @@ public class AttributeDictionaryRestController {
     private final ReactiveOpensearchRepository opensearchRepository;
     private final AttributeSenderService attributeSenderService;
 
-    private static final String IDX_TARGET = "attributs_dictionnary_v1";
+    public static final String IDX_TARGET = "attributs_dictionnary_v1";
+    public static final String BINDING_TARGET = "attributeDictionarySyncEventConsume-out-0";
 
     private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryRestController.class);
 
@@ -99,10 +100,26 @@ public class AttributeDictionaryRestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<AttributeDictionaryEntity>> save(@RequestBody AttributeDictionaryEntity attr) {
 
-        return attributeSenderService.send("attributeDictionarySyncEventConsume-out-0", attr)
+        return opensearchRepository.save(IDX_TARGET, attr, AttributeDictionaryEntity.class)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
                 .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))
+                .defaultIfEmpty(ResponseEntity.unprocessableEntity().build());
+    }
+
+    /**
+     * @param attr : the attribute
+     * @return flow of {@link AttributeDictionaryEntity}
+     */
+    @PostMapping(value = "/attributes/:async",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Void>> saveAsync(@RequestBody AttributeDictionaryEntity attr) {
+
+        return attributeSenderService.send(BINDING_TARGET, attr)
+                .doOnError(t -> log.error(t.getMessage(), t))
+                .onErrorResume(t -> Mono.empty())
+                .map(entity -> new ResponseEntity<Void>(HttpStatus.ACCEPTED))
                 .defaultIfEmpty(ResponseEntity.unprocessableEntity().build());
     }
 
@@ -113,13 +130,29 @@ public class AttributeDictionaryRestController {
     @PostMapping(value = "/attributes/:bulk",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<List<AttributeDictionaryEntity>>> saveAll(@RequestBody List<AttributeDictionaryEntity> attrs) {
+    public Mono<ResponseEntity<List<ReactiveOpensearchRepository.CrudResult>>> bulk(@RequestBody List<AttributeDictionaryEntity> attrs) {
 
-        return Flux.fromIterable(attrs)
-                .flatMap(attributeSenderService::send)
+        return opensearchRepository.bulk(attrs, IDX_TARGET)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .collectList()
                 .map(ResponseEntity::ok)
+                .onErrorResume(t -> Mono.just(ResponseEntity.noContent().build()));
+    }
+
+    /**
+     * @param attrs : attributes
+     * @return flow of list of {@link ReactiveOpensearchRepository.CrudResult}
+     */
+    @PostMapping(value = "/attributes/:bulk-async",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Void>> bulkAsync(@RequestBody List<AttributeDictionaryEntity> attrs) {
+
+        return Flux.fromIterable(attrs)
+                .flatMap(attr -> attributeSenderService.send(BINDING_TARGET, attr))
+                .doOnError(t -> log.error(t.getMessage(), t))
+                .collectList()
+                .map(entities -> new ResponseEntity<Void>(HttpStatus.ACCEPTED))
                 .onErrorResume(t -> Mono.just(ResponseEntity.noContent().build()));
     }
 

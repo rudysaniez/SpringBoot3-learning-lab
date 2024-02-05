@@ -1,15 +1,18 @@
 package com.springboot.learning.sb3.controller;
 
-import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
+import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.opensearch.action.search.SearchRequest;
+import org.opensearch.index.query.QueryBuilders;
+import org.opensearch.search.builder.SearchSourceBuilder;
 import org.opensearch.testcontainers.OpensearchContainer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
@@ -17,7 +20,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -27,7 +29,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.function.Consumer;
+import java.util.List;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -47,32 +49,41 @@ class AttributeRestControllerTest {
 
     @Autowired WebTestClient webTestClient;
     @Autowired ObjectMapper jack;
-
-    @Autowired @Qualifier("attributeDictionarySyncEventConsume")
-    Consumer<Message<AttributeDictionnary>> attributeDictionarySyncEventConsume;
+    @Autowired ReactiveOpensearchRepository opensearchRepository;
 
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
 
+    @Value("classpath:json/attributes.json")
+    Resource attributes;
+
     @BeforeEach
     void setup() {}
 
+    @Tag("Retrieve attributes on a empty index")
     @Test
-    void all() {
+    void all() throws IOException {
+
+        filling(attributes);
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes").build())
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT);
+                .expectStatus().isEqualTo(HttpStatus.OK)
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(5);
+
+        clean();
     }
 
+    @Tag("Save one attribute")
     @Test
     void save() throws IOException, InterruptedException {
 
         // Get an attribute.
-        final AttributeDictionaryEntity entity = jack.readValue(attribute01.getInputStream(), AttributeDictionaryEntity.class);
+        final AttributeDictionaryEntity entity = getAttributeCandidate(attribute01);
         Assertions.assertThat(entity).isNotNull();
 
         webTestClient.post()
@@ -82,11 +93,117 @@ class AttributeRestControllerTest {
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CREATED);
+                .expectStatus().isEqualTo(HttpStatus.CREATED)
+                .expectBody()
+                .jsonPath("$.code").isEqualTo("CODE01")
+                .jsonPath("$.group").isEqualTo("GROUP01")
+                .jsonPath("$.metricFamily").isEqualTo("METRIC01");
 
-        Thread.sleep(Duration.ofMillis(500));
+        waitOneSecond();
+        clean();
+    }
 
-        searchStatusOk();
+    @Tag("Save on attribute asynchronously")
+    @Test
+    void saveAsync() throws IOException {
+
+        // Get an attribute.
+        final AttributeDictionaryEntity entity = getAttributeCandidate(attribute01);
+        Assertions.assertThat(entity).isNotNull();
+
+        webTestClient.post()
+                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", ":async").build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(entity), AttributeDictionaryEntity.class)
+                .headers(header -> header.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
+
+        waitOneSecond();
+        clean();
+    }
+
+    @Tag("Save many attributes")
+    @Test
+    void bulk() throws IOException {
+
+        final List<AttributeDictionaryEntity> entities = getManyAttributeCandidates(attributes);
+        Assertions.assertThat(entities).isNotEmpty();
+
+        webTestClient.post()
+                .uri(uri -> uri.pathSegment("v1", "attributes", ":bulk").build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(entities)
+                .headers(header -> header.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.OK)
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(5)
+                .jsonPath("$.[0].status").isEqualTo(201)
+                .jsonPath("$.[1].status").isEqualTo(201)
+                .jsonPath("$.[2].status").isEqualTo(201)
+                .jsonPath("$.[3].status").isEqualTo(201)
+                .jsonPath("$.[4].status").isEqualTo(201);
+
+        waitOneSecond();
+        clean();
+    }
+
+    @Tag("Save many attributes asynchronously")
+    @Test
+    void bulkAsync() throws IOException {
+
+        final List<AttributeDictionaryEntity> entities = getManyAttributeCandidates(attributes);
+        Assertions.assertThat(entities).isNotEmpty();
+
+        webTestClient.post()
+                .uri(uri -> uri.pathSegment("v1", "attributes", ":bulk-async").build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(entities)
+                .headers(header -> header.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
+
+        waitOneSecond();
+        clean();
+    }
+
+    @Tag("Update an attribute")
+    @Test
+    void update() throws IOException {
+
+        filling(attributes);
+
+        waitOneSecond();
+
+        // Launch a search by the code
+        final var query = SearchSourceBuilder.searchSource()
+                .query(QueryBuilders.matchQuery("code", "CODE01"))
+                .from(0)
+                .size(2);
+        final var request = new SearchRequest(new String[]{AttributeDictionaryRestController.IDX_TARGET}, query);
+        final var searchResult = opensearchRepository.search(request, AttributeDictionaryEntity.class)
+                .collectList().block();
+        Assertions.assertThat(searchResult).isNotEmpty();
+
+        // Update an attribute
+        var attribute = searchResult.stream().findFirst().get();
+        attribute.setGroup("GROUP_10");
+
+        webTestClient.put()
+                .uri(uri -> uri.pathSegment("v1", "attributes", attribute.getId()).build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(attribute)
+                .headers(header -> header.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.OK)
+                .expectBody()
+                .jsonPath("$.group").isEqualTo("GROUP_10");
+
         clean();
     }
 
@@ -106,5 +223,38 @@ class AttributeRestControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.OK);
+    }
+
+    private List<AttributeDictionaryEntity> getManyAttributeCandidates(Resource input) throws IOException {
+        return jack.readValue(input.getContentAsByteArray(), new TypeReference<>() {});
+    }
+
+    private AttributeDictionaryEntity getAttributeCandidate(Resource input) throws IOException {
+        return jack.readValue(input.getInputStream(), AttributeDictionaryEntity.class);
+    }
+
+    private void waitOneSecond() {
+
+        try {
+            Thread.sleep(Duration.ofSeconds(1));
+        }
+        catch (InterruptedException e) {}
+    }
+
+    private void filling(Resource input) throws IOException {
+
+        final List<AttributeDictionaryEntity> entities = getManyAttributeCandidates(input);
+        Assertions.assertThat(entities).isNotEmpty();
+
+        webTestClient.post()
+                .uri(uri -> uri.pathSegment("v1", "attributes", ":bulk-async").build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(entities)
+                .headers(header -> header.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
+
+        waitOneSecond();
     }
 }
