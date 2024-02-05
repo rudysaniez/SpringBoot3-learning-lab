@@ -3,7 +3,7 @@ package com.springboot.learning.sb3.stream;
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
 import com.springboot.learning.sb3.mapper.AttributeAvroMapper;
-import com.springboot.learning.sb3.service.AttributeDictionaryService;
+import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.awaitility.Awaitility;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;

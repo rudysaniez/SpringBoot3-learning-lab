@@ -20,6 +20,15 @@ management:
       cache:
         time-to-live: 10000ms
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /openapi/v3/api-docs
+  swagger-ui:
+    path: /openapi/swagger-ui.html
+  paths-to-match: /**
+  packages-to-scan: com.springboot.learning.sb3.controller
+
 spring:
   jackson:
     deserialization:
@@ -144,3 +153,5 @@ security:
           - READER
           - WRITER
           - ADMIN
+
+service.version: v1

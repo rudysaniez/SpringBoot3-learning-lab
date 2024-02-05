@@ -1,4 +1,4 @@
-package com.springboot.learning.sb3.controller.exception;
+package com.springboot.learning.sb3.controller.contract;
 
 import org.springframework.http.HttpStatus;
 

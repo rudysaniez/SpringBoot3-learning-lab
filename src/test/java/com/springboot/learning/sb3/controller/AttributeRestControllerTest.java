@@ -3,16 +3,12 @@ package com.springboot.learning.sb3.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
-import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.helper.TestHelper;
-import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
+import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.opensearch.action.search.SearchRequest;
-import org.opensearch.index.query.QueryBuilders;
-import org.opensearch.search.builder.SearchSourceBuilder;
 import org.opensearch.testcontainers.OpensearchContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +23,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -51,7 +46,7 @@ class AttributeRestControllerTest {
 
     @Autowired WebTestClient webTestClient;
     @Autowired ObjectMapper jack;
-    @Autowired ReactiveOpensearchRepository opensearchRepository;
+    @Autowired AttributeDictionaryService attributeDictionaryService;
 
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
@@ -62,9 +57,9 @@ class AttributeRestControllerTest {
     @BeforeEach
     void setup() {}
 
-    @Tag("Retrieve attributes on a empty index")
+    @Tag("Retrieve attributes as page")
     @Test
-    void all() throws IOException {
+    void getAttributesAsPage() throws IOException {
 
         filling(attributes);
 
@@ -126,7 +121,7 @@ class AttributeRestControllerTest {
         TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
-    @Tag("Save many attributes")
+    @Tag("Bulk many attributes")
     @Test
     void bulk() throws IOException {
 
@@ -153,7 +148,7 @@ class AttributeRestControllerTest {
         TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
-    @Tag("Save many attributes asynchronously")
+    @Tag("Bulk many attributes asynchronously")
     @Test
     void bulkAsync() throws IOException {
 
@@ -179,18 +174,10 @@ class AttributeRestControllerTest {
 
         filling(attributes);
 
-        // Launch a search by the code
-        final var query = SearchSourceBuilder.searchSource()
-                .query(QueryBuilders.matchQuery("code", "CODE01"))
-                .from(0)
-                .size(2);
-        final var request = new SearchRequest(new String[]{AttributeDictionaryRestController.IDX_TARGET}, query);
-        final var searchResult = opensearchRepository.search(request, AttributeDictionaryEntity.class)
-                .collectList().block();
-        Assertions.assertThat(searchResult).isNotEmpty();
+        final var page = attributeDictionaryService.searchAsPage(0, 10).block();
 
         // Update an attribute
-        var attribute = searchResult.stream().findFirst().get();
+        var attribute = page.content().stream().findFirst().get();
         attribute.setGroup("GROUP_10");
 
         webTestClient.put()
@@ -207,6 +194,28 @@ class AttributeRestControllerTest {
         TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
+    @Test
+    void deleteOne() throws IOException {
+
+        filling(attributes);
+
+        final var page = attributeDictionaryService.searchAsPage(0, 1).block();
+        final var attribute = page.content().stream().findFirst().get();
+
+        webTestClient.delete()
+                .uri(uri -> uri.pathSegment("v1", "attributes", attribute.getId()).build())
+                .headers(header -> header.setBasicAuth("user", "user"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.OK);
+
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
+    }
+
+    /**
+     * @param input : the input resource
+     * @throws IOException
+     */
     private void filling(Resource input) throws IOException {
 
         final List<AttributeDictionary> entities = getManyAttributeCandidates(jack, input);
@@ -221,9 +230,15 @@ class AttributeRestControllerTest {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
 
-        TestHelper.waitInSecond(2);
+        TestHelper.waitInSecond(1);
     }
 
+    /**
+     * @param jack : Jack !
+     * @param input : the input resource
+     * @return list of {@link AttributeDictionary}
+     * @throws IOException
+     */
     private List<AttributeDictionary> getManyAttributeCandidates(ObjectMapper jack, Resource input) throws IOException {
         return jack.readValue(input.getContentAsByteArray(), new TypeReference<>() {});
     }

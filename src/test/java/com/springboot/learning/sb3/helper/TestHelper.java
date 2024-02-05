@@ -1,7 +1,6 @@
 package com.springboot.learning.sb3.helper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.awaitility.Awaitility;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

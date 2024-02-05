@@ -198,12 +198,12 @@ public class ReactiveOpensearchRepository {
             });
         })
         .map(id -> new GetRequest(indexName, id))
-        .doOnNext(id -> log.info(" > The id of entity created is {}.", id.id()))
+        .doOnNext(id -> log.debug(" > The id of entity created is {}.", id.id()))
         .flatMap(getRequestById -> Mono.<T>create(sink ->
             highLevelClient.getAsync(getRequestById, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(GetResponse documentFields) {
-                    log.info(" > The entity created has been find, the id is {}, and the content is {}.",
+                    log.debug(" > The entity created has been find, the id is {}, and the content is {}.",
                             documentFields.getId(),
                             documentFields.getSourceAsMap());
                     final Map<String, Object> data = documentFields.getSourceAsMap();
@@ -217,7 +217,7 @@ public class ReactiveOpensearchRepository {
                 }
             }))
         )
-        .doOnNext(entityAfterInsert -> log.info(" > The entity after persistence is {}", entityAfterInsert));
+        .doOnNext(entityAfterInsert -> log.debug(" > The entity after persistence is {}", entityAfterInsert));
     }
 
     /**

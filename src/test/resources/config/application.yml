@@ -114,3 +114,5 @@ security:
         password: bob
         authorities:
           - READER
+
+service.version: v1

@@ -26,6 +26,7 @@ public class AttributeSenderService {
 
     private static final AttributeAvroMapper mapper = Mappers.getMapper(AttributeAvroMapper.class);
 
+    public static final String BINDING_TARGET = "attributeDictionarySyncEventConsume-out-0";
     private static final Logger log = LoggerFactory.getLogger(AttributeSenderService.class);
 
     public AttributeSenderService(StreamBridge streamBridge, Executor taskExecutor) {
@@ -34,12 +35,10 @@ public class AttributeSenderService {
     }
 
     /**
-     * @param bindingName : the binding name
      * @param entity : the attribute entity
      * @return flow of {@link AttributeDictionaryEntity}
      */
-    public Mono<AttributeDictionaryEntity> send(@NotNull String bindingName,
-                                                @NotNull AttributeDictionaryEntity entity) {
+    public Mono<AttributeDictionaryEntity> send(@NotNull AttributeDictionaryEntity entity) {
 
         log.info(" > Send by Stream-bridge, attribute is {}", entity);
 
@@ -52,7 +51,7 @@ public class AttributeSenderService {
                         .build()
                 )
                 .doOnNext(message -> log.info(" > Message content {}", message))
-                .flatMap(message -> Mono.fromCallable(() -> streamBridge.send(bindingName, message)))
+                .flatMap(message -> Mono.fromCallable(() -> streamBridge.send(BINDING_TARGET, message)))
                 .thenReturn(entity)
                 .subscribeOn(Schedulers.fromExecutor(taskExecutor));
     }

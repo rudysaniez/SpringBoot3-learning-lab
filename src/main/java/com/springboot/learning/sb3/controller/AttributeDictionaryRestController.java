@@ -8,6 +8,7 @@ import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.mapper.AttributeMapper;
 import com.springboot.learning.sb3.producer.AttributeSenderService;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
+import com.springboot.learning.sb3.service.IAttributeDictionaryService;
 import org.mapstruct.factory.Mappers;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.client.core.CountRequest;
@@ -28,20 +29,17 @@ import java.util.List;
 @RestController
 public class AttributeDictionaryRestController implements AttributeDictionaryAPI {
 
-    private final ReactiveOpensearchRepository opensearchRepository;
     private final AttributeSenderService attributeSenderService;
-
-    public static final String IDX_TARGET = "attributs_dictionnary_v1";
-    public static final String BINDING_TARGET = "attributeDictionarySyncEventConsume-out-0";
+    private final IAttributeDictionaryService attributeDictionaryService;
 
     private static final AttributeMapper mapper = Mappers.getMapper(AttributeMapper.class);
     private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryRestController.class);
 
-    public AttributeDictionaryRestController(ReactiveOpensearchRepository opensearchRepository,
-                                             AttributeSenderService attributeSenderService) {
+    public AttributeDictionaryRestController(AttributeSenderService attributeSenderService,
+                                             IAttributeDictionaryService attributeDictionaryService) {
 
-        this.opensearchRepository = opensearchRepository;
         this.attributeSenderService = attributeSenderService;
+        this.attributeDictionaryService = attributeDictionaryService;
     }
 
     /**
@@ -53,7 +51,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         log.info(" > Get attribute by identifier : {}.", id);
 
-        return opensearchRepository.getById(IDX_TARGET, id, AttributeDictionaryEntity.class)
+        return attributeDictionaryService.getAttributeById(id)
                 .map(mapper::toModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
@@ -65,13 +63,11 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
      * @return flow of {@link AttributeDictionaryEntity}
      */
     @Override
-    public Mono<ResponseEntity<Page<AttributeDictionary>>> getAllAttributes() {
+    public Mono<ResponseEntity<Page<AttributeDictionary>>> getAttributesAsPage(int page, int size) {
 
-        log.info(" > Get attributes as page.");
+        log.info(" > Get attributes as page, page={} and size={}.", page, size);
 
-        final var search = SearchSourceBuilder.searchSource().from(0).size(5);
-        final var request = new SearchRequest(new String[]{IDX_TARGET}, search);
-        return opensearchRepository.searchAsPage(request, new CountRequest(IDX_TARGET), AttributeDictionaryEntity.class)
+        return attributeDictionaryService.searchAsPage(page, size)
                 .map(mapper::toPageModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
@@ -91,12 +87,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
         final var query = q.split("=");
         final var queryParam = new AbstractMap.SimpleImmutableEntry<>(query[0], query[1]);
 
-        final SearchSourceBuilder search = SearchSourceBuilder.searchSource()
-                .query(QueryBuilders.prefixQuery(queryParam.getKey(), queryParam.getValue()))
-                .from(0)
-                .size(5);
-        final var request = new SearchRequest(new String[]{IDX_TARGET}, search);
-        return opensearchRepository.search(request, AttributeDictionaryEntity.class)
+        return attributeDictionaryService.searchWithQueryPrefix(queryParam.getKey(), queryParam.getValue(), 10)
                 .map(mapper::toModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Flux.empty());
@@ -113,7 +104,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return Mono.just(attributeDictionary)
                 .map(mapper::toEntity)
-                .flatMap(entity -> opensearchRepository.save(IDX_TARGET, entity, AttributeDictionaryEntity.class))
+                .flatMap(attributeDictionaryService::save)
                 .map(mapper::toModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
@@ -132,7 +123,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return Mono.just(attributeDictionary)
                 .map(mapper::toEntity)
-                .flatMap(entity -> attributeSenderService.send(BINDING_TARGET, entity))
+                .flatMap(attributeSenderService::send)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
                 .map(model -> new ResponseEntity<Void>(HttpStatus.ACCEPTED))
@@ -150,7 +141,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return Mono.just(attributeDictionaries)
                 .map(mapper::toEntityList)
-                .flatMapMany(entities -> opensearchRepository.bulk(entities, IDX_TARGET))
+                .flatMapMany(attributeDictionaryService::bulk)
                 .map(mapper::toBulkResultModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .collectList()
@@ -169,7 +160,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return Flux.fromIterable(attributeDictionaries)
                 .map(mapper::toEntity)
-                .flatMap(entity -> attributeSenderService.send(BINDING_TARGET, entity))
+                .flatMap(attributeSenderService::send)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .collectList()
                 .map(entities -> new ResponseEntity<Void>(HttpStatus.ACCEPTED))
@@ -189,7 +180,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return Mono.just(attributeDictionary)
                 .map(mapper::toEntity)
-                .flatMap(entity -> opensearchRepository.update(IDX_TARGET, id, entity, AttributeDictionaryEntity.class))
+                .flatMap(entity -> attributeDictionaryService.update(id, entity))
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .map(mapper::toModel)
                 .onErrorResume(t -> Mono.empty())
@@ -203,7 +194,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
     @Override
     public Mono<ResponseEntity<Void>> deleteOneAttribute(@PathVariable(value = "id") String id) {
 
-        return opensearchRepository.delete(IDX_TARGET, id)
+        return attributeDictionaryService.deleteOne(id)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .onErrorResume(t -> Mono.empty())
                 .filter(result -> result.equals(200))
@@ -216,17 +207,11 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
      */
     public Mono<ResponseEntity<List<BulkResult>>> deleteAllAttributes() {
 
-        final SearchSourceBuilder search = SearchSourceBuilder.searchSource()
-                .from(0)
-                .size(1000);
-
-        final var request = new SearchRequest(new String[]{IDX_TARGET}, search);
-
-        return opensearchRepository.search(request, AttributeDictionaryEntity.class)
+        return attributeDictionaryService.searchNoPredicateButLimited(1000)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .map(AttributeDictionaryEntity::getId)
                 .collectList()
-                .flatMap(ids -> opensearchRepository.deleteAll(IDX_TARGET, ids))
+                .flatMap(attributeDictionaryService::deleteAll)
                 .map(mapper::toBulkResultModels)
                 .map(ResponseEntity::ok)
                 .onErrorResume(t -> Mono.just(ResponseEntity.noContent().build()));

@@ -1,5 +1,6 @@
 package com.springboot.learning.sb3.controller.exception;
 
+import com.springboot.learning.sb3.controller.contract.HttpErrorInfo;
 import com.springboot.learning.sb3.exception.InvalidInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +13,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.ZonedDateTime;
 
 @RestControllerAdvice
-public class ExceptionHandlerController {
+public class GlobalControllerExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ExceptionHandlerController.class);
+    private static final Logger log = LoggerFactory.getLogger(GlobalControllerExceptionHandler.class);
 
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(InvalidInputException.class)

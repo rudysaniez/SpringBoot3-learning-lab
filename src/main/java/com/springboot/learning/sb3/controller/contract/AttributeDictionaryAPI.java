@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-@Tag(name = "AttributeDictionary", description = "Reactive REST API for attribute dictionary")
+@Tag(name = "AttributeDictionaryRestController", description = "Reactive REST API for attribute dictionary")
 public interface AttributeDictionaryAPI {
 
     @Operation(
@@ -42,7 +42,8 @@ public interface AttributeDictionaryAPI {
             @ApiResponse(responseCode = "204", description = "The attributes does not exist")
     })
     @GetMapping(value = "/attributes", produces = MediaType.APPLICATION_JSON_VALUE)
-    Mono<ResponseEntity<Page<AttributeDictionary>>> getAllAttributes();
+    Mono<ResponseEntity<Page<AttributeDictionary>>> getAttributesAsPage(@RequestParam(value = "page", defaultValue = "0", required = false) int page,
+                                                                     @RequestParam(value = "size", defaultValue = "5", required = false) int size);
 
 
     @Operation(
