@@ -11,10 +11,10 @@ import java.util.Objects;
 @Mapper
 public interface AttributeAvroMapper {
 
-    @Mappings(value = @Mapping(target = "isReadOnly", source = "readOnly"))
+    @Mappings(value = @Mapping(target = "isReadOnly", source = "isReadOnly"))
     AttributeDictionnary toAvro(AttributeDictionaryEntity entity);
 
-    @Mappings(value = @Mapping(target = "readOnly", source = "isReadOnly"))
+    @Mappings(value = @Mapping(target = "isReadOnly", source = "isReadOnly"))
     AttributeDictionaryEntity toModel(AttributeDictionnary avro);
 
     default String map(CharSequence value) {

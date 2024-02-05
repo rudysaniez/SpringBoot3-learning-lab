@@ -51,6 +51,9 @@ class AttributeRestControllerTest {
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
 
+    @Value("classpath:json/attribute01Up.json")
+    Resource attribute01Up;
+
     @Value("classpath:json/attributes.json")
     Resource attributes;
 
@@ -174,22 +177,22 @@ class AttributeRestControllerTest {
 
         filling(attributes);
 
-        final var page = attributeDictionaryService.searchAsPage(0, 10).block();
+        final var attributeModel = TestHelper.getAttributeCandidate(jack, attribute01Up, AttributeDictionary.class);
 
-        // Update an attribute
-        var attribute = page.content().stream().findFirst().get();
-        attribute.setGroup("GROUP_10");
+        final var attributeEntity = attributeDictionaryService.searchWithQueryPrefix("code", "code01", 1)
+                .next()
+                .block();
 
         webTestClient.put()
-                .uri(uri -> uri.pathSegment("v1", "attributes", attribute.getId()).build())
+                .uri(uri -> uri.pathSegment("v1", "attributes", attributeEntity.id()).build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(attribute)
+                .bodyValue(attributeModel)
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.OK)
                 .expectBody()
-                .jsonPath("$.group").isEqualTo("GROUP_10");
+                .jsonPath("$.referenceDataName").isEqualTo("REF_NAME_0100");
 
         TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
@@ -203,7 +206,7 @@ class AttributeRestControllerTest {
         final var attribute = page.content().stream().findFirst().get();
 
         webTestClient.delete()
-                .uri(uri -> uri.pathSegment("v1", "attributes", attribute.getId()).build())
+                .uri(uri -> uri.pathSegment("v1", "attributes", attribute.id()).build())
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()

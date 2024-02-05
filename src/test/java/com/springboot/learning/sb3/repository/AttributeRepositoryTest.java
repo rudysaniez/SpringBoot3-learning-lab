@@ -66,18 +66,18 @@ class AttributeRepositoryTest {
         final AtomicReference<AttributeDictionaryEntity> justAfterSaved = new AtomicReference<>();
         StepVerifier.create(opensearchRepository.save(IDX_TARGET, entity, AttributeDictionaryEntity.class)
                         .doOnNext(justAfterSaved::set))
-                .expectNextMatches(attrEntity -> StringUtils.hasText(attrEntity.getId())
-                                                     && attrEntity.getId().equals(justAfterSaved.get().getId()))
+                .expectNextMatches(attrEntity -> StringUtils.hasText(attrEntity.id())
+                                                     && attrEntity.id().equals(justAfterSaved.get().id()))
                 .verifyComplete();
 
         //Get by Identifier.
-        StepVerifier.create(opensearchRepository.getById(IDX_TARGET, justAfterSaved.get().getId(),
+        StepVerifier.create(opensearchRepository.getById(IDX_TARGET, justAfterSaved.get().id(),
                                 AttributeDictionaryEntity.class))
-                .expectNextMatches(attrEntity -> attrEntity.getId().equals(justAfterSaved.get().getId()))
+                .expectNextMatches(attrEntity -> attrEntity.id().equals(justAfterSaved.get().id()))
                 .verifyComplete();
 
         //Delete it.
-        StepVerifier.create(opensearchRepository.delete(IDX_TARGET, justAfterSaved.get().getId()))
+        StepVerifier.create(opensearchRepository.delete(IDX_TARGET, justAfterSaved.get().id()))
                 .expectNextMatches(status -> status.equals(200))
                 .verifyComplete();
 

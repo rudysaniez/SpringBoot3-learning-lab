@@ -19,7 +19,7 @@ import java.util.List;
 public class AttributeDictionaryService implements IAttributeDictionaryService {
 
     private final ReactiveOpensearchRepository repository;
-    private final String indexTarget = "attributes_dictionary_v1";
+    private static final String INDEX_TARGET = "attributes_dictionary_v1";
 
     public AttributeDictionaryService(ReactiveOpensearchRepository repository) {
         this.repository = repository;
@@ -27,12 +27,12 @@ public class AttributeDictionaryService implements IAttributeDictionaryService {
 
     @Override
     public String getIndexTarget() {
-        return indexTarget;
+        return INDEX_TARGET;
     }
 
     @Override
     public Mono<AttributeDictionaryEntity> getAttributeById(String id) {
-        return repository.getById(indexTarget, id, AttributeDictionaryEntity.class);
+        return repository.getById(INDEX_TARGET, id, AttributeDictionaryEntity.class);
     }
 
     @Override
@@ -41,9 +41,9 @@ public class AttributeDictionaryService implements IAttributeDictionaryService {
         final var search = SearchSourceBuilder.searchSource()
                 .from(page)
                 .size(size);
-        final var request = new SearchRequest(new String[]{indexTarget}, search);
+        final var request = new SearchRequest(new String[]{INDEX_TARGET}, search);
 
-        return repository.searchAsPage(request, new CountRequest(indexTarget), AttributeDictionaryEntity.class);
+        return repository.searchAsPage(request, new CountRequest(INDEX_TARGET), AttributeDictionaryEntity.class);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class AttributeDictionaryService implements IAttributeDictionaryService {
                 .query(QueryBuilders.prefixQuery(field, value))
                 .from(0)
                 .size(limit);
-        final var request = new SearchRequest(new String[]{indexTarget}, search);
+        final var request = new SearchRequest(new String[]{INDEX_TARGET}, search);
 
         return repository.search(request, AttributeDictionaryEntity.class);
     }
@@ -64,32 +64,32 @@ public class AttributeDictionaryService implements IAttributeDictionaryService {
         final SearchSourceBuilder search = SearchSourceBuilder.searchSource()
                 .from(0)
                 .size(limit);
-        final var request = new SearchRequest(new String[]{indexTarget}, search);
+        final var request = new SearchRequest(new String[]{INDEX_TARGET}, search);
         return repository.search(request, AttributeDictionaryEntity.class);
     }
 
     @Override
     public Mono<AttributeDictionaryEntity> save(AttributeDictionaryEntity entity) {
-        return repository.save(indexTarget, entity, AttributeDictionaryEntity.class);
+        return repository.save(INDEX_TARGET, entity, AttributeDictionaryEntity.class);
     }
 
     @Override
     public Flux<ReactiveOpensearchRepository.CrudResult> bulk(List<AttributeDictionaryEntity> entities) {
-        return repository.bulk(entities, indexTarget);
+        return repository.bulk(entities, INDEX_TARGET);
     }
 
     @Override
     public Mono<AttributeDictionaryEntity> update(String id, AttributeDictionaryEntity entity) {
-        return repository.update(indexTarget, id, entity, AttributeDictionaryEntity.class);
+        return repository.update(INDEX_TARGET, id, entity, AttributeDictionaryEntity.class);
     }
 
     @Override
     public Mono<Integer> deleteOne(String id) {
-        return repository.delete(indexTarget, id);
+        return repository.delete(INDEX_TARGET, id);
     }
 
     @Override
     public Mono<List<ReactiveOpensearchRepository.CrudResult>> deleteAll(List<String> ids) {
-        return repository.deleteAll(indexTarget, ids);
+        return repository.deleteAll(INDEX_TARGET, ids);
     }
 }

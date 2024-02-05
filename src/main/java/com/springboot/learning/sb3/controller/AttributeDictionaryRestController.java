@@ -209,7 +209,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return attributeDictionaryService.searchNoPredicateButLimited(1000)
                 .doOnError(t -> log.error(t.getMessage(), t))
-                .map(AttributeDictionaryEntity::getId)
+                .map(AttributeDictionaryEntity::id)
                 .collectList()
                 .flatMap(attributeDictionaryService::deleteAll)
                 .map(mapper::toBulkResultModels)
