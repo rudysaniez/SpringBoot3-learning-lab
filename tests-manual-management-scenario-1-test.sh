@@ -7,12 +7,14 @@ cd $(dirname $0)
 . manual-tests/banner-func-manual-tests
 . manual-tests/core-func-manual-tests
 
-waitForService localhost 8081
+PORT="8080"
+
+waitForService localhost $PORT
 
 begin_banner
 
 testNumber="GET HTTP status [endpoint=/management/info] without user"
-result=$(eval getHttpStatus localhost 8081 management/info)
+result=$(eval getHttpStatus localhost $PORT management/info)
 if [[ $result == "200" ]]
 then echo " > $testNumber : Http_status=$result."
 else
@@ -20,7 +22,7 @@ else
 fi
 
 testNumber="GET HTTP status [endpoint=/management/health] without user"
-result=$(eval getHttpStatus localhost 8081 management/info)
+result=$(eval getHttpStatus localhost $PORT management/info)
 if [[ $result == "200" ]]
 then echo " > $testNumber : Http_status=$result."
 else
