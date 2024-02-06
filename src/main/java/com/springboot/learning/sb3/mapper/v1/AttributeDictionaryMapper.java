@@ -1,4 +1,4 @@
-package com.springboot.learning.sb3.mapper;
+package com.springboot.learning.sb3.mapper.v1;
 
 import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
 import com.springboot.learning.sb3.controller.contract.BulkResult;
@@ -10,7 +10,7 @@ import org.mapstruct.Mapper;
 import java.util.List;
 
 @Mapper
-public interface AttributeMapper {
+public interface AttributeDictionaryMapper {
 
     AttributeDictionary toModel(AttributeDictionaryEntity entity);
 

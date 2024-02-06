@@ -5,15 +5,11 @@ import com.springboot.learning.sb3.controller.contract.AttributeDictionaryAPI;
 import com.springboot.learning.sb3.controller.contract.BulkResult;
 import com.springboot.learning.sb3.controller.contract.Page;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
-import com.springboot.learning.sb3.mapper.AttributeMapper;
-import com.springboot.learning.sb3.producer.AttributeSenderService;
+import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
+import com.springboot.learning.sb3.producer.v1.AttributeDictionarySenderService;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
-import com.springboot.learning.sb3.service.IAttributeDictionaryService;
+import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.mapstruct.factory.Mappers;
-import org.opensearch.action.search.SearchRequest;
-import org.opensearch.client.core.CountRequest;
-import org.opensearch.index.query.QueryBuilders;
-import org.opensearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -29,14 +25,14 @@ import java.util.List;
 @RestController
 public class AttributeDictionaryRestController implements AttributeDictionaryAPI {
 
-    private final AttributeSenderService attributeSenderService;
-    private final IAttributeDictionaryService attributeDictionaryService;
+    private final AttributeDictionarySenderService attributeSenderService;
+    private final AttributeDictionaryService attributeDictionaryService;
 
-    private static final AttributeMapper mapper = Mappers.getMapper(AttributeMapper.class);
+    private static final AttributeDictionaryMapper mapper = Mappers.getMapper(AttributeDictionaryMapper.class);
     private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryRestController.class);
 
-    public AttributeDictionaryRestController(AttributeSenderService attributeSenderService,
-                                             IAttributeDictionaryService attributeDictionaryService) {
+    public AttributeDictionaryRestController(AttributeDictionarySenderService attributeSenderService,
+                                             AttributeDictionaryService attributeDictionaryService) {
 
         this.attributeSenderService = attributeSenderService;
         this.attributeDictionaryService = attributeDictionaryService;

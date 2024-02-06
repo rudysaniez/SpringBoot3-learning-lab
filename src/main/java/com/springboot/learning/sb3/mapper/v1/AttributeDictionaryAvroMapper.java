@@ -1,4 +1,4 @@
-package com.springboot.learning.sb3.mapper;
+package com.springboot.learning.sb3.mapper.v1;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
@@ -9,7 +9,7 @@ import org.mapstruct.Mappings;
 import java.util.Objects;
 
 @Mapper
-public interface AttributeAvroMapper {
+public interface AttributeDictionaryAvroMapper {
 
     @Mappings(value = @Mapping(target = "isReadOnly", source = "isReadOnly"))
     AttributeDictionnary toAvro(AttributeDictionaryEntity entity);

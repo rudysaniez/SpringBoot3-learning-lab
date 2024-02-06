@@ -7,59 +7,54 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface IAttributeDictionaryService {
-
-    /**
-     * @return {@link String}
-     */
-    String getIndexTarget();
+public interface IAttributeDictionaryService<T> {
 
     /**
      * @param id : the identifier
-     * @return @{@link AttributeDictionaryEntity}
+     * @return @{@link T}
      */
-    Mono<AttributeDictionaryEntity> getAttributeById(String id);
+    Mono<T> getAttributeById(String id);
 
     /**
      * @param page : the page number
      * @param size : the page size
-     * @return page of {@link AttributeDictionaryEntity}
+     * @return page of {@link T}
      */
-    Mono<ReactiveOpensearchRepository.Page<AttributeDictionaryEntity>> searchAsPage(int page, int size);
+    Mono<ReactiveOpensearchRepository.Page<T>> searchAsPage(int page, int size);
 
     /**
      * @param field : the field name
      * @param value : the value of field name
      * @param limit : the limit
-     * @return {@link AttributeDictionaryEntity}
+     * @return {@link T}
      */
-    Flux<AttributeDictionaryEntity> searchWithQueryPrefix(String field, String value, int limit);
+    Flux<T> searchWithQueryPrefix(String field, String value, int limit);
 
     /**
      * @param limit : the limit
-     * @return {@link AttributeDictionaryEntity}
+     * @return {@link T}
      */
-    Flux<AttributeDictionaryEntity> searchNoPredicateButLimited(int limit);
+    Flux<T> searchNoPredicateButLimited(int limit);
 
     /**
      *
      * @param entity : the entity
-     * @return flow of {@link AttributeDictionaryEntity}
+     * @return flow of {@link T}
      */
-    Mono<AttributeDictionaryEntity> save(AttributeDictionaryEntity entity);
+    Mono<T> save(T entity);
 
     /**
      * @param entities : the entities
      * @return {@link ReactiveOpensearchRepository.CrudResult}
      */
-    Flux<ReactiveOpensearchRepository.CrudResult> bulk(List<AttributeDictionaryEntity> entities);
+    Flux<ReactiveOpensearchRepository.CrudResult> bulk(List<T> entities);
 
     /**
      * @param id : the identifier
      * @param entity : the entity
-     * @return {@link AttributeDictionaryEntity}
+     * @return {@link T}
      */
-    Mono<AttributeDictionaryEntity> update(String id, AttributeDictionaryEntity entity);
+    Mono<T> update(String id, T entity);
 
     /**
      * @param id : the identifier

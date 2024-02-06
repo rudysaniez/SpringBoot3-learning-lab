@@ -2,6 +2,8 @@
 logging:
   level:
     root: INFO
+    '[com.springboot.learning.sb3.stream]': DEBUG
+    '[com.springboot.learning.sb3.producer]': DEBUG
 
 server.port: 8080
 

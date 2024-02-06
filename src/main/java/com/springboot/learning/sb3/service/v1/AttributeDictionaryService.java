@@ -16,18 +16,13 @@ import java.util.List;
 
 @ConditionalOnProperty(prefix = "service", name = "version", havingValue = "v1")
 @Service
-public class AttributeDictionaryService implements IAttributeDictionaryService {
+public class AttributeDictionaryService implements IAttributeDictionaryService<AttributeDictionaryEntity> {
 
     private final ReactiveOpensearchRepository repository;
     private static final String INDEX_TARGET = "attributes_dictionary_v1";
 
     public AttributeDictionaryService(ReactiveOpensearchRepository repository) {
         this.repository = repository;
-    }
-
-    @Override
-    public String getIndexTarget() {
-        return INDEX_TARGET;
     }
 
     @Override

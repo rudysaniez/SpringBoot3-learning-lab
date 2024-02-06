@@ -4,8 +4,8 @@ import com.example.pennyworth.replenishment.referential.synchronisation.event.v1
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
 import com.springboot.learning.sb3.helper.TestHelper;
-import com.springboot.learning.sb3.mapper.AttributeMapper;
-import com.springboot.learning.sb3.producer.AttributeSenderService;
+import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
+import com.springboot.learning.sb3.producer.v1.AttributeDictionarySenderService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -57,7 +57,7 @@ class MessagingTest {
     OutputDestination outputDestination;
 
     @Autowired
-    AttributeSenderService attributeSenderService;
+    AttributeDictionarySenderService attributeSenderService;
 
     @Autowired
     ObjectMapper jack;
@@ -68,7 +68,7 @@ class MessagingTest {
     @Value("${spring.cloud.function.definition}")
     String functions;
 
-    static final AttributeMapper mapper = Mappers.getMapper(AttributeMapper.class);
+    static final AttributeDictionaryMapper mapper = Mappers.getMapper(AttributeDictionaryMapper.class);
 
     @BeforeEach
     void setup() {

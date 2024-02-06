@@ -15,8 +15,8 @@
 	<artifactId>springboot3-learning-lab</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
-	<name>springboot3-learning-lab</name>
-	<description>Creating a Web Application</description>
+	<name>pro-attribute-dictionary-api</name>
+	<description>The attribute dictionary API</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
