@@ -35,7 +35,7 @@ public class DictionarySyncEventConsumer {
 
             final AttributeDictionnaryKey key = (AttributeDictionnaryKey)event.getHeaders().get(KafkaHeaders.RECEIVED_KEY);
             final AttributeDictionnary payload = event.getPayload();
-            log.info(" > [Kafka-By-Spring-Cloud-Stream] Consume key={} and body={}", key, payload);
+            log.info(" > [attributeDictionarySyncEventConsume function] Consume key={} and body={}", key, payload);
 
             final var disposable = Mono.just(payload)
                     .map(mapper::toModel)

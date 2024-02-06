@@ -40,7 +40,7 @@ public class AttributeSenderService {
      */
     public Mono<AttributeDictionaryEntity> send(@NotNull AttributeDictionaryEntity entity) {
 
-        log.info(" > Send by Stream-bridge, attribute is {}", entity);
+        log.info(" > Send by Stream-bridge, attribute is {}.", entity);
 
         return Mono.just(entity)
                 .map(mapper::toAvro)
@@ -52,6 +52,7 @@ public class AttributeSenderService {
                 )
                 .doOnNext(message -> log.info(" > Message content {}", message))
                 .flatMap(message -> Mono.fromCallable(() -> streamBridge.send(BINDING_TARGET, message)))
+                .doOnNext(result -> log.info(" > Message sent, result Y/N : {}.", result))
                 .thenReturn(entity)
                 .subscribeOn(Schedulers.fromExecutor(taskExecutor));
     }
