@@ -1,9 +1,0 @@
-
-logging:
-  level:
-    root: INFO
-
-opensearch:
-  uris: http://localhost:9200
-  username: admin
-  password: admin

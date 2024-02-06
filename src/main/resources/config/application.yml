@@ -41,7 +41,7 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ssZ
 
   application:
-    name: web-lab
+    name: pro-attribute-dictionary-api
 
   threads:
     virtual:
@@ -75,54 +75,6 @@ spring:
             use-native-encoding: true
             required-groups:
               - auditGroup
-
-      kafka:
-        binder:
-          brokers: ${KAFKA_CLUSTER}
-          auto-create-topics: false
-          auto-add-partitions: false
-          configuration:
-            '[ssl.endpoint.identification.algorithm]': https
-            '[security.protocol]': SASL_SSL
-            '[sasl.jaas.config]': org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
-            '[sasl.mechanism]': PLAIN
-            '[request.timeout.ms]': 60000
-            '[key.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[value.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[key.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[value.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[basic.auth.credentials.source]': USER_INFO
-            '[schema.registry.basic.auth.user.info]': ${KAFKA_SCHEMA_USERNAME}:${KAFKA_SCHEMA_PASSWORD}
-            '[specific.avro.reader]': true
-          consumer-properties:
-            '[key.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[value.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[schema.registry.url]': ${SCHEMA_REGISTRY_URL}
-            '[basic.auth.credentials.source]': USER_INFO
-            '[schema.registry.basic.auth.user.info]': ${KAFKA_SCHEMA_USERNAME}:${KAFKA_SCHEMA_PASSWORD}
-            '[specific.avro.reader]': true
-            '[max.poll.records]': 50
-            '[fetch.max.wait.ms]': 400
-            '[fetch.min.bytes]': 50000
-          producer-properties:
-            '[key.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[value.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[schema.registry.url]': ${SCHEMA_REGISTRY_URL}
-            '[basic.auth.credentials.source]': USER_INFO
-            '[schema.registry.basic.auth.user.info]': ${KAFKA_SCHEMA_USERNAME}:${KAFKA_SCHEMA_PASSWORD}
-
-kafka:
-  brokers: ${KAFKA_CLUSTER}
-  ssl-endpoint-identification-algorithm: https
-  sasl-jaas-config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
-  schema-registry-url: ${SCHEMA_REGISTRY_URL}
-  schema-registry-basic-auth-user-info: ${KAFKA_SCHEMA_USERNAME}:${KAFKA_SCHEMA_PASSWORD}
-  security-protocol: SASL_SSL
-  sasl-mechanism: PLAIN
-  schema-auto-register: false
-  basic-auth-credentials-source: USER_INFO
-  topic:
-    attribute-topic: ${KAFKA_TOPIC}
 
 api:
   pagination:
