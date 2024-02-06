@@ -49,7 +49,7 @@ public class AttributeDictionarySenderService implements IAttributeDictionarySen
         return Mono.just(entity)
                 .map(mapper::toAvro)
                 .map(attributeDictionnary -> MessageBuilder.withPayload(attributeDictionnary)
-                        .setHeader(KafkaHeaders.RECEIVED_KEY, new AttributeDictionnaryKey(
+                        .setHeader(KafkaHeaders.KEY, new AttributeDictionnaryKey(
                                                                 ThreadLocalRandom.current().nextInt(20),
                                                                 UUID.randomUUID().toString()))
                         .build()
