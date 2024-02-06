@@ -15,7 +15,7 @@
 	<artifactId>springboot3-learning-lab</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
-	<name>pro-attribute-dictionary-api</name>
+	<name>pro-attribute-dictionary-sync</name>
 	<description>The attribute dictionary API</description>
 
 	<properties>
@@ -40,13 +40,10 @@
 	</properties>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
 		<!-- Open search -->
@@ -62,33 +59,10 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Spring doc -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-common</artifactId>
-			<version>${springdoc.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-			<version>${springdoc-webflux-ui.version}</version>
-		</dependency>
-
-		<!-- Security -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-
 		<!-- Event-Driven with Kafka -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-stream-kafka</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.projectreactor.kafka</groupId>
-			<artifactId>reactor-kafka</artifactId>
-			<version>${reactor-kafka.version}</version>
 		</dependency>
 
 		<!-- Project Reactor -->
@@ -127,12 +101,6 @@
 			<version>${mapstruct.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.openapitools</groupId>
-			<artifactId>jackson-databind-nullable</artifactId>
-			<version>${jackson-databind-nullable.version}</version>
-		</dependency>
-
 		<!-- To avoid the following error message on Apple silicon (for details, see https://github.com/netty/netty/issues/11693):
 		 Unable to load io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS.
 		 -->
@@ -146,11 +114,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -246,36 +209,6 @@
 							<sources>
 								<source>src/generated/java</source>
 							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.openapitools</groupId>
-				<artifactId>openapi-generator-maven-plugin</artifactId>
-				<version>${openapi-generator-maven-plugin.version}</version>
-				<executions>
-					<execution>
-						<id>pro-ability-api</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<inputSpec>src/main/resources/contracts/pro-ability-api.json</inputSpec>
-							<generatorName>spring</generatorName>
-							<apiPackage>com.adeo.pro.replenishment.api.ability.model</apiPackage>
-							<modelPackage>com.adeo.pro.replenishment.api.ability.model</modelPackage>
-							<generateSupportingFiles>false</generateSupportingFiles>
-
-							<configOptions>
-								<sourceFolder>src/generated/java</sourceFolder>
-								<dateLibrary>java8-localdatetime</dateLibrary>
-								<skipDefaultInterface>true</skipDefaultInterface>
-								<interfaceOnly>true</interfaceOnly>
-								<reactive>false</reactive>
-								<useJakartaEe>true</useJakartaEe>
-							</configOptions>
 						</configuration>
 					</execution>
 				</executions>

@@ -3,32 +3,6 @@ logging:
   level:
     root: INFO
 
-server.port: 8080
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: info,health
-      base-path: /management
-  endpoint:
-    health:
-      show-details: always
-      cache:
-        time-to-live: 10000ms
-    info:
-      cache:
-        time-to-live: 10000ms
-
-springdoc:
-  api-docs:
-    enabled: true
-    path: /openapi/v3/api-docs
-  swagger-ui:
-    path: /openapi/swagger-ui.html
-  paths-to-match: /**
-  packages-to-scan: com.springboot.learning.sb3.controller
-
 spring:
   jackson:
     deserialization:
@@ -41,7 +15,7 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ssZ
 
   application:
-    name: pro-attribute-dictionary-api
+    name: pro-attribute-dictionary-sync
 
   threads:
     virtual:
@@ -75,35 +49,5 @@ spring:
             use-native-encoding: true
             required-groups:
               - auditGroup
-
-api:
-  pagination:
-    page: 0
-    size: 20
-
-security:
-  access:
-    users:
-      -
-        username: user
-        password: ${USER_PASSWORD}
-        authorities:
-          - READER
-          - WRITER
-
-      -
-        username: user_writer
-        password: ${WRITER_PASSWORD}
-        authorities:
-          - READER
-          - WRITER
-
-      -
-        username: admin
-        password: ${ADMIN_PASSWORD}
-        authorities:
-          - READER
-          - WRITER
-          - ADMIN
 
 service.version: v1

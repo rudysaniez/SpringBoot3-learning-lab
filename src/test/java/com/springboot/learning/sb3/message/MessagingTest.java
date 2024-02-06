@@ -2,9 +2,9 @@ package com.springboot.learning.sb3.message;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
+import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.helper.TestHelper;
-import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
+import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryAvroMapper;
 import com.springboot.learning.sb3.producer.v1.AttributeDictionarySenderService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,8 +34,7 @@ import java.util.function.Consumer;
 
 @ExtendWith(OutputCaptureExtension.class)
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"spring.main.allow-bean-definition-overriding=true"})
+@SpringBootTest(properties = {"spring.main.allow-bean-definition-overriding=true"})
 @Import({TestChannelBinderConfiguration.class})
 @Tag("attribute-messages-test")
 class MessagingTest {
@@ -68,7 +67,7 @@ class MessagingTest {
     @Value("${spring.cloud.function.definition}")
     String functions;
 
-    static final AttributeDictionaryMapper mapper = Mappers.getMapper(AttributeDictionaryMapper.class);
+    static final AttributeDictionaryAvroMapper mapper = Mappers.getMapper(AttributeDictionaryAvroMapper.class);
 
     @BeforeEach
     void setup() {
@@ -78,9 +77,7 @@ class MessagingTest {
     @Test
     void send(CapturedOutput output) throws IOException {
 
-        final var model = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionary.class);
-        final var entity = mapper.toEntity(model);
-
+        final var entity = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
         attributeSenderService.send(entity).block();
 
         Assertions.assertThat(output.getOut()).contains(" > Send by Stream-bridge, attribute is " + entity.toString());
