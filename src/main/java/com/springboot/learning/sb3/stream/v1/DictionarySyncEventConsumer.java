@@ -38,7 +38,7 @@ public class DictionarySyncEventConsumer {
             log.info(" > [attributeDictionarySyncEventConsume function] Consume key={} and body={}", key, payload);
 
             final var disposable = Mono.just(payload)
-                    .map(mapper::toModel)
+                    .map(mapper::toEntity)
                     .flatMap(attributeDictionaryService::save)
                     .subscribe(attributeDictionaryEntity -> log.info(" > This attribute is saved {}", attributeDictionaryEntity));
 

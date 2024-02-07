@@ -15,7 +15,7 @@ public interface AttributeDictionaryAvroMapper {
     AttributeDictionnary toAvro(AttributeDictionaryEntity entity);
 
     @Mappings(value = @Mapping(target = "isReadOnly", source = "isReadOnly"))
-    AttributeDictionaryEntity toModel(AttributeDictionnary avro);
+    AttributeDictionaryEntity toEntity(AttributeDictionnary avro);
 
     default String map(CharSequence value) {
         if(Objects.isNull(value))
