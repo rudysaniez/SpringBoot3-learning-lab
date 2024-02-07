@@ -1,6 +1,6 @@
 package com.springboot.learning.sb3.cucumber.glues;
 
-import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
+import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionary;
 import com.springboot.learning.sb3.cucumber.glues.config.GlueConfiguration;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;

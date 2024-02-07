@@ -2,7 +2,7 @@ package com.springboot.learning.sb3.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
+import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionary;
 import com.springboot.learning.sb3.helper.TestHelper;
 import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
@@ -233,7 +233,7 @@ class AttributeRestControllerTest {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
 
-        TestHelper.waitInSecond(1);
+        TestHelper.waitInSecond(2);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.springboot.learning.sb3.controller.contract;
+package com.springboot.learning.sb3.controller.contract.v1;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

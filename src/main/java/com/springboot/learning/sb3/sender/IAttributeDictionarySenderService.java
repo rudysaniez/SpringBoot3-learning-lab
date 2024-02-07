@@ -1,4 +1,4 @@
-package com.springboot.learning.sb3.producer;
+package com.springboot.learning.sb3.sender;
 
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import jakarta.validation.constraints.NotNull;

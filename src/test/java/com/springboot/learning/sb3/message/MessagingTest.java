@@ -2,10 +2,10 @@ package com.springboot.learning.sb3.message;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
+import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionary;
 import com.springboot.learning.sb3.helper.TestHelper;
 import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
-import com.springboot.learning.sb3.producer.v1.AttributeDictionarySenderService;
+import com.springboot.learning.sb3.sender.v1.AttributeDictionarySenderService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;

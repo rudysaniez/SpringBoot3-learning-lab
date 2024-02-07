@@ -1,12 +1,12 @@
 package com.springboot.learning.sb3.controller;
 
-import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
-import com.springboot.learning.sb3.controller.contract.AttributeDictionaryAPI;
-import com.springboot.learning.sb3.controller.contract.BulkResult;
-import com.springboot.learning.sb3.controller.contract.Page;
+import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionary;
+import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionaryAPI;
+import com.springboot.learning.sb3.controller.contract.v1.BulkResult;
+import com.springboot.learning.sb3.controller.contract.v1.Page;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
-import com.springboot.learning.sb3.producer.v1.AttributeDictionarySenderService;
+import com.springboot.learning.sb3.sender.v1.AttributeDictionarySenderService;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.mapstruct.factory.Mappers;

@@ -1,9 +1,9 @@
-package com.springboot.learning.sb3.producer.v1;
+package com.springboot.learning.sb3.sender.v1;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryAvroMapper;
-import com.springboot.learning.sb3.producer.IAttributeDictionarySenderService;
+import com.springboot.learning.sb3.sender.IAttributeDictionarySenderService;
 import jakarta.validation.constraints.NotNull;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;

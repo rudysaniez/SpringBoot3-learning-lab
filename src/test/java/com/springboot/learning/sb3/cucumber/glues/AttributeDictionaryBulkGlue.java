@@ -1,8 +1,8 @@
 package com.springboot.learning.sb3.cucumber.glues;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.sb3.controller.contract.AttributeDictionary;
-import com.springboot.learning.sb3.controller.contract.BulkResult;
+import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionary;
+import com.springboot.learning.sb3.controller.contract.v1.BulkResult;
 import com.springboot.learning.sb3.cucumber.glues.config.GlueConfiguration;
 import com.springboot.learning.sb3.helper.TestHelper;
 import io.cucumber.java.Before;
