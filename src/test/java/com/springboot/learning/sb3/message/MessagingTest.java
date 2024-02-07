@@ -1,11 +1,11 @@
 package com.springboot.learning.sb3.message;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
+import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sb3.helper.TestHelper;
 import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryAvroMapper;
-import com.springboot.learning.sb3.producer.v1.AttributeDictionarySenderService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -20,9 +20,12 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
+import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -30,6 +33,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 @ExtendWith(OutputCaptureExtension.class)
@@ -56,7 +61,7 @@ class MessagingTest {
     OutputDestination outputDestination;
 
     @Autowired
-    AttributeDictionarySenderService attributeSenderService;
+    StreamBridge streamBridge;
 
     @Autowired
     ObjectMapper jack;
@@ -78,10 +83,19 @@ class MessagingTest {
     void send(CapturedOutput output) throws IOException {
 
         final var entity = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
-        attributeSenderService.send(entity).block();
+        final var attributeDictionaryAvro = mapper.toAvro(entity);
 
-        Assertions.assertThat(output.getOut()).contains(" > Send by Stream-bridge, attribute is " + entity.toString());
-        Assertions.assertThat(output.getOut()).contains(" > Message sent, result Y/N : true.");
+        final var msg = MessageBuilder.withPayload(attributeDictionaryAvro)
+                .setHeader(KafkaHeaders.RECEIVED_KEY, new AttributeDictionnaryKey(
+                        ThreadLocalRandom.current().nextInt(20),
+                        UUID.randomUUID().toString()))
+                .build();
+
+        streamBridge.send("attributeDictionarySyncEventConsume-out-0", msg);
+
+        TestHelper.waitInSecond(1);
+
         Assertions.assertThat(output.getOut()).contains(" > [attributeDictionarySyncEventConsume function] Consume");
+        Assertions.assertThat(output.getOut()).contains(" > This attribute is saved ");
     }
 }
