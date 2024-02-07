@@ -3,7 +3,6 @@ package com.springboot.learning.sb3.repository.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotNull;
-import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.delete.DeleteRequest;
@@ -21,7 +20,6 @@ import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.core.CountRequest;
 import org.opensearch.client.core.CountResponse;
 import org.opensearch.core.action.ActionListener;
-import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,9 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @Repository
 public class ReactiveOpensearchRepository {
