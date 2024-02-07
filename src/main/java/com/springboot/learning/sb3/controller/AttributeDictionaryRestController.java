@@ -12,6 +12,7 @@ import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.AbstractMap;
 import java.util.List;
 
+@ConditionalOnProperty(prefix = "service", name = "version", havingValue = "v1")
 @RequestMapping(value = "/v1")
 @RestController
 public class AttributeDictionaryRestController implements AttributeDictionaryAPI {
