@@ -37,6 +37,7 @@ public class ReactiveOpensearchRepository {
     private final RestHighLevelClient highLevelClient;
     private final ObjectMapper jack;
 
+    private static final String NO_SUCH_INDEX = "no such index";
     private static final Logger log = LoggerFactory.getLogger(ReactiveOpensearchRepository.class);
 
     public ReactiveOpensearchRepository(RestHighLevelClient highLevelClient, ObjectMapper jack) {
@@ -55,7 +56,7 @@ public class ReactiveOpensearchRepository {
                                @NotNull String id,
                                @NotNull Class<T> type) {
 
-        return Mono.create(sink -> {
+        return Mono.<T>create(sink -> {
             final var request = new GetRequest(indexName, id);
             highLevelClient.getAsync(request, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
@@ -72,11 +73,12 @@ public class ReactiveOpensearchRepository {
                     sink.error(e);
                 }
             });
-        });
+        })
+        .doOnError(t -> log.error(t.getMessage(), t))
+        .onErrorResume(t -> t.getMessage().contains(NO_SUCH_INDEX), throwable -> Mono.empty());
     }
 
     /**
-     *
      * @param searchRequest : the search request
      * @param type : the entity Class type
      * @return {@link Flux}
@@ -84,7 +86,7 @@ public class ReactiveOpensearchRepository {
      */
     public <T> Flux<T> search(@NotNull SearchRequest searchRequest, @NotNull Class<T> type) {
 
-        return Flux.create(fluxSink ->
+        return Flux.<T>create(fluxSink ->
             highLevelClient.searchAsync(searchRequest, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(SearchResponse searchResponse) {
@@ -96,11 +98,12 @@ public class ReactiveOpensearchRepository {
                     fluxSink.error(e);
                 }
             })
-        );
+        )
+        .doOnError(t -> log.error(t.getMessage(), t))
+        .onErrorResume(t -> t.getMessage().contains(NO_SUCH_INDEX), throwable -> Mono.empty());
     }
 
     /**
-     *
      * @param searchRequest : the search request
      * @param countRequest : the count request
      * @param type : the entity type
@@ -129,7 +132,7 @@ public class ReactiveOpensearchRepository {
      */
     public Mono<Long> count(@NotNull CountRequest countRequest) {
 
-        return Mono.create(sink ->
+        return Mono.<Long>create(sink ->
             highLevelClient.countAsync(countRequest, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
                 public void onResponse(CountResponse countResponse) {
@@ -141,37 +144,12 @@ public class ReactiveOpensearchRepository {
                     sink.error(e);
                 }
             })
-        );
+        )
+        .doOnError(t -> log.error(t.getMessage(), t))
+        .onErrorResume(t -> t.getMessage().contains(NO_SUCH_INDEX), throwable -> Mono.empty());
     }
 
     /**
-     * @param indexName : the index name
-     * @param entity : the entity
-     * @return flow of {@link String that is the ID}
-     * @param <T> : the parameter type
-     */
-    public <T> Mono<String> insert(@NotNull String indexName, @NotNull T entity) {
-
-        return Mono.create(sink -> {
-            final Map<String, Object> data = jack.convertValue(entity, new TypeReference<>() {});
-            final IndexRequest indexRequest = new IndexRequest(indexName).source(data);
-
-            highLevelClient.indexAsync(indexRequest, RequestOptions.DEFAULT, new ActionListener<>() {
-                @Override
-                public void onResponse(IndexResponse indexResponse) {
-                    sink.success(indexResponse.getId());
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    sink.error(e);
-                }
-            });
-        });
-    }
-
-    /**
-     *
      * @param indexName : the index name
      * @param entity : the entity that need to created
      * @param type : the entity class type
@@ -296,7 +274,7 @@ public class ReactiveOpensearchRepository {
      */
     public Mono<Integer> delete(@NotNull String indexName, @NotNull String id) {
 
-        return  Mono.create(sink -> {
+        return Mono.<Integer>create(sink -> {
             final var request = new DeleteRequest(indexName, id);
             highLevelClient.deleteAsync(request, RequestOptions.DEFAULT, new ActionListener<>() {
                 @Override
@@ -309,7 +287,9 @@ public class ReactiveOpensearchRepository {
                     sink.error(e);
                 }
             });
-        });
+        })
+        .doOnError(t -> log.error(t.getMessage(), t))
+        .onErrorResume(t -> t.getMessage().contains(NO_SUCH_INDEX), throwable -> Mono.empty());
     }
 
     /**

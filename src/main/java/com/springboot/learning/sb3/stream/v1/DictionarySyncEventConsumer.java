@@ -40,7 +40,10 @@ public class DictionarySyncEventConsumer {
             final var disposable = Mono.just(payload)
                     .map(mapper::toEntity)
                     .flatMap(attributeDictionaryService::save)
-                    .subscribe(attributeDictionaryEntity -> log.info(" > This attribute is saved {}", attributeDictionaryEntity));
+                    .subscribe(attributeDictionaryEntity -> log.info(" > This attribute is saved {}", attributeDictionaryEntity),
+                            throwable -> log.error(throwable.getMessage(), throwable),
+                            () -> log.debug(" > The save asynchronously is complete.")
+                    );
 
             Awaitility.await().until(disposable::isDisposed);
         };

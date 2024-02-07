@@ -5,6 +5,7 @@ import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionaryAPI
 import com.springboot.learning.sb3.controller.contract.v1.BulkResult;
 import com.springboot.learning.sb3.controller.contract.v1.Page;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
+import com.springboot.learning.sb3.exception.InvalidInputException;
 import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
 import com.springboot.learning.sb3.sender.v1.AttributeDictionarySenderService;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.AbstractMap;
 import java.util.List;
+import java.util.Objects;
 
 @ConditionalOnProperty(prefix = "service", name = "version", havingValue = "v1")
 @RequestMapping(value = "/v1")
@@ -52,7 +54,6 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
         return attributeDictionaryService.getAttributeById(id)
                 .map(mapper::toModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
-                .onErrorResume(t -> Mono.empty())
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.noContent().build());
     }
@@ -68,9 +69,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
         return attributeDictionaryService.searchAsPage(page, size)
                 .map(mapper::toPageModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
-                .onErrorResume(t -> Mono.empty())
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.noContent().build());
+                .map(ResponseEntity::ok);
     }
 
     /**
@@ -80,15 +79,15 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
     @Override
     public Flux<AttributeDictionary> searchAttributes(@RequestParam(value = "q") String q) {
 
-        log.info(" > Search an attribute with query is {}.", q);
-
         final var query = q.split("=");
         final var queryParam = new AbstractMap.SimpleImmutableEntry<>(query[0], query[1]);
 
+        log.info(" > Search an attribute with query is {}, key={}, value={}.",
+                q, queryParam.getKey(), queryParam.getValue());
+
         return attributeDictionaryService.searchWithQueryPrefix(queryParam.getKey(), queryParam.getValue(), 10)
                 .map(mapper::toModel)
-                .doOnError(t -> log.error(t.getMessage(), t))
-                .onErrorResume(t -> Flux.empty());
+                .doOnError(t -> log.error(t.getMessage(), t));
     }
 
     /**
@@ -105,9 +104,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
                 .flatMap(attributeDictionaryService::save)
                 .map(mapper::toModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
-                .onErrorResume(t -> Mono.empty())
-                .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))
-                .defaultIfEmpty(ResponseEntity.unprocessableEntity().build());
+                .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED));
     }
 
     /**
@@ -123,9 +120,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
                 .map(mapper::toEntity)
                 .flatMap(attributeSenderService::send)
                 .doOnError(t -> log.error(t.getMessage(), t))
-                .onErrorResume(t -> Mono.empty())
-                .map(model -> new ResponseEntity<Void>(HttpStatus.ACCEPTED))
-                .defaultIfEmpty(ResponseEntity.unprocessableEntity().build());
+                .map(model -> new ResponseEntity<>(HttpStatus.ACCEPTED));
     }
 
     /**
@@ -143,8 +138,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
                 .map(mapper::toBulkResultModel)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .collectList()
-                .map(ResponseEntity::ok)
-                .onErrorResume(t -> Mono.just(ResponseEntity.unprocessableEntity().build()));
+                .map(ResponseEntity::ok);
     }
 
     /**
@@ -181,9 +175,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
                 .flatMap(entity -> attributeDictionaryService.update(id, entity))
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .map(mapper::toModel)
-                .onErrorResume(t -> Mono.empty())
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.unprocessableEntity().build());
+                .map(ResponseEntity::ok);
     }
 
     /**
@@ -194,7 +186,6 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return attributeDictionaryService.deleteOne(id)
                 .doOnError(t -> log.error(t.getMessage(), t))
-                .onErrorResume(t -> Mono.empty())
                 .filter(result -> result.equals(200))
                 .map(status -> ResponseEntity.ok().<Void>build())
                 .defaultIfEmpty(ResponseEntity.noContent().build());
@@ -211,7 +202,6 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
                 .collectList()
                 .flatMap(attributeDictionaryService::deleteAll)
                 .map(mapper::toBulkResultModels)
-                .map(ResponseEntity::ok)
-                .onErrorResume(t -> Mono.just(ResponseEntity.noContent().build()));
+                .map(ResponseEntity::ok);
     }
 }

@@ -1,6 +1,7 @@
 package com.springboot.learning.sb3.service.v1;
 
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
+import com.springboot.learning.sb3.exception.InvalidInputException;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import com.springboot.learning.sb3.service.IAttributeDictionaryService;
 import org.opensearch.action.search.SearchRequest;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 
 @ConditionalOnProperty(prefix = "service", name = "version", havingValue = "v1")
 @Service
@@ -65,6 +67,10 @@ public class AttributeDictionaryService implements IAttributeDictionaryService<A
 
     @Override
     public Mono<AttributeDictionaryEntity> save(AttributeDictionaryEntity entity) {
+
+        if(Objects.isNull(entity.code()))
+            throw new InvalidInputException("The code field in attribute dictionary is mandatory");
+
         return repository.save(INDEX_TARGET, entity, AttributeDictionaryEntity.class);
     }
 

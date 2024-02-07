@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class AttributeDictionarySearchGlue extends GlueConfiguration {
+public class AttributeDictionarySearchInEmptyDatabaseGlue extends GlueConfiguration {
 
-    AtomicReference<String> attributeDictionaryCodeContext = new AtomicReference<>();
+    AtomicReference<String> attributeCodeContext = new AtomicReference<>();
     AtomicInteger httpStatusContext = new AtomicInteger();
     AtomicReference<List<AttributeDictionary>> attributesFoundContext = new AtomicReference<>();
 
-    private static final Logger log = LoggerFactory.getLogger(AttributeDictionarySearchGlue.class);
+    private static final Logger log = LoggerFactory.getLogger(AttributeDictionarySearchInEmptyDatabaseGlue.class);
 
     @Before
     public void setUp() {
@@ -32,19 +32,21 @@ public class AttributeDictionarySearchGlue extends GlueConfiguration {
         log.info(" > The baseURI is {} and port is {}.", RestAssured.baseURI, RestAssured.port);
     }
 
-    @Given("I search this attribute dictionary with code equals to {string}")
-    public void I_search_this_attribute_dictionary_with_code_equals_code01(String code) {
+    @Given("I prepare the search in empty database with code equals to {string}")
+    public void iPrepareTheSearchInEmptyDatabaseWithCodeEqualsToCode01(String code) {
         log.info(" > I_search_this_attribute_dictionary_with_code_equals_code01");
-        attributeDictionaryCodeContext.set(code);
+        attributeCodeContext.set(code);
     }
 
-    @When("I call a get in reactive api with the code searched")
-    public void I_call_a_get_in_reactive_api_with_the_code_searched() {
-        log.info(" > I call a get in reactive api with the code searched {}", attributeDictionaryCodeContext.get());
+    @When("I call a get in reactive api with the code searched in empty database")
+    public void iCallAGetInReactiveApiWithTheCodeSearchedInEmptyDatabase() {
+
+        log.info(" > I call a get in reactive api with the code searched in empty database {}",
+                attributeCodeContext.get());
 
         final Response response = RestAssured.given()
             .auth().basic("user", "user")
-                .get("/v1/attributes/:search?q=code=" + attributeDictionaryCodeContext.get());
+                .get("/v1/attributes/:search?q=code=" + attributeCodeContext.get());
 
         httpStatusContext.set(response.statusCode());
         attributesFoundContext.set(response.body().as(new TypeRef<>() {}));
