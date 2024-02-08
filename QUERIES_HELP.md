@@ -11,6 +11,7 @@
 [RestHighLevelClient example](#https://blog.clairvoyantsoft.com/elasticsearch-java-high-level-rest-client-1c029610348d)
 
 ## Table of contents
+- [create an index](#create-an-index)
 - [match](#match)
 - [match and minimum_should_match](#match-and-minimum_should_match)
 - [multi match](#multi-match)
@@ -26,6 +27,191 @@
 - [wildcard queries](#wildcard-queries)
 - [regex queries](#regex-queries)
 
+## create an index
+
+```
+PUT attributes_dictionary_v1
+{
+  "mappings": {
+    "properties": {
+      "autoOptionSorting": {
+        "type": "boolean"
+      },
+      "code": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        },
+        "fielddata": true
+      },
+      "dateMax": {
+        "type": "date"
+      },
+      "dateMin": {
+        "type": "date"
+      },
+      "decimalsAllowed": {
+        "type": "boolean"
+      },
+      "defaultMetricUnit": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "defaultValue": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "group": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "isReadOnly": {
+        "type": "boolean"
+      },
+      "labels": {
+        "properties": {
+          "KEY01": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "localizable": {
+        "type": "boolean"
+      },
+      "maxCharacters": {
+        "type": "long"
+      },
+      "maxFileSize": {
+        "type": "long"
+      },
+      "message": {
+        "type": "text",
+        "fielddata": true
+      },
+      "metricFamily": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "minimumInputLength": {
+        "type": "long"
+      },
+      "negativeAllowed": {
+        "type": "boolean"
+      },
+      "numberMax": {
+        "type": "float"
+      },
+      "numberMin": {
+        "type": "float"
+      },
+      "referenceDataName": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "scopable": {
+        "type": "boolean"
+      },
+      "sortOrder": {
+        "type": "long"
+      },
+      "type": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "unique": {
+        "type": "boolean"
+      },
+      "useableAsGridFilter": {
+        "type": "boolean"
+      },
+      "validationRegexp": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "validationRule": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "wysiwygEnabled": {
+        "type": "boolean"
+      }
+    }
+  }
+}
+```
+
+Note :  
+```
+"code": {
+    "type": "text",
+    "fields": {
+      "keyword": {
+        "type": "keyword",
+        "ignore_above": 256
+      }
+    },
+    "fielddata": true
+}
+```
+
+The property **fielddata** allows to specify a sort on the **code** field.
+
+If you want display the mapping about an index, you can launch that :  
+
+```
+GET attributes_dictionary_v1/_mapping {
+}
+```
+
 ## match
 
 The “match” query is one of the most basic and commonly used queries in Elasticsearch and functions as a full-text query. 
@@ -33,12 +219,12 @@ We can use this query to search for text, number, or boolean values.
 Let us search for the word *Learn* in the *videoName* field in the documents we ingested earlier.
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
     "query": {
         "match": {
-          "videoName": {
-            "query" : "Learn"
+          "code": {
+            "query" : "code01"
           }
         }
     }
@@ -54,12 +240,12 @@ Now, if we set the “minium_should_match” parameter to 3, then all three word
 In our case, the following query would return only 1 document (with id=2) as that is the only one matching our criteria
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
     "query": {
         "match": {
-          "videoName": {
-            "query" : "Learn",
+          "code": {
+            "query" : "code01",
             "minimum_should_match": 3
           }
         }
@@ -74,12 +260,12 @@ But what if we needed to search keywords across multiple fields in a document? T
 Let’s try an example search for the keyword “research help” in the “position” and “phrase” fields contained in the documents.
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "multi_match": {
-      "fields": ["videoName","description"],
-      "query": "Learn"
+      "fields": ["code","type"],
+      "query": "code01"
     }
   }
 }
@@ -92,22 +278,22 @@ If we need to search for the phrase “roots heuristic coherent” in the “phr
 we can use the “match_phrase” query:
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "match_phrase": {
-      "videoName": {
-        "query": "Learn Springboot 3 with Testing"
+      "code": {
+        "query": "code01"
       }
     }
   }
 }
 
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "match_phrase": {
-      "videoName": "Learn Spring boot 3 with Kafka"
+      "code": "code02"
     }
   }
 }
@@ -120,12 +306,12 @@ Suppose we searched for “roots coherent” with the match_phrase query. We wou
 This is because for match_phrase to match, the terms need to be in the exact order.
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "match_phrase": {
-      "videoName": {
-        "query": "Learn ",
+      "code": {
+        "query": "code",
         "slop": 1
       }
     }
@@ -139,47 +325,14 @@ The **match_phrase_prefix** query is similar to the match_phrase query,
 but here the last term of the search keyword is considered as a prefix and is used to match any term starting with that prefix term.
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "match_phrase_prefix": {
-      "videoName": {
-        "query": "Springboot 3 w"
+      "code": {
+        "query": "code0"
       }
     }
-  }
-}
-
-I obtain :
-
-{
-  "took": 17,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
-  },
-  "hits": {
-    "total": {
-      "value": 1,
-      "relation": "eq"
-    },
-    "max_score": 1.0986491,
-    "hits": [
-      {
-        "_index": "videos",
-        "_id": "jmNWE40BQpatIpF0zsjl",
-        "_score": 1.0986491,
-        "_source": {
-          "_class": "com.springboot.learning.sb3.domain.VideoEntity",
-          "videoName": "Learn Springboot 3 with Testing",
-          "description": "Nice book on the tests",
-          "username": "user"
-        }
-      }
-    ]
   }
 }
 ```
@@ -192,45 +345,12 @@ For example, if we search for the word "testing" using the term query against th
 it will search exactly as the word is, even with the casing.
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "term": {
-      "videoName": "testing"
+      "code": "01"
     }
-  }
-}
-
-I obtain :
-
-{
-  "took": 2,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
-  },
-  "hits": {
-    "total": {
-      "value": 1,
-      "relation": "eq"
-    },
-    "max_score": 0.7199211,
-    "hits": [
-      {
-        "_index": "videos",
-        "_id": "jmNWE40BQpatIpF0zsjl",
-        "_score": 0.7199211,
-        "_source": {
-          "_class": "com.springboot.learning.sb3.domain.VideoEntity",
-          "videoName": "Learn Springboot 3 with Testing",
-          "description": "Nice book on the tests",
-          "username": "user"
-        }
-      }
-    ]
   }
 }
 ```
@@ -240,56 +360,12 @@ I obtain :
 We can also pass multiple terms to be searched on the same field, by using the terms query.
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "terms": {
-      "videoName": ["testing", "kafka"]
+      "code": ["co", "01"]
     }
-  }
-}
-
-I obtain :
-
-{
-  "took": 4,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
-  },
-  "hits": {
-    "total": {
-      "value": 2,
-      "relation": "eq"
-    },
-    "max_score": 1,
-    "hits": [
-      {
-        "_index": "videos",
-        "_id": "jmNWE40BQpatIpF0zsjl",
-        "_score": 1,
-        "_source": {
-          "_class": "com.springboot.learning.sb3.domain.VideoEntity",
-          "videoName": "Learn Springboot 3 with Testing",
-          "description": "Nice book on the tests",
-          "username": "user"
-        }
-      },
-      {
-        "_index": "videos",
-        "_id": "AmPSGI0BQpatIpF0ktRf",
-        "_score": 1,
-        "_source": {
-          "_class": "com.springboot.learning.sb3.domain.VideoEntity",
-          "videoName": "Learn Spring boot 3 with Kafka",
-          "description": "Nice book!",
-          "username": "user"
-        }
-      }
-    ]
   }
 }
 ```
@@ -297,56 +373,12 @@ I obtain :
 ### exists
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "exists": {
-      "field": "videoName"
+      "field": "code"
     }
-  }
-}
-
-I obtain :
-
-{
-  "took": 3,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
-  },
-  "hits": {
-    "total": {
-      "value": 2,
-      "relation": "eq"
-    },
-    "max_score": 1,
-    "hits": [
-      {
-        "_index": "videos",
-        "_id": "jmNWE40BQpatIpF0zsjl",
-        "_score": 1,
-        "_source": {
-          "_class": "com.springboot.learning.sb3.domain.VideoEntity",
-          "videoName": "Learn Springboot 3 with Testing",
-          "description": "Nice book on the tests",
-          "username": "user"
-        }
-      },
-      {
-        "_index": "videos",
-        "_id": "AmPSGI0BQpatIpF0ktRf",
-        "_score": 1,
-        "_source": {
-          "_class": "com.springboot.learning.sb3.domain.VideoEntity",
-          "videoName": "Learn Spring boot 3 with Kafka",
-          "description": "Nice book!",
-          "username": "user"
-        }
-      }
-    ]
   }
 }
 ```
@@ -354,33 +386,12 @@ I obtain :
 But if launch that :
 
 ```
-GET videos/_search
+GET attributes_dictionary_v1/_search
 {
   "query": {
     "exists": {
-      "field": "videoDescription"
+      "field": "code"
     }
-  }
-}
-
-I obtain :
-
-{
-  "took": 12,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
-  },
-  "hits": {
-    "total": {
-      "value": 0,
-      "relation": "eq"
-    },
-    "max_score": null,
-    "hits": []
   }
 }
 ```

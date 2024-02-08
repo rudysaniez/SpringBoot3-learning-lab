@@ -8,6 +8,8 @@ import org.opensearch.action.search.SearchRequest;
 import org.opensearch.client.core.CountRequest;
 import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.search.builder.SearchSourceBuilder;
+import org.opensearch.search.sort.FieldSortBuilder;
+import org.opensearch.search.sort.SortOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -36,6 +38,7 @@ public class AttributeDictionaryService implements IAttributeDictionaryService<A
     public Mono<ReactiveOpensearchRepository.Page<AttributeDictionaryEntity>> searchAsPage(int page, int size) {
 
         final var search = SearchSourceBuilder.searchSource()
+                .sort(new FieldSortBuilder("code").order(SortOrder.ASC))
                 .from(page)
                 .size(size);
         final var request = new SearchRequest(new String[]{INDEX_TARGET}, search);
