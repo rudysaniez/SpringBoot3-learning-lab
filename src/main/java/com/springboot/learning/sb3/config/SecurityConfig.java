@@ -86,34 +86,6 @@ public class SecurityConfig {
                                          @NotNull String password,
                                          @NotNull List<String> roles) {
 
-//        try {
-//
-//            final Optional<UserAccountEntity> entity = userAccountRepository.findByUsername(username).blockOptional();
-//            return entity.map(UserAccountEntity::asUser).orElseGet(() -> {
-//
-//                final String pass = passwordEncoder().encode(password);
-//                final var entityCreated = userAccountRepository.save(new UserAccountEntity(null,
-//                                username,
-//                                pass,
-//                                roles))
-//                        .block();
-//
-//                return User.withUsername(entityCreated.username())
-//                        .password(entityCreated.password())
-//                        .roles(entityCreated.authorities().toArray(String[]::new))
-//                        .build();
-//            });
-//        }
-//        catch(Exception e) {
-//
-//            log.warn(e.getMessage());
-//            final String pass = passwordEncoder().encode(password);
-//            return User.withUsername(username)
-//                    .password(pass)
-//                    .roles(roles.toArray(String[]::new))
-//                    .build();
-//        }
-
         final String pass = passwordEncoder().encode(password);
         return User.withUsername(username)
                 .password(pass)
