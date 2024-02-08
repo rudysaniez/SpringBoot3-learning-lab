@@ -275,8 +275,9 @@ class AttributeRestControllerTest {
     @Test
     void deleteOne() {
 
-        final var page = attributeDictionaryService.searchAsPage(0, 1).block();
-        final var attribute = page.content().stream().findFirst().get();
+        final var attribute = attributeDictionaryService.searchWithQueryPrefix("code", "code01", 1)
+                .next()
+                .block();
 
         webTestClient.delete()
                 .uri(uri -> uri.pathSegment("v1", "attributes", attribute.id()).build())
