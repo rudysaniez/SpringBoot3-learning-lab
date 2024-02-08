@@ -38,7 +38,7 @@ public class AttributeDictionaryService implements IAttributeDictionaryService<A
     public Mono<ReactiveOpensearchRepository.Page<AttributeDictionaryEntity>> searchAsPage(int page, int size) {
 
         final var search = SearchSourceBuilder.searchSource()
-                .sort(new FieldSortBuilder("code").order(SortOrder.ASC))
+                //.sort(new FieldSortBuilder("code").order(SortOrder.ASC)) FIXME
                 .from(page)
                 .size(size);
         final var request = new SearchRequest(new String[]{INDEX_TARGET}, search);
