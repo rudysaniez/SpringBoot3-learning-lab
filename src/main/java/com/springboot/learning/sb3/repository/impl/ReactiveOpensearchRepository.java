@@ -235,12 +235,12 @@ public class ReactiveOpensearchRepository {
 
     /**
      *
-     * @param indexName
-     * @param id
-     * @param entity
-     * @param type
+     * @param indexName : the index name
+     * @param id : the identifier
+     * @param entity : the entity
+     * @param type : the entity type
      * @return {@link T}
-     * @param <T> : the parameter type
+     * @param <T> : the parameterized type
      */
     public <T> Mono<T> update(@NotNull String indexName,
                               @NotNull String id,

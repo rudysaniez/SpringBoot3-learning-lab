@@ -5,10 +5,9 @@ import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionaryAPI
 import com.springboot.learning.sb3.controller.contract.v1.BulkResult;
 import com.springboot.learning.sb3.controller.contract.v1.Page;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
-import com.springboot.learning.sb3.exception.InvalidInputException;
 import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
-import com.springboot.learning.sb3.sender.v1.AttributeDictionarySenderService;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
+import com.springboot.learning.sb3.sender.v1.AttributeDictionarySenderService;
 import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
@@ -22,7 +21,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.AbstractMap;
 import java.util.List;
-import java.util.Objects;
 
 @ConditionalOnProperty(prefix = "service", name = "version", havingValue = "v1")
 @RequestMapping(value = "/v1")
