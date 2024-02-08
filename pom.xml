@@ -88,11 +88,6 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-stream-kafka</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>io.projectreactor.kafka</groupId>
-			<artifactId>reactor-kafka</artifactId>
-			<version>${reactor-kafka.version}</version>
-		</dependency>
 
 		<!-- Project Reactor -->
 		<dependency>

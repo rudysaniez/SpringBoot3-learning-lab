@@ -8,6 +8,12 @@ opensearch:
   username: admin
   password: admin
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 spring:
   cloud:
     stream:
