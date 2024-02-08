@@ -15,7 +15,7 @@ content-type: application/json; charset=UTF-8
 
 {
     "acknowledged": true,
-    "index": "attributes_dictionary_v3",
+    "index": "attributes_dictionary_v1",
     "shards_acknowledged": true
 }
 ```
@@ -33,7 +33,7 @@ HTTP/1.1 200 OK
 content-length: 1580
 content-type: application/json; charset=UTF-8
 {
-    "attributes_dictionary_v3": {
+    "attributes_dictionary_v1": {
         "mappings": {
             "properties": {
                 "autoOptionSorting": {
