@@ -6,6 +6,7 @@ import com.springboot.learning.sb3.controller.contract.v1.HttpErrorInfo;
 import com.springboot.learning.sb3.helper.TestHelper;
 import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -64,26 +65,20 @@ class AttributeRestControllerTest {
     Resource attributeBad01;
 
     @BeforeEach
-    void setup() {}
+    void setup() {
+        filling(attributes);
+    }
+
+    @AfterEach
+    void after() {
+        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
+    }
 
     @Tag("Get an attribute by identifier")
     @Test
     void getAttributeById() {
 
-        filling(attributes);
-
-        var attribute = webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", ":search")
-                        .queryParam("q", "code=code01")
-                        .build())
-                .headers(header -> header.setBasicAuth("user", "user"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.OK)
-                .returnResult(new ParameterizedTypeReference<List<AttributeDictionary>>() {})
-                .getResponseBody()
-                .next()
-                .flatMapIterable(attributeDictionaries -> attributeDictionaries)
+        var attribute = attributeDictionaryService.searchWithQueryPrefix("code", "code01", 1)
                 .next()
                 .block();
 
@@ -93,15 +88,11 @@ class AttributeRestControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.OK);
-
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
-    @Tag("Get no attribute by identifier because it doesn't exist")
+    @Tag("Get no attributes by identifier because it doesn't exist")
     @Test
-    void getNoAttributeByNotExistIdentifier() {
-
-        filling(attributes);
+    void getNoAttributesByNotExistIdentifier() {
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", "not_exist_identifier").build())
@@ -109,15 +100,11 @@ class AttributeRestControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT);
-
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Retrieve attributes as page")
     @Test
     void getAttributesAsPage() {
-
-        filling(attributes);
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes").build())
@@ -127,15 +114,11 @@ class AttributeRestControllerTest {
                 .expectStatus().isEqualTo(HttpStatus.OK)
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(5);
-
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Search attributes")
     @Test
     void searchAttributes() {
-
-        filling(attributes);
 
         var attributesFlux = webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", ":search")
@@ -153,8 +136,6 @@ class AttributeRestControllerTest {
         StepVerifier.create(attributesFlux)
                 .expectNextMatches(attributeDictionary -> attributeDictionary.code().equals("CODE01"))
                 .verifyComplete();
-
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Save one attribute")
@@ -177,9 +158,6 @@ class AttributeRestControllerTest {
                 .jsonPath("$.code").isEqualTo("CODE01")
                 .jsonPath("$.group").isEqualTo("GROUP01")
                 .jsonPath("$.metricFamily").isEqualTo("METRIC01");
-
-        TestHelper.waitInSecond(1);
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Save one bad attribute")
@@ -208,9 +186,6 @@ class AttributeRestControllerTest {
                         && httpErrorInfo.path().equalsIgnoreCase("/v1/attributes")
                 )
                 .verifyComplete();
-
-        TestHelper.waitInSecond(1);
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Save on attribute asynchronously")
@@ -229,9 +204,6 @@ class AttributeRestControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
-
-        TestHelper.waitInSecond(1);
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Bulk many attributes")
@@ -276,16 +248,11 @@ class AttributeRestControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
-
-        TestHelper.waitInSecond(1);
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Tag("Update an attribute")
     @Test
     void update() throws IOException {
-
-        filling(attributes);
 
         final var attributeModel = TestHelper.getAttributeCandidate(jack, attribute01Up, AttributeDictionary.class);
 
@@ -303,14 +270,10 @@ class AttributeRestControllerTest {
                 .expectStatus().isEqualTo(HttpStatus.OK)
                 .expectBody()
                 .jsonPath("$.referenceDataName").isEqualTo("REF_NAME_0100");
-
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     @Test
-    void deleteOne() throws IOException {
-
-        filling(attributes);
+    void deleteOne() {
 
         final var page = attributeDictionaryService.searchAsPage(0, 1).block();
         final var attribute = page.content().stream().findFirst().get();
@@ -321,13 +284,10 @@ class AttributeRestControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.OK);
-
-        TestHelper.clean(webTestClient, "v1", "attributes", ":empty");
     }
 
     /**
      * @param input : the input resource
-     * @throws IOException
      */
     private void filling(Resource input) {
 
