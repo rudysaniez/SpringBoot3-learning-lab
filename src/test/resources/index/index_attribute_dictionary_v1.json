@@ -1,0 +1,156 @@
+{
+  "mappings": {
+    "properties": {
+      "autoOptionSorting": {
+        "type": "boolean"
+      },
+      "code": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        },
+        "fielddata": true
+      },
+      "dateMax": {
+        "type": "date"
+      },
+      "dateMin": {
+        "type": "date"
+      },
+      "decimalsAllowed": {
+        "type": "boolean"
+      },
+      "defaultMetricUnit": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "defaultValue": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "group": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "isReadOnly": {
+        "type": "boolean"
+      },
+      "labels": {
+        "properties": {
+          "KEY01": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "localizable": {
+        "type": "boolean"
+      },
+      "maxCharacters": {
+        "type": "long"
+      },
+      "maxFileSize": {
+        "type": "long"
+      },
+      "message": {
+        "type": "text",
+        "fielddata": true
+      },
+      "metricFamily": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "minimumInputLength": {
+        "type": "long"
+      },
+      "negativeAllowed": {
+        "type": "boolean"
+      },
+      "numberMax": {
+        "type": "float"
+      },
+      "numberMin": {
+        "type": "float"
+      },
+      "referenceDataName": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "scopable": {
+        "type": "boolean"
+      },
+      "sortOrder": {
+        "type": "long"
+      },
+      "type": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "unique": {
+        "type": "boolean"
+      },
+      "useableAsGridFilter": {
+        "type": "boolean"
+      },
+      "validationRegexp": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "validationRule": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "wysiwygEnabled": {
+        "type": "boolean"
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package com.springboot.learning.sb3.cucumber;
 
+import com.springboot.learning.sb3.helper.TestHelper;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
 import io.cucumber.spring.CucumberContextConfiguration;
@@ -14,6 +15,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -22,6 +24,7 @@ public class CucumberSpringConfiguration {
 
     static OpensearchContainer<?> opensearch;
 
+    private static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
     private static final Logger log = LoggerFactory.getLogger(CucumberSpringConfiguration.class);
 
     @BeforeAll
@@ -34,6 +37,15 @@ public class CucumberSpringConfiguration {
                 .withStartupTimeout(Duration.ofMinutes(2));
 
         opensearch.start();
+
+        while (!opensearch.isRunning())
+            TestHelper.waitInSecond(2);
+
+        log.info(" > Cucumber tests are worked on opensearch index V1.");
+        if(!INDEX_IS_CREATED.get()) {
+            var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+            result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
+        }
 
         log.info(" > The opensearch is started");
     }

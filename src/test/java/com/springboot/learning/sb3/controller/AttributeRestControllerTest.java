@@ -31,6 +31,7 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -64,8 +65,18 @@ class AttributeRestControllerTest {
     @Value("classpath:json/attributeBad01.json")
     Resource attributeBad01;
 
+    static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
+
     @BeforeEach
     void setup() {
+
+        synchronized (this) {
+            if(!INDEX_IS_CREATED.get()) {
+                var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+                result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
+            }
+        }
+
         filling(attributes);
     }
 

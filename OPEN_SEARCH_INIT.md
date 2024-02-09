@@ -1,9 +1,11 @@
 <h3 align="center">Opensearch : Index creation </h3>
 
+## Index creation
+
 I would like create a new index :  
 
 ```
-http -a admin:admin PUT https://localhost:9200/attributes_dictionary_v1 < index_creation_v1.json --verify=no
+http -a admin:admin PUT https://localhost:9200/attributes_dictionary_v1 < index_attribute_dictionary_v1.json --verify=no
 ```
 
 I obtain that :  
@@ -20,10 +22,29 @@ content-type: application/json; charset=UTF-8
 }
 ```
 
+Important information, when you launch the `docker-compose.yml`, the opensearch security is disabled. You need 
+launch this request :
+
+```
+http PUT http://localhost:9200/attributes_dictionary_v1 < index_attribute_dictionary_v1.json
+```
+
+You remark that the base url is `http://localhost:9200` and not `https://localhost:9200`.
+
+---
+
+## Get the mapping
+
 I would like display the mapping associated to `attributes_dictionary_v1` index :  
 
 ```
 http -a admin:admin  https://localhost:9200/attributes_dictionary_v1/_mapping --verify=no
+```
+
+If the opensearch security is disabled :
+
+```
+http http://localhost:9200/attributes_dictionary_v1/_mapping
 ```
 
 I obtain that :  

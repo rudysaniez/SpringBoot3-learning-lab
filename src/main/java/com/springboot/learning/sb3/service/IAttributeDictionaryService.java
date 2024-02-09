@@ -10,6 +10,11 @@ import java.util.List;
 public interface IAttributeDictionaryService<T> {
 
     /**
+     * @return {@link String}
+     */
+    String getIndexName();
+
+    /**
      * @param id : the identifier
      * @return @{@link T}
      */

@@ -2,6 +2,7 @@ package com.springboot.learning.sb3.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.sb3.domain.AttributeDictionaryEntity;
+import com.springboot.learning.sb3.helper.TestHelper;
 import com.springboot.learning.sb3.repository.impl.ReactiveOpensearchRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,7 @@ import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Testcontainers(disabledWithoutDocker = true)
@@ -40,6 +42,11 @@ class AttributeRepositoryTest {
             .withStartupAttempts(5)
             .withStartupTimeout(Duration.ofMinutes(2));
 
+    @DynamicPropertySource
+    static void dynProps(DynamicPropertyRegistry registry) {
+        registry.add("opensearch.uris", opensearch::getHttpHostAddress);
+    }
+
     @Autowired RestHighLevelClient highLevelClient;
     @Autowired ObjectMapper jack;
 
@@ -48,11 +55,19 @@ class AttributeRepositoryTest {
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
 
-    private static final String IDX_TARGET = "attributs_dictionnary_v1";
+    private static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
+    private static final String IDX_TARGET = "attribute_dictionary_v1";
 
     @BeforeEach
     void setup() {
         opensearchRepository = new ReactiveOpensearchRepository(highLevelClient, jack);
+
+        synchronized (this) {
+            if(!INDEX_IS_CREATED.get()) {
+                var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+                result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
+            }
+        }
     }
 
     @Test
@@ -81,10 +96,5 @@ class AttributeRepositoryTest {
                 .expectNextMatches(status -> status.equals(200))
                 .verifyComplete();
 
-    }
-
-    @DynamicPropertySource
-    static void dynProps(DynamicPropertyRegistry registry) {
-        registry.add("opensearch.uris", opensearch::getHttpHostAddress);
     }
 }

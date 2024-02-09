@@ -30,6 +30,11 @@ public class AttributeDictionaryService implements IAttributeDictionaryService<A
     }
 
     @Override
+    public String getIndexName() {
+        return INDEX_TARGET;
+    }
+
+    @Override
     public Mono<AttributeDictionaryEntity> getAttributeById(String id) {
         return repository.getById(INDEX_TARGET, id, AttributeDictionaryEntity.class);
     }
@@ -38,7 +43,7 @@ public class AttributeDictionaryService implements IAttributeDictionaryService<A
     public Mono<ReactiveOpensearchRepository.Page<AttributeDictionaryEntity>> searchAsPage(int page, int size) {
 
         final var search = SearchSourceBuilder.searchSource()
-                //.sort(new FieldSortBuilder("code").order(SortOrder.ASC)) FIXME
+                .sort(new FieldSortBuilder("code").order(SortOrder.ASC))
                 .from(page)
                 .size(size);
         final var request = new SearchRequest(new String[]{INDEX_TARGET}, search);

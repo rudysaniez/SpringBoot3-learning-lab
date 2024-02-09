@@ -6,6 +6,7 @@ import com.springboot.learning.sb3.controller.contract.v1.AttributeDictionary;
 import com.springboot.learning.sb3.helper.TestHelper;
 import com.springboot.learning.sb3.mapper.v1.AttributeDictionaryMapper;
 import com.springboot.learning.sb3.sender.v1.AttributeDictionarySenderService;
+import com.springboot.learning.sb3.service.v1.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -30,6 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 @ExtendWith(OutputCaptureExtension.class)
@@ -60,19 +62,26 @@ class MessagingTest {
     AttributeDictionarySenderService attributeSenderService;
 
     @Autowired
+    AttributeDictionaryService attributeDictionaryService;
+
+    @Autowired
     ObjectMapper jack;
 
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
 
-    @Value("${spring.cloud.function.definition}")
-    String functions;
-
+    static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
     static final AttributeDictionaryMapper mapper = Mappers.getMapper(AttributeDictionaryMapper.class);
 
     @BeforeEach
     void setup() {
-        Assertions.assertThat(functions).isEqualTo("attributeDictionarySyncEventConsume");
+
+        synchronized (this) {
+            if(!INDEX_IS_CREATED.get()) {
+                var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+                result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
+            }
+        }
     }
 
     @Test
