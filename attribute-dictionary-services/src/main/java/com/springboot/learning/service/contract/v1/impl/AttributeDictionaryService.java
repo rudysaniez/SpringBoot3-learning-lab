@@ -1,4 +1,4 @@
-package com.springboot.learning.service.contract.impl.v1;
+package com.springboot.learning.service.contract.v1.impl;
 
 import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
 import com.springboot.learning.repository.impl.ReactiveOpensearchRepository;

@@ -1,10 +1,9 @@
-package com.springboot.learning.service.v1.test;
+package com.springboot.learning.repository.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
+import com.springboot.learning.repository.tests.helper.TestHelper;
 import com.springboot.learning.repository.impl.ReactiveOpensearchRepository;
-import com.springboot.learning.service.contract.impl.v1.AttributeDictionaryService;
-import com.springboot.learning.service.test.helper.TestHelper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.client.core.CountRequest;
 import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.opensearch.spring.boot.autoconfigure.test.DataOpenSearchTest;
@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.core.io.Resource;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.util.StringUtils;
@@ -35,6 +36,7 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,8 +44,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @DataOpenSearchTest
 @AutoConfigureJson
 @AutoConfigureJsonTesters
-@Tag("attribute-dictionary-service-v1-test")
-class AttributeDictionaryServiceTest {
+@EnableElasticsearchRepositories
+@Tag("attribute-reactive-repository-test")
+class ReactiveOpensearchRepositoryTest {
 
     @Container
     static final OpensearchContainer<?> opensearch = new OpensearchContainer<>("opensearchproject/opensearch:2.11.1")
@@ -59,7 +62,6 @@ class AttributeDictionaryServiceTest {
     @Autowired ObjectMapper jack;
 
     ReactiveOpensearchRepository opensearchRepository;
-    AttributeDictionaryService attributeDictionaryService;
 
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
@@ -72,12 +74,11 @@ class AttributeDictionaryServiceTest {
 
     private static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
     private static final String IDX_TARGET = "attribute_dictionary_v1";
-    private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryServiceTest.class);
+    private static final Logger log = LoggerFactory.getLogger(ReactiveOpensearchRepositoryTest.class);
 
     @BeforeEach
     void setup() {
         opensearchRepository = new ReactiveOpensearchRepository(highLevelClient, jack);
-        attributeDictionaryService = new AttributeDictionaryService(opensearchRepository);
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
@@ -90,13 +91,12 @@ class AttributeDictionaryServiceTest {
     @AfterEach
     void after() {
         TestHelper.waitInSecond(1);
-        var deletedNumber = attributeDictionaryService.deleteAll().block();
+        var deletedNumber = opensearchRepository.deleteAll(IDX_TARGET).block();
         log.info(" > Delete all elements {}.", deletedNumber);
     }
 
-    @Tag(value = "Get an attribute by identifier")
     @Test
-    void getAttributeById() throws IOException {
+    void getById() throws IOException {
 
         // Get an attribute.
         final AttributeDictionaryEntity entity = jack.readValue(attribute01.getInputStream(), AttributeDictionaryEntity.class);
@@ -104,14 +104,15 @@ class AttributeDictionaryServiceTest {
 
         // Persist it.
         final AtomicReference<AttributeDictionaryEntity> justAfterSaved = new AtomicReference<>();
-        StepVerifier.create(attributeDictionaryService.save(entity)
+        StepVerifier.create(opensearchRepository.save(IDX_TARGET, entity, AttributeDictionaryEntity.class)
                         .doOnNext(justAfterSaved::set))
                 .expectNextMatches(attrEntity -> StringUtils.hasText(attrEntity.id())
                                                      && attrEntity.id().equals(justAfterSaved.get().id()))
                 .verifyComplete();
 
         //Get by Identifier.
-        StepVerifier.create(attributeDictionaryService.getAttributeById(justAfterSaved.get().id()))
+        StepVerifier.create(opensearchRepository.getById(IDX_TARGET, justAfterSaved.get().id(),
+                                AttributeDictionaryEntity.class))
                 .expectNextMatches(attrEntity -> attrEntity.id().equals(justAfterSaved.get().id()))
                 .verifyComplete();
     }
@@ -121,7 +122,7 @@ class AttributeDictionaryServiceTest {
 
         List<AttributeDictionaryEntity> entities = TestHelper.getManyAttributeCandidates(jack, attributes);
 
-        Flux<ReactiveOpensearchRepository.CrudResult> entityFlux = attributeDictionaryService.bulk(entities);
+        Flux<ReactiveOpensearchRepository.CrudResult> entityFlux = opensearchRepository.bulk(entities, IDX_TARGET);
 
         StepVerifier.create(entityFlux)
                 .expectNextMatches(crudResult -> crudResult.status() == 201)
@@ -139,11 +140,37 @@ class AttributeDictionaryServiceTest {
         final AttributeDictionaryEntity entity = jack.readValue(attribute01.getInputStream(), AttributeDictionaryEntity.class);
         Assertions.assertThat(entity).isNotNull();
 
-        var attributeCreated = attributeDictionaryService.save(entity).block();
+        var attributeCreated = opensearchRepository.save(IDX_TARGET, entity, AttributeDictionaryEntity.class).block();
 
         //Delete it.
-        StepVerifier.create(attributeDictionaryService.deleteOne(attributeCreated.id()))
+        StepVerifier.create(opensearchRepository.delete(IDX_TARGET, attributeCreated.id()))
                 .expectNextMatches(status -> status.equals(200))
+                .verifyComplete();
+    }
+
+    @Test
+    void deleteIn() {
+
+        bulk();
+        TestHelper.waitInSecond(1);
+
+        SearchSourceBuilder query = SearchSourceBuilder.searchSource()
+                        .query(QueryBuilders.matchAllQuery())
+                        .from(0)
+                        .size(10);
+
+        var request = new SearchRequest(new String[]{IDX_TARGET}, query);
+
+        List<String> attributeIds = opensearchRepository.search(request, AttributeDictionaryEntity.class)
+                .toStream()
+                .map(AttributeDictionaryEntity::id)
+                .limit(3)
+                .toList();
+
+        StepVerifier.create(opensearchRepository.deleteIn(IDX_TARGET, attributeIds).flatMapIterable(list -> list))
+                .expectNextMatches(crudResult -> crudResult.status() == 200)
+                .expectNextMatches(crudResult -> crudResult.status() == 200)
+                .expectNextMatches(crudResult -> crudResult.status() == 200)
                 .verifyComplete();
     }
 
@@ -154,7 +181,7 @@ class AttributeDictionaryServiceTest {
         final AttributeDictionaryEntity entity = jack.readValue(attribute01.getInputStream(), AttributeDictionaryEntity.class);
         Assertions.assertThat(entity).isNotNull();
 
-        var entityMono = attributeDictionaryService.save(entity);
+        var entityMono = opensearchRepository.save(IDX_TARGET, entity, AttributeDictionaryEntity.class);
         StepVerifier.create(entityMono)
                 .expectNextMatches(attributeDictionaryEntity -> attributeDictionaryEntity.code().equals("CODE01"))
                 .verifyComplete();
@@ -166,7 +193,12 @@ class AttributeDictionaryServiceTest {
         save();
         TestHelper.waitInSecond(1);
 
-        var attributeIdFound = attributeDictionaryService.searchNoPredicateButLimited(1)
+        final SearchSourceBuilder query = SearchSourceBuilder.searchSource()
+                .query(QueryBuilders.matchAllQuery())
+                .from(0)
+                .size(1);
+        final SearchRequest request = new SearchRequest(new String[]{IDX_TARGET}, query);
+        var attributeIdFound = opensearchRepository.search(request, AttributeDictionaryEntity.class)
                 .next()
                 .map(AttributeDictionaryEntity::id)
                 .block();
@@ -175,14 +207,26 @@ class AttributeDictionaryServiceTest {
         var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute01Up, AttributeDictionaryEntity.class);
 
         //Launch the update
-        Mono<AttributeDictionaryEntity> attributeUpdated = attributeDictionaryService.update(
+        Mono<AttributeDictionaryEntity> attributeUpdated = opensearchRepository.update(IDX_TARGET,
                 attributeIdFound,
-                attributeCandidate);
+                attributeCandidate,
+                AttributeDictionaryEntity.class);
 
         StepVerifier.create(attributeUpdated)
                 .expectNextMatches(attributeDictionaryEntity -> attributeDictionaryEntity
                                         .referenceDataName().equals("REF_NAME_0100"))
                 .verifyComplete();
+    }
+
+    @Test
+    void count() {
+
+        bulk();
+        TestHelper.waitInSecond(1);
+
+        Optional<Long> count = opensearchRepository.count(new CountRequest(IDX_TARGET)).blockOptional();
+        Assertions.assertThat(count).isPresent();
+        Assertions.assertThat(count.get()).isEqualTo(5);
     }
 
     @Test
@@ -197,7 +241,7 @@ class AttributeDictionaryServiceTest {
                 .size(5);
         final SearchRequest request = new SearchRequest(new String[]{IDX_TARGET}, query);
 
-        StepVerifier.create(attributeDictionaryService.searchNoPredicateButLimited(5))
+        StepVerifier.create(opensearchRepository.search(request, AttributeDictionaryEntity.class))
                 .expectNextMatches(attributeDictionaryEntity -> attributeDictionaryEntity.code().equals("CODE01"))
                 .expectNextMatches(attributeDictionaryEntity -> attributeDictionaryEntity.code().equals("CODE02"))
                 .expectNextMatches(attributeDictionaryEntity -> attributeDictionaryEntity.code().equals("CODE03"))
@@ -218,7 +262,9 @@ class AttributeDictionaryServiceTest {
                 .size(5);
         final SearchRequest request = new SearchRequest(new String[]{IDX_TARGET}, query);
 
-        var pageMono = attributeDictionaryService.searchAsPage(0, 5);
+        var pageMono = opensearchRepository.searchAsPage(request,
+                new CountRequest(IDX_TARGET),
+                AttributeDictionaryEntity.class);
 
         StepVerifier.create(pageMono)
                 .expectNextMatches(page -> page.content().size() == 5

@@ -10,11 +10,11 @@ import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDa
  * <a href="https://github.com/opensearch-project/spring-data-opensearch/tree/main/spring-data-opensearch-examples/spring-boot-gradle">...</a>
  */
 @SpringBootApplication(exclude = ElasticsearchDataAutoConfiguration.class)
-public class Application {
+public class ApplicationRepositories {
 
 	public static void main(String[] args) {
 
-		SpringApplication app = new SpringApplication(Application.class);
+		SpringApplication app = new SpringApplication(ApplicationRepositories.class);
 		app.setWebApplicationType(WebApplicationType.NONE);
 		app.setBannerMode(Banner.Mode.CONSOLE);
 		app.run(args);

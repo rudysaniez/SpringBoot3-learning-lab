@@ -15,7 +15,7 @@
 	<artifactId>springboot3-learning-lab</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
-	<name>pro-attribute-dictionary-api</name>
+	<name>pro-attribute-dictionary</name>
 	<description>The attribute dictionary API</description>
 
 	<packaging>pom</packaging>
@@ -47,6 +47,7 @@
 	<modules>
 		<module>opensearch-reactive-repository</module>
 		<module>attribute-dictionary-services</module>
+		<module>attribute-dictionary-api</module>
 	</modules>
 
 	<repositories>

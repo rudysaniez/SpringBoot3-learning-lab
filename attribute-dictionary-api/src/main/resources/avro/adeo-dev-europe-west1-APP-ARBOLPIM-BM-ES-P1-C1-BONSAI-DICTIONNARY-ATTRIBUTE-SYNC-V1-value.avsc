@@ -1,0 +1,108 @@
+{
+  "type" : "record",
+  "name" : "AttributeDictionnary",
+  "namespace" : "com.example.pennyworth.replenishment.referential.synchronisation.event.v1",
+  "fields" : [ {
+    "name" : "code",
+    "type" : "string"
+  }, {
+    "name" : "type",
+    "type" : "string"
+  }, {
+    "name" : "group",
+    "type" : "string"
+  }, {
+    "name" : "unique",
+    "type" : "boolean"
+  }, {
+    "name" : "useable_as_grid_filter",
+    "type" : "boolean"
+  }, {
+    "name" : "allowed_extensions",
+    "type" : {
+      "type" : "array",
+      "items" : "string"
+    }
+  }, {
+    "name" : "metric_family",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "default_metric_unit",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "reference_data_name",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "available_locales",
+    "type" : {
+      "type" : "array",
+      "items" : "string"
+    }
+  }, {
+    "name" : "max_characters",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "validation_rule",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "validation_regexp",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "wysiwyg_enabled",
+    "type" : [ "null", "boolean" ]
+  }, {
+    "name" : "number_min",
+    "type" : [ "null", "double" ]
+  }, {
+    "name" : "number_max",
+    "type" : [ "null", "double" ]
+  }, {
+    "name" : "decimals_allowed",
+    "type" : [ "null", "boolean" ]
+  }, {
+    "name" : "negative_allowed",
+    "type" : [ "null", "boolean" ]
+  }, {
+    "name" : "date_min",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "date_max",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "max_file_size",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "minimum_input_length",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "sort_order",
+    "type" : "int"
+  }, {
+    "name" : "localizable",
+    "type" : "boolean"
+  }, {
+    "name" : "scopable",
+    "type" : "boolean"
+  }, {
+    "name" : "labels",
+    "type" : {
+      "type" : "map",
+      "values" : "string"
+    }
+  }, {
+    "name" : "guidelines",
+    "type" : {
+      "type" : "array",
+      "items" : "string"
+    }
+  }, {
+    "name" : "auto_option_sorting",
+    "type" : [ "null", "boolean" ]
+  }, {
+    "name" : "default_value",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "is_read_only",
+    "type" : "boolean"
+  } ]
+}

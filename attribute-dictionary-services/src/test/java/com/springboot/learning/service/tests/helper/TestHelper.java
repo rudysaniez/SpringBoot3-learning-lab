@@ -1,4 +1,4 @@
-package com.springboot.learning.repository.test.helper;
+package com.springboot.learning.service.tests.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

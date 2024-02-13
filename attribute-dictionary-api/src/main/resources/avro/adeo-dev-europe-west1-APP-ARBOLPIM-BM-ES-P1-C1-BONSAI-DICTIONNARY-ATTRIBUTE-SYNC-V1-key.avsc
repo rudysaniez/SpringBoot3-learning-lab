@@ -1,0 +1,17 @@
+{
+   "type":"record",
+   "name":"AttributeDictionnaryKey",
+   "namespace":"com.example.pennyworth.replenishment.referential.synchronisation.event.v1",
+   "fields":[
+      {
+         "name":"buId",
+         "type":["null","int"],
+         "default":null
+      },
+  	  {
+	  	"name":"correlationId",
+	  	"type":["null","string"],
+	  	"default":null
+  	  }
+   ]
+}
