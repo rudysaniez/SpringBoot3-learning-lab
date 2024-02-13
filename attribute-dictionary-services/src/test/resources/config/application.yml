@@ -13,3 +13,5 @@ spring:
       write-numbers-as-strings: false
     default-property-inclusion: NON_NULL
     date-format: yyyy-MM-dd'T'HH:mm:ssZ
+
+service.version: v1

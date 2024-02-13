@@ -9,12 +9,18 @@
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>attribute-dictionary-opensearch-reactive-repository</artifactId>
+	<artifactId>attribute-dictionary-services</artifactId>
 
-	<name>pro-attribute-dictionary-opensearch-reactive-repository</name>
-	<description>The attribute dictionary API</description>
+	<name>pro-attribute-dictionary-services</name>
+	<description>The attribute dictionary services</description>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.adeo.springboot.learning.sb3</groupId>
+			<artifactId>attribute-dictionary-opensearch-reactive-repository</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>

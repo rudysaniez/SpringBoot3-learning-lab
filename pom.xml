@@ -46,6 +46,7 @@
 
 	<modules>
 		<module>opensearch-reactive-repository</module>
+		<module>attribute-dictionary-services</module>
 	</modules>
 
 	<repositories>
@@ -77,66 +78,9 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>build-helper-maven-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>add-source-mapstruct</id>
-							<phase>generate-sources</phase>
-							<goals>
-								<goal>add-source</goal>
-							</goals>
-							<configuration>
-								<sources>
-									<source>${project.build.directory}/generated-sources/annotations/</source>
-									<source>${project.build.directory}/generated-sources/avro/</source>
-								</sources>
-							</configuration>
-						</execution>
-
-						<execution>
-							<id>add-source-generated</id>
-							<phase>generate-sources</phase>
-							<goals>
-								<goal>add-source</goal>
-							</goals>
-							<configuration>
-								<sources>
-									<source>src/generated/java</source>
-								</sources>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-
-				<plugin>
 					<groupId>org.openapitools</groupId>
 					<artifactId>openapi-generator-maven-plugin</artifactId>
 					<version>${openapi-generator-maven-plugin.version}</version>
-					<executions>
-						<execution>
-							<id>pro-ability-api</id>
-							<goals>
-								<goal>generate</goal>
-							</goals>
-							<configuration>
-								<inputSpec>src/main/resources/contracts/pro-ability-api.json</inputSpec>
-								<generatorName>spring</generatorName>
-								<apiPackage>com.adeo.pro.replenishment.api.ability.model</apiPackage>
-								<modelPackage>com.adeo.pro.replenishment.api.ability.model</modelPackage>
-								<generateSupportingFiles>false</generateSupportingFiles>
-
-								<configOptions>
-									<sourceFolder>src/generated/java</sourceFolder>
-									<dateLibrary>java8-localdatetime</dateLibrary>
-									<skipDefaultInterface>true</skipDefaultInterface>
-									<interfaceOnly>true</interfaceOnly>
-									<reactive>false</reactive>
-									<useJakartaEe>true</useJakartaEe>
-								</configOptions>
-							</configuration>
-						</execution>
-					</executions>
 				</plugin>
 
 				<!-- Generate Pojo from avro schema -->
@@ -144,29 +88,6 @@
 					<groupId>org.apache.avro</groupId>
 					<artifactId>avro-maven-plugin</artifactId>
 					<version>${avro.version}</version>
-					<executions>
-						<execution>
-							<id>schemas</id>
-							<phase>generate-sources</phase>
-							<goals>
-								<goal>schema</goal>
-								<goal>protocol</goal>
-								<goal>idl-protocol</goal>
-							</goals>
-							<configuration>
-								<sourceDirectory>${project.avroSchemas.directory}</sourceDirectory>
-								<outputDirectory>${project.build.directory}/generated-sources/avro/</outputDirectory>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<configuration>
-						<mainClass>com.springboot.learning.sb3.Application</mainClass>
-					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>

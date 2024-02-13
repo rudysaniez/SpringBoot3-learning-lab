@@ -2,3 +2,5 @@
 logging:
   level:
     root: INFO
+
+service.version: v1
