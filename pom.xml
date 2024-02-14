@@ -48,6 +48,7 @@
 		<module>opensearch-reactive-repository</module>
 		<module>attribute-dictionary-services</module>
 		<module>attribute-dictionary-api</module>
+		<module>attribute-dictionary-sync</module>
 	</modules>
 
 	<repositories>
