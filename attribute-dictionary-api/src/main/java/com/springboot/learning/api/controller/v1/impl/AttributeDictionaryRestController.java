@@ -1,10 +1,11 @@
 package com.springboot.learning.api.controller.v1.impl;
 
-import com.springboot.learning.api.controller.v1.contract.AttributeDictionary;
-import com.springboot.learning.api.controller.v1.contract.AttributeDictionaryAPI;
-import com.springboot.learning.api.controller.v1.contract.BulkResult;
-import com.springboot.learning.api.controller.v1.contract.Page;
+import com.springboot.learning.api.controller.v1.AttributeDictionary;
+import com.springboot.learning.api.controller.v1.AttributeDictionaryAPI;
+import com.springboot.learning.api.controller.v1.BulkResult;
+import com.springboot.learning.api.controller.v1.Page;
 import com.springboot.learning.api.mapper.v1.AttributeDictionaryMapper;
+import com.springboot.learning.api.sender.service.AttributeDictionarySenderService;
 import com.springboot.learning.service.contract.v1.impl.AttributeDictionaryService;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
@@ -25,12 +26,16 @@ import java.util.List;
 public class AttributeDictionaryRestController implements AttributeDictionaryAPI {
 
     private final AttributeDictionaryService attributeDictionaryService;
+    private final AttributeDictionarySenderService attributeDictionarySenderService;
 
     private static final AttributeDictionaryMapper mapper = Mappers.getMapper(AttributeDictionaryMapper.class);
     private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryRestController.class);
 
-    public AttributeDictionaryRestController(AttributeDictionaryService attributeDictionaryService) {
+    public AttributeDictionaryRestController(AttributeDictionaryService attributeDictionaryService,
+                                             AttributeDictionarySenderService attributeDictionarySenderService) {
+
         this.attributeDictionaryService = attributeDictionaryService;
+        this.attributeDictionarySenderService = attributeDictionarySenderService;
     }
 
     /**
@@ -109,7 +114,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return Mono.just(attributeDictionary)
                 .map(mapper::toEntity)
-                //.flatMap(attributeSenderService::send)
+                .flatMap(attributeDictionarySenderService::send)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .map(model -> new ResponseEntity<>(HttpStatus.ACCEPTED));
     }
@@ -143,7 +148,7 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
 
         return Flux.fromIterable(attributeDictionaries)
                 .map(mapper::toEntity)
-                //.flatMap(attributeSenderService::send)
+                .flatMap(attributeDictionarySenderService::send)
                 .doOnError(t -> log.error(t.getMessage(), t))
                 .collectList()
                 .map(entities -> new ResponseEntity<Void>(HttpStatus.ACCEPTED))

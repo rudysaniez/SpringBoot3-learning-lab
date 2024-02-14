@@ -1,4 +1,4 @@
-package com.springboot.learning.api.mapper.v1;
+package com.springboot.learning.api.mapper;
 
 import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
 import com.springboot.learning.repository.domain.AttributeDictionaryEntity;

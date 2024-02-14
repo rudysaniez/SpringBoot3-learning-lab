@@ -1,8 +1,8 @@
 package com.springboot.learning.api.mapper.v1;
 
-import com.springboot.learning.api.controller.v1.contract.AttributeDictionary;
-import com.springboot.learning.api.controller.v1.contract.BulkResult;
-import com.springboot.learning.api.controller.v1.contract.Page;
+import com.springboot.learning.api.controller.v1.AttributeDictionary;
+import com.springboot.learning.api.controller.v1.BulkResult;
+import com.springboot.learning.api.controller.v1.Page;
 import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
 import com.springboot.learning.repository.impl.ReactiveOpensearchRepository;
 import org.mapstruct.Mapper;

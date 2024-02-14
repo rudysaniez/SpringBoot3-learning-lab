@@ -2,6 +2,8 @@
 logging:
   level:
     root: INFO
+    '[com.springboot.learning.sb3.stream]': DEBUG
+    '[com.springboot.learning.sb3.producer]': DEBUG
 
 server.port: 8080
 
@@ -20,19 +22,6 @@ management:
       cache:
         time-to-live: 10000ms
 
-springdoc:
-  api-docs:
-    path: /openapi/v3/api-docs
-  swagger-ui:
-    path: /openapi/swagger-ui.html
-  paths-to-match: /**
-  packages-to-scan: com.springboot.learning.api.controller
-
-opensearch:
-  uris: ${OPENSEARCH_URI}
-  username: ${OPENSEARCH_USERNAME}
-  password: ${OPENSEARCH_PASSWORD}
-
 spring:
   jackson:
     deserialization:
@@ -45,7 +34,7 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ssZ
 
   application:
-    name: pro-attribute-dictionary-api
+    name: web-lab
 
   threads:
     virtual:
@@ -80,6 +69,19 @@ spring:
             required-groups:
               - auditGroup
 
+kafka:
+  brokers: ${KAFKA_CLUSTER}
+  ssl-endpoint-identification-algorithm: https
+  sasl-jaas-config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
+  schema-registry-url: ${SCHEMA_REGISTRY_URL}
+  schema-registry-basic-auth-user-info: ${KAFKA_SCHEMA_USERNAME}:${KAFKA_SCHEMA_PASSWORD}
+  security-protocol: SASL_SSL
+  sasl-mechanism: PLAIN
+  schema-auto-register: false
+  basic-auth-credentials-source: USER_INFO
+  topic:
+    attribute-topic: ${KAFKA_TOPIC}
+
 api:
   pagination:
     page: 0
@@ -90,29 +92,34 @@ security:
     users:
       -
         username: user
-        password: ${USER_PASSWORD}
+        password: user
         authorities:
           - READER
           - WRITER
 
       -
         username: user_writer
-        password: ${WRITER_PASSWORD}
+        password: user_writer
         authorities:
           - READER
           - WRITER
 
       -
         username: admin
-        password: ${ADMIN_PASSWORD}
+        password: admin
         authorities:
           - READER
           - WRITER
           - ADMIN
+
+      - username: bob
+        password: bob
+        authorities:
+          - READER
 
 service.version: v1
 
 application:
   opensearch:
     indices:
-      attributes-dictionary-name: attributes_dictionary_${INDICES_VERSION}_${spring.profiles.active}_${BU}
+      attributes-dictionary-name: attributes_dictionary_v1

@@ -1,13 +1,14 @@
 package com.springboot.learning.service;
 
+import com.springboot.learning.repository.ApplicationRepositories;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
-@ComponentScan(basePackages = "com.springboot.learning.repository")
+@Import(ApplicationRepositories.class)
 @SpringBootApplication(exclude = ElasticsearchDataAutoConfiguration.class)
 public class ApplicationServices {
 

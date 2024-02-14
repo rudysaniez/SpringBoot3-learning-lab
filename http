@@ -4,8 +4,8 @@ set -e
 
 cd $(dirname $0)
 
-cat src/main/resources/banner.txt
-echo
+#cat src/main/resources/banner.txt
+#echo
 
 Help()
 {
@@ -64,9 +64,9 @@ then METHOD="GET"
 fi
 
 if [[ -n $METHOD && $METHOD == "POST" ]]
-then http -a $USERNAME:$PASSWORD POST ":$PORT/$ENDPOINT" < src/test/resources/json/$FILE
+then http -a $USERNAME:$PASSWORD POST ":$PORT/$ENDPOINT" < attribute-dictionary-api/src/test/resources/json/$FILE
 elif [[ -n $METHOD && $METHOD == "PUT" ]]
-then http -a $USERNAME:$PASSWORD PUT ":$PORT/$ENDPOINT" < src/test/resources/json/$FILE
+then http -a $USERNAME:$PASSWORD PUT ":$PORT/$ENDPOINT" < attribute-dictionary-api/src/test/resources/json/$FILE
 elif [[ -n $METHOD && $METHOD == "DELETE" && -z $ID ]]
 then http -a $USERNAME:$PASSWORD DELETE ":$PORT/$ENDPOINT"
 elif [[ -n $METHOD && $METHOD == "DELETE" && -n $ID ]]
