@@ -1,6 +1,6 @@
 package com.springboot.learning.api.sender.service;
 
-import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
+import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionaryKey;
 import com.springboot.learning.api.mapper.AttributeDictionaryAvroMapper;
 import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
 import com.springboot.learning.service.exception.InvalidInputException;
@@ -53,7 +53,7 @@ public class AttributeDictionarySenderService {
         return Mono.just(entity)
                 .map(mapper::toAvro)
                 .map(attributeDictionnary -> MessageBuilder.withPayload(attributeDictionnary)
-                        .setHeader(KafkaHeaders.KEY, new AttributeDictionnaryKey(
+                        .setHeader(KafkaHeaders.KEY, new AttributeDictionaryKey(
                                                                 ThreadLocalRandom.current().nextInt(20),
                                                                 UUID.randomUUID().toString()))
                         .build()

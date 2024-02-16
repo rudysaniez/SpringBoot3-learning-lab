@@ -1,6 +1,6 @@
 package com.springboot.learning.sync.mapper;
 
-import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
+import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionary;
 import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,10 +12,10 @@ import java.util.Objects;
 public interface AttributeDictionaryAvroMapper {
 
     @Mappings(value = @Mapping(target = "isReadOnly", source = "isReadOnly"))
-    AttributeDictionnary toAvro(AttributeDictionaryEntity entity);
+    AttributeDictionary toAvro(AttributeDictionaryEntity entity);
 
     @Mappings(value = @Mapping(target = "isReadOnly", source = "isReadOnly"))
-    AttributeDictionaryEntity toEntity(AttributeDictionnary avro);
+    AttributeDictionaryEntity toEntity(AttributeDictionary avro);
 
     default String map(CharSequence value) {
         if(Objects.isNull(value))

@@ -30,9 +30,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.IntStream;
 
 @Repository
 public class ReactiveOpensearchRepository {
@@ -153,69 +152,172 @@ public class ReactiveOpensearchRepository {
     }
 
     /**
+     *
      * @param indexName : the index name
-     * @param entity : the entity that need to created
-     * @param type : the entity class type
+     * @param entity : the entity
+     * @param entityId : the entity identifier, if empty the identifier will be automatically generated
+     * @param type : the entity type
      * @return flow of {@link T}
-     * @param <T> : the parameter type
+     * @param <T> : the parameterized type
      */
     public <T> Mono<T> save(@NotNull String indexName,
                             @NotNull T entity,
+                            @NotNull Optional<String> entityId,
                             @NotNull Class<T> type) {
 
         return Mono.<String>create(sink -> {
-            final Map<String, Object> data = jack.convertValue(entity, new TypeReference<>() {});
-            final IndexRequest indexRequest = new IndexRequest(indexName).source(data);
+                    final Map<String, Object> data = jack.convertValue(entity, new TypeReference<>() {});
+                    final IndexRequest indexRequest = new IndexRequest(indexName).source(data);
+                    entityId.ifPresent(indexRequest::id);
 
-            highLevelClient.indexAsync(indexRequest, RequestOptions.DEFAULT, new ActionListener<>() {
-                @Override
-                public void onResponse(IndexResponse indexResponse) {
-                    sink.success(indexResponse.getId());
-                }
+                    highLevelClient.indexAsync(indexRequest, RequestOptions.DEFAULT, new ActionListener<>() {
+                        @Override
+                        public void onResponse(IndexResponse indexResponse) {
+                            sink.success(indexResponse.getId());
+                        }
 
-                @Override
-                public void onFailure(Exception e) {
-                    sink.error(e);
-                }
-            });
-        })
-        .map(id -> new GetRequest(indexName, id))
-        .doOnNext(id -> log.debug(" > The id of entity created is {}.", id.id()))
-        .flatMap(getRequestById -> Mono.<T>create(sink ->
-            highLevelClient.getAsync(getRequestById, RequestOptions.DEFAULT, new ActionListener<>() {
-                @Override
-                public void onResponse(GetResponse documentFields) {
-                    log.debug(" > The entity created has been find, the id is {}, and the content is {}.",
-                            documentFields.getId(),
-                            documentFields.getSourceAsMap());
-                    final Map<String, Object> data = documentFields.getSourceAsMap();
-                    OpensearchEngineHelper.mergeIdInMap(documentFields.getId(), data);
-                    sink.success(OpensearchEngineHelper.mapToObject(jack, data, type));
-                }
+                        @Override
+                        public void onFailure(Exception e) {
+                            sink.error(e);
+                        }
+                    });
+                })
+                .map(id -> new GetRequest(indexName, id))
+                .doOnNext(id -> log.debug(" > The id of entity created is {}.", id.id()))
+                .flatMap(getRequestById -> Mono.<T>create(sink ->
+                        highLevelClient.getAsync(getRequestById, RequestOptions.DEFAULT, new ActionListener<>() {
+                            @Override
+                            public void onResponse(GetResponse documentFields) {
+                                log.debug(" > The entity created has been find, the id is {}, and the content is {}.",
+                                        documentFields.getId(),
+                                        documentFields.getSourceAsMap());
+                                final Map<String, Object> data = documentFields.getSourceAsMap();
+                                OpensearchEngineHelper.mergeIdInMap(documentFields.getId(), data);
+                                sink.success(OpensearchEngineHelper.mapToObject(jack, data, type));
+                            }
 
-                @Override
-                public void onFailure(Exception e) {
-                    sink.error(e);
+                            @Override
+                            public void onFailure(Exception e) {
+                                sink.error(e);
+                            }
+                        }))
+                )
+                .doOnNext(entityAfterInsert -> log.debug(" > The entity after persistence is {}", entityAfterInsert));
+    }
+
+    /**
+     * Upsert an input entity. It is necessary to specify the field name and the field value.
+     * The search is insensitive. 'code01', 'CODE01' allow to find a document that contains 'CODE01' as code.
+     * @param indexName : the index name
+     * @param fieldName : the field name that allows to know if a save must be made or an update
+     * @param fieldValue : the field value
+     * @param entity : the entity to persist
+     * @param type : the entity type
+     * @return flow of {@link T}
+     * @param <T> : the parameterized type
+     */
+    public <T> Mono<T> upsert(@NotNull String indexName,
+                              @NotNull String fieldName,
+                              @NotNull String fieldValue,
+                              @NotNull T entity,
+                              @NotNull Class<T> type) {
+
+        final var query = new SearchSourceBuilder()
+                .from(0)
+                .size(1)
+                .query(QueryBuilders.termQuery(fieldName, fieldValue)
+                        .caseInsensitive(true)
+                );
+
+        final var request = new SearchRequest(new String[]{indexName}, query);
+
+        return Mono.<String>create(sink -> highLevelClient.searchAsync(request, RequestOptions.DEFAULT, new ActionListener<>() {
+            @Override
+            public void onResponse(SearchResponse searchResponse) {
+
+                final var totalHits = searchResponse.getHits().getTotalHits();
+                if(Objects.nonNull(totalHits)) {
+                    var count = totalHits.value;
+                    if (count > 0)
+                        sink.success(searchResponse.getHits().getHits()[0].getId());
+                    else
+                        sink.success();
                 }
-            }))
-        )
-        .doOnNext(entityAfterInsert -> log.debug(" > The entity after persistence is {}", entityAfterInsert));
+                else
+                    sink.success();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                sink.error(e);
+            }
+        }))
+        .doOnError(t -> log.error(t.getMessage(), t))
+        .onErrorResume(t -> t.getMessage().contains(NO_SUCH_INDEX), throwable -> Mono.empty())
+        .doOnNext(id -> log.debug(" > The entity already exist, an update will be made. The entity identifier is {}.", id))
+        .flatMap(id -> this.update(indexName, id, entity, type))
+        .doOnNext(entityAfterUpdate -> log.debug(" > The entity of type={} has been updated.", type.getSimpleName()))
+        .switchIfEmpty(save(indexName, entity, Optional.empty(), type)
+            .doOnNext(entityAfterSave -> log.debug(" > The entity of type={} has been saved.", type.getSimpleName())));
+    }
+
+    /**
+     * Upsert an input entity by using the entity identifier that allows to know if an update or save will
+     * be performed.
+     * @param indexName : the index name
+     * @param entity : the entity to persist
+     * @param entityId : entity identifier
+     * @param type : the entity type
+     * @return flow of {@link T}
+     * @param <T> : the parameterized type
+     */
+    public <T> Mono<T> upsert(@NotNull String indexName,
+                              @NotNull T entity,
+                              @NotNull String entityId,
+                              @NotNull Class<T> type) {
+
+        return getById(indexName, entityId, type)
+            .doOnError(t -> log.error(t.getMessage(), t))
+            .onErrorResume(t -> t.getMessage().contains(NO_SUCH_INDEX), throwable -> Mono.empty())
+            .doOnNext(id -> log.debug(" > The entity already exist, an update will be made. The entity identifier is {}.", id))
+            .flatMap(useless -> this.update(indexName, entityId, entity, type))
+            .doOnNext(entityAfterUpdate -> log.debug(" > The entity of type={} has been updated.", type.getSimpleName()))
+            .switchIfEmpty(save(indexName, entity, Optional.of(entityId), type)
+                            .doOnNext(entityAfterSave -> log.debug(" > The entity of type={} has been saved.", type.getSimpleName())));
     }
 
     /**
      * @param entities : the list of entity
+     * @param entityIds : the list of entityIds, if empty, the _id will be automatically generated
      * @param indexName : the index name
      * @return {@link Flux of crud result that contain the identifier and the status code}
      * @param <T> : the parameter type
      */
-    public <T> Flux<CrudResult> bulk(@NotNull List<T> entities, @NotNull String indexName) {
+    public <T> Flux<CrudResult> bulk(@NotNull List<T> entities,
+                                     @NotNull Optional<List<String>> entityIds,
+                                     @NotNull String indexName) {
 
         final var bulk = new BulkRequest();
 
-        entities.stream()
-            .map(e -> jack.convertValue(e, new TypeReference<Map<String, Object>>() {}))
-            .map(dataAsMap -> new IndexRequest(indexName).source(dataAsMap))
-            .forEach(bulk::add);
+        if(entityIds.isEmpty()) {
+            entities.stream()
+                    .map(e -> jack.convertValue(e, new TypeReference<Map<String, Object>>() {
+                    }))
+                    .map(dataAsMap -> new IndexRequest(indexName).source(dataAsMap))
+                    .forEach(bulk::add);
+        }
+        else {
+            final var indexRequestList = entities.stream()
+                .map(e -> jack.convertValue(e, new TypeReference<Map<String, Object>>() {
+                }))
+                .map(dataAsMap -> new IndexRequest(indexName).source(dataAsMap))
+                .toList();
+
+            IntStream.range(0, entities.size())
+                .boxed()
+                .map(i -> indexRequestList.get(i).id(entityIds.get().get(i)))
+                .forEach(bulk::add);
+        }
 
         return Mono.<List<CrudResult>>create(sink ->
             highLevelClient.bulkAsync(bulk, RequestOptions.DEFAULT, new ActionListener<>() {

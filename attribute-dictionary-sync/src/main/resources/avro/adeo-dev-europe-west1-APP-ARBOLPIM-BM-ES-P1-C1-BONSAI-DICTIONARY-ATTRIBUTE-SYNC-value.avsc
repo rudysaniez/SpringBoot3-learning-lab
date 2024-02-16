@@ -1,7 +1,7 @@
 {
   "type" : "record",
-  "name" : "AttributeDictionnary",
-  "namespace" : "com.example.pennyworth.replenishment.referential.synchronisation.event.v1",
+  "name" : "AttributeDictionary",
+  "namespace" : "com.adeo.bonsai.dictionary.attribute.synchronisation.event",
   "fields" : [ {
     "name" : "code",
     "type" : "string"

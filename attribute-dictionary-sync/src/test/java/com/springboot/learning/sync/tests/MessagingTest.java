@@ -1,7 +1,7 @@
 package com.springboot.learning.sync.tests;
 
-import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
-import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
+import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionary;
+import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionaryKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sync.mapper.AttributeDictionaryAvroMapper;
@@ -56,7 +56,7 @@ class MessagingTest {
     }
 
     @Autowired
-    Consumer<Message<AttributeDictionnary>> attributeDictionarySyncEventConsume;
+    Consumer<Message<AttributeDictionary>> attributeDictionarySyncEventConsume;
 
     @Autowired
     OutputDestination outputDestination;
@@ -88,7 +88,7 @@ class MessagingTest {
         final var avro = mapper.toAvro(entity);
 
         final var msg = MessageBuilder.withPayload(avro)
-            .setHeader(KafkaHeaders.RECEIVED_KEY, new AttributeDictionnaryKey(
+            .setHeader(KafkaHeaders.RECEIVED_KEY, new AttributeDictionaryKey(
                     ThreadLocalRandom.current().nextInt(20),
                     UUID.randomUUID().toString()))
             .build();

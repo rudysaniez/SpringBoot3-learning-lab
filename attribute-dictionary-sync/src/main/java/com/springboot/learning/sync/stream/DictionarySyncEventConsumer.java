@@ -1,7 +1,7 @@
 package com.springboot.learning.sync.stream;
 
-import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnary;
-import com.example.pennyworth.replenishment.referential.synchronisation.event.v1.AttributeDictionnaryKey;
+import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionary;
+import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionaryKey;
 import com.springboot.learning.service.contract.v1.impl.AttributeDictionaryService;
 import com.springboot.learning.sync.mapper.AttributeDictionaryAvroMapper;
 import org.awaitility.Awaitility;
@@ -29,12 +29,12 @@ public class DictionarySyncEventConsumer {
     }
 
     @Bean
-    Consumer<Message<AttributeDictionnary>> attributeDictionarySyncEventConsume() {
+    Consumer<Message<AttributeDictionary>> attributeDictionarySyncEventConsume() {
 
         return event -> {
 
-            final AttributeDictionnaryKey key = (AttributeDictionnaryKey)event.getHeaders().get(KafkaHeaders.RECEIVED_KEY);
-            final AttributeDictionnary payload = event.getPayload();
+            final AttributeDictionaryKey key = (AttributeDictionaryKey)event.getHeaders().get(KafkaHeaders.RECEIVED_KEY);
+            final AttributeDictionary payload = event.getPayload();
             log.info(" > [attributeDictionarySyncEventConsume function] Consume key={} and body={}", key, payload);
 
             final var disposable = Mono.just(payload)

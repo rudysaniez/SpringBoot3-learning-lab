@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @ConditionalOnProperty(prefix = "service", name = "version", havingValue = "v1")
 @Service
@@ -80,12 +81,17 @@ public class AttributeDictionaryService implements IAttributeDictionaryService<A
         if(Objects.isNull(entity.code()))
             throw new InvalidInputException("The code field in attribute dictionary is mandatory");
 
-        return repository.save(INDEX_TARGET, entity, AttributeDictionaryEntity.class);
+        return repository.save(INDEX_TARGET, entity, Optional.of(entity.code()), AttributeDictionaryEntity.class);
     }
 
     @Override
     public Flux<ReactiveOpensearchRepository.CrudResult> bulk(List<AttributeDictionaryEntity> entities) {
-        return repository.bulk(entities, INDEX_TARGET);
+
+        final var ids = entities.stream()
+            .map(AttributeDictionaryEntity::code)
+            .toList();
+
+        return repository.bulk(entities, Optional.of(ids), INDEX_TARGET);
     }
 
     @Override

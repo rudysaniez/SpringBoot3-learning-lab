@@ -93,38 +93,6 @@ public interface AttributeDictionaryAPI {
 
 
     @Operation(
-            operationId = "bulkAttributes",
-            summary = "Save many attributes.",
-            description = "Save many attributes.",
-            tags = {"AttributeDictionaryRestController"}
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Create many attributes."),
-            @ApiResponse(responseCode = "422", description = "The input attributes are incorrect.")
-    })
-    @PostMapping(value = "/attributes/:bulk",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    Mono<ResponseEntity<List<BulkResult>>> bulkAttributes(@RequestBody List<AttributeDictionary> attributeDictionaries);
-
-
-    @Operation(
-            operationId = "bulkAttributesAsync",
-            summary = "Save many attributes asynchronously.",
-            description = "Save many attributes asynchronously.",
-            tags = {"AttributeDictionaryRestController"}
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202", description = "The creation of attributes has been accepted."),
-            @ApiResponse(responseCode = "422", description = "The input attributes are incorrect.")
-    })
-    @PostMapping(value = "/attributes/:bulk-async",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    Mono<ResponseEntity<Void>> bulkAttributesAsync(@RequestBody List<AttributeDictionary> attributeDictionaries);
-
-
-    @Operation(
             operationId = "updateAttribute",
             summary = "Update one attribute.",
             description = "Update one attribute.",

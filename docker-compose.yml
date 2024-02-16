@@ -100,3 +100,14 @@ services:
       - WRITER_PASSWORD=writer
       - ADMIN_PASSWORD=admin
       - JAVA_OPTS=-Xms512M -Xmx512M
+
+  attributes-sync:
+    image: attribute-dictionary-sync:latest
+    depends_on:
+      opensearch:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_OPTS=-Xms512M -Xmx512M

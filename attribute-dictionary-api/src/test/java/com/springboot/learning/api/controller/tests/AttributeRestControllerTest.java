@@ -223,47 +223,6 @@ class AttributeRestControllerTest {
                 .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
     }
 
-    @Tag("Bulk many attributes")
-    @Test
-    void bulk() {
-
-        final List<AttributeDictionary> entities = TestHelper.getManyAttributeCandidates(jack, attributes);
-        Assertions.assertThat(entities).isNotEmpty();
-
-        webTestClient.post()
-                .uri(uri -> uri.pathSegment("v1", "attributes", ":bulk").build())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(entities)
-                .headers(header -> header.setBasicAuth("user", "user"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.OK)
-                .expectBody()
-                .jsonPath("$.length()").isEqualTo(5)
-                .jsonPath("$.[0].status").isEqualTo(201)
-                .jsonPath("$.[1].status").isEqualTo(201)
-                .jsonPath("$.[2].status").isEqualTo(201)
-                .jsonPath("$.[3].status").isEqualTo(201)
-                .jsonPath("$.[4].status").isEqualTo(201);
-    }
-
-    @Tag("Bulk many attributes asynchronously")
-    @Test
-    void bulkAsync() {
-
-        final List<AttributeDictionary> entities = TestHelper.getManyAttributeCandidates(jack, attributes);
-        Assertions.assertThat(entities).isNotEmpty();
-
-        webTestClient.post()
-                .uri(uri -> uri.pathSegment("v1", "attributes", ":bulk-async").build())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(entities)
-                .headers(header -> header.setBasicAuth("user", "user"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.ACCEPTED);
-    }
-
     @Tag("Update an attribute")
     @Test
     void update() throws IOException {

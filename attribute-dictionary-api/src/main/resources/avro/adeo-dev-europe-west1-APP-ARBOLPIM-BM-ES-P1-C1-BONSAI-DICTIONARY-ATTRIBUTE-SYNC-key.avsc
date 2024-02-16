@@ -1,7 +1,7 @@
 {
    "type":"record",
-   "name":"AttributeDictionnaryKey",
-   "namespace":"com.example.pennyworth.replenishment.referential.synchronisation.event.v1",
+   "name":"AttributeDictionaryKey",
+   "namespace":"com.adeo.bonsai.dictionary.attribute.synchronisation.event",
    "fields":[
       {
          "name":"buId",

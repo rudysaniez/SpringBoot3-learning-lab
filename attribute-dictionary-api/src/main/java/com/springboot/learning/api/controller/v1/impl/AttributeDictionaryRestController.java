@@ -120,42 +120,6 @@ public class AttributeDictionaryRestController implements AttributeDictionaryAPI
     }
 
     /**
-     * @param attributeDictionaries : attributes
-     * @return flow of list of {@link BulkResult}
-     */
-    @Override
-    public Mono<ResponseEntity<List<BulkResult>>> bulkAttributes(@RequestBody List<AttributeDictionary> attributeDictionaries) {
-
-        log.info(" > Bulk attributes : {}.", attributeDictionaries);
-
-        return Mono.just(attributeDictionaries)
-                .map(mapper::toEntityList)
-                .flatMapMany(attributeDictionaryService::bulk)
-                .map(mapper::toBulkResultModel)
-                .doOnError(t -> log.error(t.getMessage(), t))
-                .collectList()
-                .map(ResponseEntity::ok);
-    }
-
-    /**
-     * @param attributeDictionaries : attributes
-     * @return flow of list of {@link BulkResult}
-     */
-    @Override
-    public Mono<ResponseEntity<Void>> bulkAttributesAsync(@RequestBody List<AttributeDictionary> attributeDictionaries) {
-
-        log.info(" > Bulk attributes asynchronously : {}.", attributeDictionaries);
-
-        return Flux.fromIterable(attributeDictionaries)
-                .map(mapper::toEntity)
-                .flatMap(attributeDictionarySenderService::send)
-                .doOnError(t -> log.error(t.getMessage(), t))
-                .collectList()
-                .map(entities -> new ResponseEntity<Void>(HttpStatus.ACCEPTED))
-                .onErrorResume(t -> Mono.just(ResponseEntity.unprocessableEntity().build()));
-    }
-
-    /**
      *
      * @param id : the identifier
      * @param attributeDictionary : the attribute

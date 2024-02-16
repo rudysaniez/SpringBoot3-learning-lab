@@ -3,6 +3,7 @@ package com.springboot.learning.api.controller.tests.helper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +39,9 @@ public class TestHelper {
     /**
      * @param jack : Jack !
      * @param input : the input resource
-     * @return {@link List}
-     * @param <T> : the parameterized
+     * @return {@link List<AttributeDictionaryEntity>}
      */
-    public static <T> List<T> getManyAttributeCandidates(ObjectMapper jack, Resource input) {
+    public static List<AttributeDictionaryEntity> getManyAttributeCandidates(ObjectMapper jack, Resource input) {
 
         try {
             return jack.readValue(input.getContentAsByteArray(), new TypeReference<>() {});
@@ -75,6 +75,18 @@ public class TestHelper {
     public static void waitInSecond(int during) {
         try {
            Thread.sleep(Duration.ofSeconds(during));
+        }
+        catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * @param during : the duration
+     */
+    public static void waitInMillis(int during) {
+        try {
+            Thread.sleep(Duration.ofMillis(during));
         }
         catch(Exception e) {
             log.error(e.getMessage(), e);
