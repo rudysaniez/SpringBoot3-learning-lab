@@ -1,9 +1,11 @@
 package com.springboot.learning.repository.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
+import com.springboot.learning.common.JackHelper;
+import com.springboot.learning.common.OpensearchHelper;
+import com.springboot.learning.common.WaitHelper;
+import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
 import com.springboot.learning.repository.impl.ReactiveOpensearchRepository;
-import com.springboot.learning.repository.tests.helper.TestHelper;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -33,14 +35,12 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.util.StringUtils;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.com.google.common.collect.Comparators;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,7 +102,7 @@ class AttributeRepositoryTest {
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
-                var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
                 result.ifPresent(openSearchIndexCreationResult -> {
                     INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged());
                     IDX_TARGET.set(openSearchIndexCreationResult.index());
@@ -113,16 +113,16 @@ class AttributeRepositoryTest {
 
     @AfterEach
     void after() {
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
         var deletedNumber = opensearchRepository.deleteAll(IDX_TARGET.get()).block();
         log.info(" > Delete all elements {}.", deletedNumber);
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
     }
 
     @Test
     void getById() throws IOException {
 
-        final var entity = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
+        final var entity = JackHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
 
         StepVerifier.create(opensearchRepository.save(IDX_TARGET.get(),
                                 entity, Optional.of(entity.code()),
@@ -142,7 +142,7 @@ class AttributeRepositoryTest {
     @Test
     void bulk() {
 
-        List<AttributeDictionaryEntity> entities = TestHelper.getManyAttributeCandidates(jack, attributes);
+        List<AttributeDictionaryEntity> entities = JackHelper.getManyAttributeCandidates(jack, attributes);
 
         final List<String> ids = entities.stream()
             .map(AttributeDictionaryEntity::code)
@@ -176,7 +176,7 @@ class AttributeRepositoryTest {
     void deleteIn() {
 
         bulk();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
         SearchSourceBuilder query = SearchSourceBuilder.searchSource()
             .query(QueryBuilders.matchAllQuery())
@@ -205,7 +205,7 @@ class AttributeRepositoryTest {
     @Test
     void saveWithAutoIdentifier(CapturedOutput output) throws IOException {
 
-        final var entity = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
+        final var entity = JackHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
 
         var entityMono = opensearchRepository.save(IDX_TARGET.get(),
             entity, Optional.empty(),
@@ -225,7 +225,7 @@ class AttributeRepositoryTest {
     @Test
     void saveWithManualIdentifier(CapturedOutput output) throws IOException {
 
-        final var entity = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
+        final var entity = JackHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
 
         var entityMono = opensearchRepository.save(IDX_TARGET.get(),
             entity, Optional.of(entity.code()),
@@ -245,7 +245,7 @@ class AttributeRepositoryTest {
 
         final String id = saveAnAttribute();
 
-        final var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute01Up,
+        final var attributeCandidate = JackHelper.getAttributeCandidate(jack, attribute01Up,
             AttributeDictionaryEntity.class);
 
         //Launch the update
@@ -264,9 +264,9 @@ class AttributeRepositoryTest {
     void upsertBySearchAsUpdate(CapturedOutput output) throws IOException {
 
         saveAnAttribute();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
-        final var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute01Up,
+        final var attributeCandidate = JackHelper.getAttributeCandidate(jack, attribute01Up,
             AttributeDictionaryEntity.class);
 
         var fieldName = "code";
@@ -291,7 +291,7 @@ class AttributeRepositoryTest {
 
         final String id = saveAnAttribute();
 
-        final var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute01Up,
+        final var attributeCandidate = JackHelper.getAttributeCandidate(jack, attribute01Up,
             AttributeDictionaryEntity.class);
 
         StepVerifier.create(opensearchRepository.upsert(IDX_TARGET.get(),
@@ -314,7 +314,7 @@ class AttributeRepositoryTest {
     @Test
     void upsertByIdAsSaveEmptyIndex(@NotNull CapturedOutput output) throws IOException {
 
-        final var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute01,
+        final var attributeCandidate = JackHelper.getAttributeCandidate(jack, attribute01,
             AttributeDictionaryEntity.class);
 
         StepVerifier.create(opensearchRepository.upsert(IDX_TARGET.get(),
@@ -337,7 +337,7 @@ class AttributeRepositoryTest {
     @Test
     void upsertByIdAsSaveIndexNotExist(CapturedOutput output) throws IOException {
 
-        final var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute01,
+        final var attributeCandidate = JackHelper.getAttributeCandidate(jack, attribute01,
             AttributeDictionaryEntity.class);
 
         StepVerifier.create(opensearchRepository.upsert(IDX_TARGET.get().concat("_unknown"),
@@ -362,7 +362,7 @@ class AttributeRepositoryTest {
     void upsertByIdAsSaveAttributeMoreCompleted(CapturedOutput output) throws IOException {
 
         //A save will be executed
-        final var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute03,
+        final var attributeCandidate = JackHelper.getAttributeCandidate(jack, attribute03,
             AttributeDictionaryEntity.class);
 
         StepVerifier.create(opensearchRepository.upsert(IDX_TARGET.get(),
@@ -384,7 +384,7 @@ class AttributeRepositoryTest {
         Assertions.assertThat(output.getOut()).contains(" > The entity of type=AttributeDictionaryEntity has been saved.");
 
         //An update will be performed
-        final var attributeCandidateUp = TestHelper.getAttributeCandidate(jack, attribute03Up,
+        final var attributeCandidateUp = JackHelper.getAttributeCandidate(jack, attribute03Up,
                 AttributeDictionaryEntity.class);
 
         StepVerifier.create(opensearchRepository.upsert(IDX_TARGET.get(),
@@ -410,7 +410,7 @@ class AttributeRepositoryTest {
     void count() {
 
         bulk();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
         Mono<Long> resultMono = opensearchRepository.count(new CountRequest(IDX_TARGET.get()));
         StepVerifier.create(resultMono)
@@ -423,7 +423,7 @@ class AttributeRepositoryTest {
     void search() {
 
         bulk();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
         final SearchSourceBuilder query = SearchSourceBuilder.searchSource()
             .query(QueryBuilders.matchAllQuery())
@@ -445,7 +445,7 @@ class AttributeRepositoryTest {
     void searchAsPageNumber0AndSize5() {
 
         bulk();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
         final SearchSourceBuilder query = SearchSourceBuilder.searchSource()
             .query(QueryBuilders.matchAllQuery())

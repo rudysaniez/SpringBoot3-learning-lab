@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.2</version>
+		<version>3.2.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -42,6 +42,7 @@
 		<cucumber.version>7.15.0</cucumber.version>
 		<rest-assured.version>5.4.0</rest-assured.version>
 		<junit-platform-suite.version>1.10.2</junit-platform-suite.version>
+		<mockserver-netty.version>5.15.0</mockserver-netty.version>
 	</properties>
 
 	<modules>
@@ -49,6 +50,10 @@
 		<module>attribute-dictionary-services</module>
 		<module>attribute-dictionary-api</module>
 		<module>attribute-dictionary-sync</module>
+		<module>dictionary-backend-api</module>
+		<module>common</module>
+		<module>eureka-server</module>
+		<module>dictionary-entity</module>
 	</modules>
 
 	<repositories>

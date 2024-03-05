@@ -85,7 +85,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
-  attributes-api:
+  attribute-dictionary-api:
     image: attribute-dictionary-api:latest
     ports:
       - 8080:8080
@@ -99,9 +99,10 @@ services:
       - USER_PASSWORD=user
       - WRITER_PASSWORD=writer
       - ADMIN_PASSWORD=admin
+      - EUREKA_SERVER=eureka
       - JAVA_OPTS=-Xms512M -Xmx512M
 
-  attributes-sync:
+  attribute-dictionary-sync:
     image: attribute-dictionary-sync:latest
     depends_on:
       opensearch:
@@ -110,4 +111,32 @@ services:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_OPTS=-Xms512M -Xmx512M
+
+  dictionary-backend-api:
+    image: dictionary-backend-api:latest
+    ports:
+      - 9080:9080
+    depends_on:
+      opensearch:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - DICTIONARY_API_URI=http://attribute-dictionary-api:8080
+      - DICTIONARY_API_KEY=NONE
+      - DICTIONARY_BASIC_AUTH_USERNAME=user
+      - DICTIONARY_BASIC_AUTH_PASSWORD=user
+      - RESOURCE_SERVER_URI=https://idpb2e-rec.adeo.com
+      - RESOURCE_SERVER_JWK_URI=https://idpb2e-rec.adeo.com/ext/oauth/jwks
+      - RESOURCE_SERVER_JWS_ALGORITHMS=RS512
+      - EUREKA_SERVER=eureka
+      - JAVA_OPTS=-Xms512M -Xmx512M
+
+  eureka:
+    image: eureka-server:latest
+    ports:
+      - "8761:8761"
+    environment:
       - JAVA_OPTS=-Xms512M -Xmx512M

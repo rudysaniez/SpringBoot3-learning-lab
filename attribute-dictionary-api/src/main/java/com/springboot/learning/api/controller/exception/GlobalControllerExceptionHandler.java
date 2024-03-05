@@ -1,6 +1,6 @@
 package com.springboot.learning.api.controller.exception;
 
-import com.springboot.learning.api.controller.v1.HttpErrorInfo;
+import com.springboot.learning.api.controller.contract.v1.HttpErrorInfo;
 import com.springboot.learning.service.exception.InvalidInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,0 +1,18 @@
+{
+  "allowedExtensions": [],
+  "availableLocales": [],
+  "code": "isHomeDeliverable",
+  "group": "hidden_attributes",
+  "guidelines": [
+    "4567"
+  ],
+  "id": "isHomeDeliverable",
+  "isReadOnly": true,
+  "labels": {},
+  "localizable": false,
+  "scopable": false,
+  "sortOrder": 0,
+  "type": "pim_catalog_boolean",
+  "unique": false,
+  "useableAsGridFilter": false
+}

@@ -1,0 +1,28 @@
+{
+  "content": [
+    {
+      "allowedExtensions": [],
+      "availableLocales": [],
+      "code": "isHomeDeliverable",
+      "group": "hidden_attributes",
+      "guidelines": [
+        "4567"
+      ],
+      "id": "isHomeDeliverable",
+      "isReadOnly": true,
+      "labels": {},
+      "localizable": false,
+      "scopable": false,
+      "sortOrder": 0,
+      "type": "pim_catalog_boolean",
+      "unique": false,
+      "useableAsGridFilter": false
+    }
+  ],
+  "pageMetadata": {
+    "number": 0,
+    "size": 5,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}

@@ -2,7 +2,7 @@ package com.springboot.learning.api.sender.service;
 
 import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionaryKey;
 import com.springboot.learning.api.mapper.AttributeDictionaryAvroMapper;
-import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
+import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
 import com.springboot.learning.service.exception.InvalidInputException;
 import jakarta.validation.constraints.NotNull;
 import org.mapstruct.factory.Mappers;

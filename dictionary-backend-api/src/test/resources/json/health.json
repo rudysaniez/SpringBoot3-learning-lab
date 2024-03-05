@@ -1,0 +1,50 @@
+{
+  "components": {
+    "binders": {
+      "components": {
+        "kafka": {
+          "details": {
+            "listenerContainers": [
+              {
+                "groupId": "svc-arbolpim-app-dev-BM-ES-SCS",
+                "isPaused": false,
+                "isRunning": true,
+                "isStoppedAbnormally": false,
+                "listenerId": "KafkaConsumerDestination{consumerDestinationName='adeo-dev-europe-west1-APP-ARBOLPIM-BM-ES-P1-C1-BONSAI-DICTIONARY-ATTRIBUTE-SYNC', partitions=0, dlqName='null'}.container"
+              }
+            ],
+            "topicsInUse": [
+              "adeo-dev-europe-west1-APP-ARBOLPIM-BM-ES-P1-C1-BONSAI-DICTIONARY-ATTRIBUTE-SYNC"
+            ]
+          },
+          "status": "UP"
+        }
+      },
+      "status": "UP"
+    },
+    "diskSpace": {
+      "details": {
+        "exists": true,
+        "free": 20933386240,
+        "path": "/home/.",
+        "threshold": 10485760,
+        "total": 101203873792
+      },
+      "status": "UP"
+    },
+    "livenessState": {
+      "status": "UP"
+    },
+    "ping": {
+      "status": "UP"
+    },
+    "readinessState": {
+      "status": "UP"
+    }
+  },
+  "groups": [
+    "liveness",
+    "readiness"
+  ],
+  "status": "UP"
+}

@@ -1,0 +1,637 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Dictionary reactive API",
+    "description": "The dictionary reactive API",
+    "contact": {
+      "name": "rudysaniez",
+      "url": "https://github.com/adeo/pro-cust-xp-bonsai-attribute-dictionary-api",
+      "email": "rudysaniez@adeo.com"
+    },
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/v1",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "AttributeDictionaryRestController",
+      "description": "Reactive REST API for attribute dictionary"
+    }
+  ],
+  "paths": {
+    "/attributes/{id}": {
+      "get": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Get attributes by identifier.",
+        "description": "Get attributes by identifier.",
+        "operationId": "getAttributeById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The attribute as been found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttributeDictionary"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "The attribute does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttributeDictionary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Update one attribute.",
+        "description": "Update one attribute.",
+        "operationId": "updateAttribute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttributeDictionary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "422": {
+            "description": "The input attribute are incorrect.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The updating of attribute has been performed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttributeDictionary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Delete one attribute.",
+        "description": "Delete one attribute.",
+        "operationId": "deleteOneAttribute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Nothing deletion has been performed."
+          },
+          "200": {
+            "description": "The attribute deletion has been performed."
+          }
+        }
+      }
+    },
+    "/attributes/:async": {
+      "post": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Save an attribute asynchronously.",
+        "description": "Save an attribute asynchronously.",
+        "operationId": "saveAttributeAsync",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttributeDictionary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "422": {
+            "description": "The input attribute is incorrect.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "The attribute creation has been accepted."
+          }
+        }
+      }
+    },
+    "/attributes": {
+      "get": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Get attributes in page.",
+        "description": "Get attributes in page.",
+        "operationId": "getAllAttributes",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 5
+            }
+          }
+        ],
+        "responses": {
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The attributes are retrieves in a page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageAttributeDictionary"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "The attributes does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageAttributeDictionary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Save an attribute.",
+        "description": "Save an attribute.",
+        "operationId": "saveAttribute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttributeDictionary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "422": {
+            "description": "The input attribute is incorrect.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The attribute is created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttributeDictionary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attributes/:search": {
+      "get": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Search attributes.",
+        "description": "Search attributes.",
+        "operationId": "searchAttributes",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The search is performed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttributeDictionary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attributes/:empty": {
+      "delete": {
+        "tags": [
+          "AttributeDictionaryRestController"
+        ],
+        "summary": "Delete all attributes.",
+        "description": "Delete all attributes.",
+        "operationId": "deleteAllAttributes",
+        "responses": {
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorInfo"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Nothing deletions has been performed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The attributes deletion has been performed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HttpErrorInfo": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "httpStatus": {
+            "type": "string",
+            "enum": [
+              "100 CONTINUE",
+              "101 SWITCHING_PROTOCOLS",
+              "102 PROCESSING",
+              "103 EARLY_HINTS",
+              "103 CHECKPOINT",
+              "200 OK",
+              "201 CREATED",
+              "202 ACCEPTED",
+              "203 NON_AUTHORITATIVE_INFORMATION",
+              "204 NO_CONTENT",
+              "205 RESET_CONTENT",
+              "206 PARTIAL_CONTENT",
+              "207 MULTI_STATUS",
+              "208 ALREADY_REPORTED",
+              "226 IM_USED",
+              "300 MULTIPLE_CHOICES",
+              "301 MOVED_PERMANENTLY",
+              "302 FOUND",
+              "302 MOVED_TEMPORARILY",
+              "303 SEE_OTHER",
+              "304 NOT_MODIFIED",
+              "305 USE_PROXY",
+              "307 TEMPORARY_REDIRECT",
+              "308 PERMANENT_REDIRECT",
+              "400 BAD_REQUEST",
+              "401 UNAUTHORIZED",
+              "402 PAYMENT_REQUIRED",
+              "403 FORBIDDEN",
+              "404 NOT_FOUND",
+              "405 METHOD_NOT_ALLOWED",
+              "406 NOT_ACCEPTABLE",
+              "407 PROXY_AUTHENTICATION_REQUIRED",
+              "408 REQUEST_TIMEOUT",
+              "409 CONFLICT",
+              "410 GONE",
+              "411 LENGTH_REQUIRED",
+              "412 PRECONDITION_FAILED",
+              "413 PAYLOAD_TOO_LARGE",
+              "413 REQUEST_ENTITY_TOO_LARGE",
+              "414 URI_TOO_LONG",
+              "414 REQUEST_URI_TOO_LONG",
+              "415 UNSUPPORTED_MEDIA_TYPE",
+              "416 REQUESTED_RANGE_NOT_SATISFIABLE",
+              "417 EXPECTATION_FAILED",
+              "418 I_AM_A_TEAPOT",
+              "419 INSUFFICIENT_SPACE_ON_RESOURCE",
+              "420 METHOD_FAILURE",
+              "421 DESTINATION_LOCKED",
+              "422 UNPROCESSABLE_ENTITY",
+              "423 LOCKED",
+              "424 FAILED_DEPENDENCY",
+              "425 TOO_EARLY",
+              "426 UPGRADE_REQUIRED",
+              "428 PRECONDITION_REQUIRED",
+              "429 TOO_MANY_REQUESTS",
+              "431 REQUEST_HEADER_FIELDS_TOO_LARGE",
+              "451 UNAVAILABLE_FOR_LEGAL_REASONS",
+              "500 INTERNAL_SERVER_ERROR",
+              "501 NOT_IMPLEMENTED",
+              "502 BAD_GATEWAY",
+              "503 SERVICE_UNAVAILABLE",
+              "504 GATEWAY_TIMEOUT",
+              "505 HTTP_VERSION_NOT_SUPPORTED",
+              "506 VARIANT_ALSO_NEGOTIATES",
+              "507 INSUFFICIENT_STORAGE",
+              "508 LOOP_DETECTED",
+              "509 BANDWIDTH_LIMIT_EXCEEDED",
+              "510 NOT_EXTENDED",
+              "511 NETWORK_AUTHENTICATION_REQUIRED"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AttributeDictionary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "unique": {
+            "type": "boolean"
+          },
+          "useableAsGridFilter": {
+            "type": "boolean"
+          },
+          "allowedExtensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metricFamily": {
+            "type": "string"
+          },
+          "defaultMetricUnit": {
+            "type": "string"
+          },
+          "referenceDataName": {
+            "type": "string"
+          },
+          "availableLocales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxCharacters": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validationRule": {
+            "type": "string"
+          },
+          "validationRegexp": {
+            "type": "string"
+          },
+          "wysiwygEnabled": {
+            "type": "boolean"
+          },
+          "numberMin": {
+            "type": "number",
+            "format": "double"
+          },
+          "numberMax": {
+            "type": "number",
+            "format": "double"
+          },
+          "decimalsAllowed": {
+            "type": "boolean"
+          },
+          "negativeAllowed": {
+            "type": "boolean"
+          },
+          "dateMin": {
+            "type": "string"
+          },
+          "dateMax": {
+            "type": "string"
+          },
+          "maxFileSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minimumInputLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "localizable": {
+            "type": "boolean"
+          },
+          "scopable": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "guidelines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "autoOptionSorting": {
+            "type": "boolean"
+          },
+          "defaultValue": {
+            "type": "string"
+          },
+          "isReadOnly": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageAttributeDictionary": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttributeDictionary"
+            }
+          },
+          "pageMetadata": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "PageMetadata": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      }
+    }
+  }
+}

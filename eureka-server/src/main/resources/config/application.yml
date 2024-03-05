@@ -1,0 +1,51 @@
+
+logging:
+  level:
+    root: INFO
+
+server.port: 8761
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
+      base-path: /management
+  endpoint:
+    health:
+      show-details: always
+      cache:
+        time-to-live: 10000ms
+    info:
+      cache:
+        time-to-live: 10000ms
+
+spring:
+  jackson:
+    deserialization:
+      accept-single-value-as-array: true
+    serialization:
+      write-dates-as-timestamps: false
+    generator:
+      write-numbers-as-strings: false
+    default-property-inclusion: NON_NULL
+    date-format: yyyy-MM-dd'T'HH:mm:ssZ
+
+  application:
+    name: pro-eureka-server
+
+  threads:
+    virtual:
+      enabled: false
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+    wait-time-in-ms-when-sync-empty: 0
+    response-cache-update-interval-ms: 5000

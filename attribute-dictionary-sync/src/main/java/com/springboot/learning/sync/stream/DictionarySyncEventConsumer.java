@@ -2,7 +2,7 @@ package com.springboot.learning.sync.stream;
 
 import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionary;
 import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionaryKey;
-import com.springboot.learning.service.contract.v1.impl.AttributeDictionaryService;
+import com.springboot.learning.service.impl.AttributeDictionaryService;
 import com.springboot.learning.sync.mapper.AttributeDictionaryAvroMapper;
 import org.awaitility.Awaitility;
 import org.mapstruct.factory.Mappers;

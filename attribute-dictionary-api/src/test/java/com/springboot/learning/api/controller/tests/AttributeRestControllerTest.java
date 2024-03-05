@@ -1,11 +1,13 @@
 package com.springboot.learning.api.controller.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.api.controller.tests.helper.TestHelper;
-import com.springboot.learning.api.controller.v1.AttributeDictionary;
-import com.springboot.learning.api.controller.v1.HttpErrorInfo;
-import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
-import com.springboot.learning.service.contract.v1.impl.AttributeDictionaryService;
+import com.springboot.learning.api.controller.contract.v1.AttributeDictionary;
+import com.springboot.learning.api.controller.contract.v1.HttpErrorInfo;
+import com.springboot.learning.common.JackHelper;
+import com.springboot.learning.common.OpensearchHelper;
+import com.springboot.learning.common.WaitHelper;
+import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
+import com.springboot.learning.service.impl.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -78,7 +80,7 @@ class AttributeRestControllerTest {
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
-                var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
                 result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
             }
         }
@@ -100,7 +102,7 @@ class AttributeRestControllerTest {
                 .block();
 
         webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", attribute.id()).build())
+                .uri(uriBuilder -> uriBuilder.pathSegment("attributes", attribute.id()).build())
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -112,7 +114,7 @@ class AttributeRestControllerTest {
     void getNoAttributesByNotExistIdentifier() {
 
         webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", "not_exist_identifier").build())
+                .uri(uriBuilder -> uriBuilder.pathSegment("attributes", "not_exist_identifier").build())
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -124,7 +126,7 @@ class AttributeRestControllerTest {
     void getAttributesAsPage() {
 
         webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes").build())
+                .uri(uriBuilder -> uriBuilder.pathSegment("attributes").build())
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -138,7 +140,7 @@ class AttributeRestControllerTest {
     void searchAttributes() {
 
         var attributesFlux = webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", ":search")
+                .uri(uriBuilder -> uriBuilder.pathSegment("attributes", ":search")
                         .queryParam("q", "code=code01")
                         .build())
                 .headers(header -> header.setBasicAuth("user", "user"))
@@ -160,11 +162,11 @@ class AttributeRestControllerTest {
     void save() throws IOException {
 
         // Get an attribute.
-        final var attr = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionary.class);
+        final var attr = JackHelper.getAttributeCandidate(jack, attribute01, AttributeDictionary.class);
         Assertions.assertThat(attr).isNotNull();
 
         webTestClient.post()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes").build())
+                .uri(uriBuilder -> uriBuilder.pathSegment("attributes").build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(attr)
                 .headers(header -> header.setBasicAuth("user", "user"))
@@ -182,11 +184,11 @@ class AttributeRestControllerTest {
     void saveBad() throws IOException {
 
         // Get an attribute.
-        final var attr = TestHelper.getAttributeCandidate(jack, attributeBad01, AttributeDictionary.class);
+        final var attr = JackHelper.getAttributeCandidate(jack, attributeBad01, AttributeDictionary.class);
         Assertions.assertThat(attr).isNotNull();
 
         Mono<HttpErrorInfo> httpErrorInfoMono = webTestClient.post()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes").build())
+                .uri(uriBuilder -> uriBuilder.pathSegment("attributes").build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(attr)
                 .headers(header -> header.setBasicAuth("user", "user"))
@@ -200,7 +202,7 @@ class AttributeRestControllerTest {
         StepVerifier.create(httpErrorInfoMono)
                 .expectNextMatches(httpErrorInfo -> httpErrorInfo.httpStatus().equals(HttpStatus.UNPROCESSABLE_ENTITY)
                         && httpErrorInfo.message().equalsIgnoreCase("The code field in attribute dictionary is mandatory")
-                        && httpErrorInfo.path().equalsIgnoreCase("/v1/attributes")
+                        && httpErrorInfo.path().equalsIgnoreCase("/attributes")
                 )
                 .verifyComplete();
     }
@@ -210,11 +212,11 @@ class AttributeRestControllerTest {
     void saveAsync() throws IOException {
 
         // Get an attribute.
-        final var attr = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionary.class);
+        final var attr = JackHelper.getAttributeCandidate(jack, attribute01, AttributeDictionary.class);
         Assertions.assertThat(attr).isNotNull();
 
         webTestClient.post()
-                .uri(uriBuilder -> uriBuilder.pathSegment("v1", "attributes", ":async").build())
+                .uri(uriBuilder -> uriBuilder.pathSegment("attributes", ":async").build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(attr)
                 .headers(header -> header.setBasicAuth("user", "user"))
@@ -227,14 +229,14 @@ class AttributeRestControllerTest {
     @Test
     void update() throws IOException {
 
-        final var attributeModel = TestHelper.getAttributeCandidate(jack, attribute01Up, AttributeDictionary.class);
+        final var attributeModel = JackHelper.getAttributeCandidate(jack, attribute01Up, AttributeDictionary.class);
 
         final var attributeEntity = attributeDictionaryService.searchWithQueryPrefix("code", "code01", 1)
                 .next()
                 .block();
 
         webTestClient.put()
-                .uri(uri -> uri.pathSegment("v1", "attributes", attributeEntity.id()).build())
+                .uri(uri -> uri.pathSegment("attributes", attributeEntity.id()).build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(attributeModel)
                 .headers(header -> header.setBasicAuth("user", "user"))
@@ -254,13 +256,13 @@ class AttributeRestControllerTest {
                 .block();
 
         webTestClient.delete()
-                .uri(uri -> uri.pathSegment("v1", "attributes", attribute.id()).build())
+                .uri(uri -> uri.pathSegment("attributes", attribute.id()).build())
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.OK);
 
-        TestHelper.waitInSecond(2);
+        WaitHelper.waitInSecond(2);
 
         final var attributeAfterDelete = attributeDictionaryService.searchWithQueryPrefix("code", "code01", 1)
                 .next()
@@ -273,7 +275,7 @@ class AttributeRestControllerTest {
     void deleteAll() {
 
         var count = webTestClient.delete()
-                .uri(uri -> uri.pathSegment("v1", "attributes", ":empty").build())
+                .uri(uri -> uri.pathSegment("attributes", ":empty").build())
                 .headers(header -> header.setBasicAuth("user", "user"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -286,7 +288,7 @@ class AttributeRestControllerTest {
                 .expectNextMatches(aLong -> aLong.equals(5L))
                 .verifyComplete();
 
-        TestHelper.waitInSecond(2);
+        WaitHelper.waitInSecond(2);
 
         final var attributeAfterDelete = attributeDictionaryService.searchWithQueryPrefix("code", "code", 10)
                 .collectList()
@@ -300,18 +302,18 @@ class AttributeRestControllerTest {
      */
     private void filling(Resource input) {
 
-        final List<AttributeDictionaryEntity> entities = TestHelper.getManyAttributeCandidates(jack, input);
+        final List<AttributeDictionaryEntity> entities = JackHelper.getManyAttributeCandidates(jack, input);
         Assertions.assertThat(entities).isNotEmpty();
 
         var disposable = attributeDictionaryService.bulk(entities)
                 .subscribe(crudResult -> log.info(" > Create an attribute, result is {}", crudResult));
         Awaitility.await().until(disposable::isDisposed);
 
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
     }
 
     private void clean() {
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
         var result = attributeDictionaryService.deleteAll().blockOptional();
         result.ifPresent(count -> log.info(" > {} attributes deleted", count));
     }

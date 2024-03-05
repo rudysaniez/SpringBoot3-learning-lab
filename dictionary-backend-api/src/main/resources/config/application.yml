@@ -1,0 +1,80 @@
+
+logging:
+  level:
+    root: INFO
+
+server.port: 9080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
+      base-path: /management
+  endpoint:
+    health:
+      show-details: always
+      cache:
+        time-to-live: 10000ms
+    info:
+      cache:
+        time-to-live: 10000ms
+
+springdoc:
+  api-docs:
+    path: /openapi/v3/api-docs
+  swagger-ui:
+    path: /openapi/swagger-ui.html
+  paths-to-match: /**
+  packages-to-scan: com.springboot.learning.backend.api.controller
+
+spring:
+  jackson:
+    deserialization:
+      accept-single-value-as-array: true
+    serialization:
+      write-dates-as-timestamps: false
+    generator:
+      write-numbers-as-strings: false
+    default-property-inclusion: NON_NULL
+    date-format: yyyy-MM-dd'T'HH:mm:ssZ
+
+  application:
+    name: pro-backend-api
+
+  threads:
+    virtual:
+      enabled: false
+
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: ${RESOURCE_SERVER_URI}
+          jwk-set-uri: ${RESOURCE_SERVER_JWK_URI}
+          jws-algorithms: ${RESOURCE_SERVER_JWS_ALGORITHMS}
+
+api:
+  pagination:
+    page: 0
+    size: 10
+
+microservices:
+  dictionary-api-uri: ${DICTIONARY_API_URI}
+  dictionary-api-key: ${DICTIONARY_API_KEY}
+  dictionary-basic-auth-username: ${DICTIONARY_BASIC_AUTH_USERNAME}
+  dictionary-basic-auth-password: ${DICTIONARY_BASIC_AUTH_PASSWORD}
+
+app:
+  eureka-server: ${EUREKA_SERVER}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${app.eureka-server}:8761/eureka/
+    initial-instance-info-replication-interval-seconds: 5
+    registry-fetch-interval-seconds: 5
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 5
+

@@ -30,7 +30,7 @@ spring:
 
       bindings:
         attributeDictionarySyncEventConsume-in-0:
-          destination: adeo-dev-europe-west1-APP-ARBOLPIM-BM-ES-P1-C1-BONSAI-DICTIONNARY-ATTRIBUTE-SYNC-V1
+          destination: adeo-dev-europe-west1-APP-ARBOLPIM-BM-ES-P1-C1-BONSAI-DICTIONARY-ATTRIBUTE-SYNC-V1
           group: svc-arbolpim-app-dev-BM-ES-SCS
           content-type: application/*+avro
 
@@ -41,15 +41,6 @@ spring:
             back-off-initial-interval: 500
             back-off-max-interval: 1000
             back-off-multiplier: 2.0
-
-        attributeDictionarySyncEventConsume-out-0:
-          destination: adeo-dev-europe-west1-APP-ARBOLPIM-BM-ES-P1-C1-BONSAI-DICTIONNARY-ATTRIBUTE-SYNC-V1
-          content-type: application/*+avro
-
-          producer:
-            use-native-encoding: true
-            required-groups:
-              - auditGroup
 
 service.version: v1
 

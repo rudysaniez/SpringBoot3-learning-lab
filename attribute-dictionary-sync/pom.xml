@@ -216,7 +216,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.springboot.learning.sync.ApplicationSyncs</mainClass>
+                    <mainClass>com.springboot.learning.sync.ApplicationSync</mainClass>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,7 +1,7 @@
 package com.springboot.learning.api.mapper;
 
-import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionary;
-import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
+import com.springboot.learning.api.controller.contract.v1.AttributeDictionary;
+import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;

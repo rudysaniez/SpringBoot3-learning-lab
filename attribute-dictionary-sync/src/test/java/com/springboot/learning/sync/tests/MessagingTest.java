@@ -3,9 +3,10 @@ package com.springboot.learning.sync.tests;
 import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionary;
 import com.adeo.bonsai.dictionary.attribute.synchronisation.event.AttributeDictionaryKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
+import com.springboot.learning.common.JackHelper;
+import com.springboot.learning.common.OpensearchHelper;
+import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
 import com.springboot.learning.sync.mapper.AttributeDictionaryAvroMapper;
-import com.springboot.learning.sync.tests.helper.TestHelper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
-import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
@@ -59,9 +59,6 @@ class MessagingTest {
     Consumer<Message<AttributeDictionary>> attributeDictionarySyncEventConsume;
 
     @Autowired
-    OutputDestination outputDestination;
-
-    @Autowired
     ObjectMapper jack;
 
     @Value("classpath:json/attribute01.json")
@@ -75,7 +72,7 @@ class MessagingTest {
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
-                var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
                 result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
             }
         }
@@ -84,7 +81,7 @@ class MessagingTest {
     @Test
     void send(CapturedOutput output) throws IOException {
 
-        final var entity = TestHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
+        final var entity = JackHelper.getAttributeCandidate(jack, attribute01, AttributeDictionaryEntity.class);
         final var avro = mapper.toAvro(entity);
 
         final var msg = MessageBuilder.withPayload(avro)

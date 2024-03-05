@@ -1,10 +1,12 @@
 package com.springboot.learning.service.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.learning.repository.domain.AttributeDictionaryEntity;
+import com.springboot.learning.common.JackHelper;
+import com.springboot.learning.common.OpensearchHelper;
+import com.springboot.learning.common.WaitHelper;
+import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
 import com.springboot.learning.repository.impl.ReactiveOpensearchRepository;
-import com.springboot.learning.service.contract.v1.impl.AttributeDictionaryService;
-import com.springboot.learning.service.tests.helper.TestHelper;
+import com.springboot.learning.service.impl.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,7 +83,7 @@ class AttributeDictionaryServiceTest {
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
-                var result = TestHelper.putIndexV1(opensearch.getHttpHostAddress());
+                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
                 result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
             }
         }
@@ -89,7 +91,7 @@ class AttributeDictionaryServiceTest {
 
     @AfterEach
     void after() {
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
         var deletedNumber = attributeDictionaryService.deleteAll().block();
         log.info(" > Delete all elements {}.", deletedNumber);
     }
@@ -119,7 +121,7 @@ class AttributeDictionaryServiceTest {
     @Test
     void bulk() {
 
-        List<AttributeDictionaryEntity> entities = TestHelper.getManyAttributeCandidates(jack, attributes);
+        List<AttributeDictionaryEntity> entities = JackHelper.getManyAttributeCandidates(jack, attributes);
 
         Flux<ReactiveOpensearchRepository.CrudResult> entityFlux = attributeDictionaryService.bulk(entities);
 
@@ -164,7 +166,7 @@ class AttributeDictionaryServiceTest {
     void update() throws IOException {
 
         save();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
         var attributeIdFound = attributeDictionaryService.searchNoPredicateButLimited(1)
                 .next()
@@ -172,7 +174,7 @@ class AttributeDictionaryServiceTest {
                 .block();
 
         //Get attribute candidate
-        var attributeCandidate = TestHelper.getAttributeCandidate(jack, attribute01Up, AttributeDictionaryEntity.class);
+        var attributeCandidate = JackHelper.getAttributeCandidate(jack, attribute01Up, AttributeDictionaryEntity.class);
 
         //Launch the update
         Mono<AttributeDictionaryEntity> attributeUpdated = attributeDictionaryService.update(
@@ -189,7 +191,7 @@ class AttributeDictionaryServiceTest {
     void search() {
 
         bulk();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
         final SearchSourceBuilder query = SearchSourceBuilder.searchSource()
                 .query(QueryBuilders.matchAllQuery())
@@ -210,7 +212,7 @@ class AttributeDictionaryServiceTest {
     void searchAsPageNumber0() {
 
         bulk();
-        TestHelper.waitInSecond(1);
+        WaitHelper.waitInSecond(1);
 
         final SearchSourceBuilder query = SearchSourceBuilder.searchSource()
                 .query(QueryBuilders.matchAllQuery())

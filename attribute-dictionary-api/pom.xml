@@ -30,6 +30,11 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
         <!-- Spring doc -->
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -298,7 +303,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.springboot.learning.api.ApplicationApis</mainClass>
+                    <mainClass>com.springboot.learning.api.ApplicationDictionaryApi</mainClass>
                 </configuration>
             </plugin>
         </plugins>
