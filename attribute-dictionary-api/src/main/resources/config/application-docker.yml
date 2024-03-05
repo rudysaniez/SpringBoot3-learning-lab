@@ -3,17 +3,12 @@ logging:
   level:
     root: INFO
 
-opensearch:
-  uris: http://opensearch:9200
-  username: admin
-  password: admin
-
 spring:
   cloud:
     stream:
       kafka:
         binder:
-          brokers: broker:9092
+          brokers: ${KAFKA_BROKER}
           auto-create-topics: true
           auto-add-partitions: true
           configuration:
@@ -26,7 +21,7 @@ spring:
           consumer-properties:
             '[key.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
             '[value.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[schema.registry.url]': http://schema-registry:8081
+            '[schema.registry.url]': ${SCHEMA_REGISTRY_URI}
             '[specific.avro.reader]': true
             '[max.poll.records]': 50
             '[fetch.max.wait.ms]': 400
@@ -34,7 +29,7 @@ spring:
           producer-properties:
             '[key.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
             '[value.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[schema.registry.url]': http://schema-registry:8081
+            '[schema.registry.url]': ${SCHEMA_REGISTRY_URI}
 
 application:
   opensearch:

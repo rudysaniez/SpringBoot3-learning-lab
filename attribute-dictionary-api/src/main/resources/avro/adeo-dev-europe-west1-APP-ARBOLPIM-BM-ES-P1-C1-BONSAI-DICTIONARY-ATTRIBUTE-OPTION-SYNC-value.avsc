@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "AttributeOptionDictionary",
+  "namespace" : "com.adeo.bonsai.dictionary.attributeoption.synchronisation.event",
+  "fields": [
+    {"name": "code", "type": "string"},
+    {"name": "attribute", "type": "string"},
+    {"name": "sort_order", "type": "int"},
+    {"name": "labels", "type": {"type": "map", "values": "string"}}
+  ]
+}

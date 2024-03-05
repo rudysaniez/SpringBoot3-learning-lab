@@ -1,0 +1,17 @@
+{
+   "type":"record",
+   "name":"AttributeOptionDictionaryKey",
+   "namespace":"com.adeo.bonsai.dictionary.attributeoption.synchronisation.event",
+   "fields":[
+      {
+         "name":"buId",
+         "type":["null","int"],
+         "default":null
+      },
+  	  {
+	  	"name":"correlationId",
+	  	"type":["null","string"],
+	  	"default":null
+  	  }
+   ]
+}

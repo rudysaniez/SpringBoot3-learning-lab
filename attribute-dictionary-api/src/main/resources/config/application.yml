@@ -111,4 +111,4 @@ service.version: v1
 application:
   opensearch:
     indices:
-      attributes-dictionary-name: attributes_dictionary_${INDICES_VERSION}_${spring.profiles.active}_${BU}
+      attributes-dictionary-name: attributes_dictionary_v1

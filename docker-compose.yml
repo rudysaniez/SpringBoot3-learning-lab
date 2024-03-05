@@ -96,6 +96,11 @@ services:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - OPENSEARCH_URI=http://opensearch:9200
+      - OPENSEARCH_USERNAME=admin
+      - OPENSEARCH_PASSWORD=admin
+      - KAFKA_BROKER=broker:9092
+      - SCHEMA_REGISTRY_URI=http://schema-registry:8081
       - USER_PASSWORD=user
       - WRITER_PASSWORD=writer
       - ADMIN_PASSWORD=admin

@@ -52,7 +52,8 @@ public class AttributeDictionarySenderService {
 
         return Mono.just(entity)
                 .map(mapper::toAvro)
-                .map(attributeDictionnary -> MessageBuilder.withPayload(attributeDictionnary)
+                .doOnNext(attributeDictionary -> log.info(" > Attribute (Avro) {}", attributeDictionary))
+                .map(attributeDictionary -> MessageBuilder.withPayload(attributeDictionary)
                         .setHeader(KafkaHeaders.KEY, new AttributeDictionaryKey(
                                                                 ThreadLocalRandom.current().nextInt(20),
                                                                 UUID.randomUUID().toString()))
