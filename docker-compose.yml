@@ -150,3 +150,13 @@ services:
       - "8761:8761"
     environment:
       - JAVA_OPTS=-Xms512M -Xmx512M
+
+  gateway:
+    image: gateway:latest
+    ports:
+      - "7070:7070"
+    environment:
+      - JAVA_OPTS=-Xms512M -Xmx512M
+      - EUREKA_SERVER=eureka
+      - DICTIONARY_API_URI=http://pro-attribute-dictionary-api
+      - BACKEND_API_URI=http://pro-backend-api

@@ -11,11 +11,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class HealthCheckBackendConfiguration {
+public class HealthCheckBackendConfig {
 
     private final DictionaryIntegration dictionaryIntegration;
 
-    public HealthCheckBackendConfiguration(DictionaryIntegration dictionaryIntegration) {
+    public HealthCheckBackendConfig(DictionaryIntegration dictionaryIntegration) {
         this.dictionaryIntegration = dictionaryIntegration;
     }
 

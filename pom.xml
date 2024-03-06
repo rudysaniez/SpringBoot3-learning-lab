@@ -54,6 +54,7 @@
 		<module>common</module>
 		<module>eureka-server</module>
 		<module>dictionary-entity</module>
+		<module>gateway</module>
 	</modules>
 
 	<repositories>

@@ -10,8 +10,10 @@ docker build -f attribute-dictionary-api/src/main/docker/Dockerfile -t attribute
 docker build -f attribute-dictionary-sync/src/main/docker/Dockerfile -t attribute-dictionary-sync .
 docker build -f dictionary-backend-api/src/main/docker/Dockerfile -t dictionary-backend-api .
 docker build -f eureka-server/src/main/docker/Dockerfile -t eureka-server .
+docker build -f gateway/src/main/docker/Dockerfile -t gateway .
 
 docker images | grep -i attribute-dictionary-api
 docker images | grep -i attribute-dictionary-sync
 docker images | grep -i dictionary-backend-api
 docker images | grep -i eureka-server
+docker images | grep -i gateway
