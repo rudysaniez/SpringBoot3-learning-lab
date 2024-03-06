@@ -3,36 +3,3 @@ logging:
   level:
     root: INFO
     '[com.springboot.learning.api.sender]': DEBUG
-
-spring:
-  cloud:
-    stream:
-      kafka:
-        binder:
-          brokers: localhost:9092
-          auto-create-topics: true
-          auto-add-partitions: true
-          configuration:
-            '[request.timeout.ms]': 60000
-            '[key.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[value.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[key.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[value.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[specific.avro.reader]': true
-          consumer-properties:
-            '[key.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[value.deserializer]': io.confluent.kafka.serializers.KafkaAvroDeserializer
-            '[schema.registry.url]': http://localhost:8081
-            '[specific.avro.reader]': true
-            '[max.poll.records]': 50
-            '[fetch.max.wait.ms]': 400
-            '[fetch.min.bytes]': 50000
-          producer-properties:
-            '[key.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[value.serializer]': io.confluent.kafka.serializers.KafkaAvroSerializer
-            '[schema.registry.url]': http://localhost:8081
-
-application:
-  opensearch:
-    indices:
-      attributes-dictionary-name: attributes_dictionary_v1
