@@ -1,6 +1,6 @@
 package com.springboot.learning.backend.api.config;
 
-import com.springboot.learning.backend.api.integration.DictionaryIntegration;
+import com.springboot.learning.backend.api.integration.DictionaryHealthIntegration;
 import org.springframework.boot.actuate.health.CompositeReactiveHealthContributor;
 import org.springframework.boot.actuate.health.ReactiveHealthContributor;
 import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
@@ -13,9 +13,9 @@ import java.util.Map;
 @Configuration
 public class HealthCheckBackendConfig {
 
-    private final DictionaryIntegration dictionaryIntegration;
+    private final DictionaryHealthIntegration dictionaryIntegration;
 
-    public HealthCheckBackendConfig(DictionaryIntegration dictionaryIntegration) {
+    public HealthCheckBackendConfig(DictionaryHealthIntegration dictionaryIntegration) {
         this.dictionaryIntegration = dictionaryIntegration;
     }
 

@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-@Tag(name = "BonsaiBackendRestController", description = "Reactive REST API for Bonsai backend")
-public interface BonsaiBackendAPI {
+@Tag(name = "BackendAttributeController", description = "Reactive REST API for Bonsai backend")
+public interface BackendAttributeAPI {
 
     @Operation(
             operationId = "getAttributeById",
             summary = "Get attributes by identifier.",
             description = "Get attributes by identifier.",
-            tags = {"BonsaiBackendRestController"}
+            tags = {"BackendAttributeController"}
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The attribute as been found."),
@@ -35,7 +35,7 @@ public interface BonsaiBackendAPI {
             operationId = "getAllAttributes",
             summary = "Get attributes in page.",
             description = "Get attributes in page.",
-            tags = {"BonsaiBackendRestController"}
+            tags = {"BackendAttributeController"}
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The attributes are retrieves in a page"),

@@ -3,8 +3,15 @@ package com.springboot.learning.backend.api.integration;
 import com.adeo.pro.replenishment.api.dictionary.model.AttributeDictionary;
 import com.adeo.pro.replenishment.api.dictionary.model.AttributesApi;
 import com.adeo.pro.replenishment.api.dictionary.model.PageAttributeDictionary;
+import com.adeo.pro.replenishment.api.dictionary.model.PageMetadata;
+import com.springboot.learning.backend.api.controller.contract.v1.AttributeDictionaryModel;
+import com.springboot.learning.backend.api.controller.contract.v1.PageMetadataModel;
+import com.springboot.learning.backend.api.controller.contract.v1.PageModel;
 import com.springboot.learning.backend.api.integration.exception.MicroserviceCalledException;
 import com.springboot.learning.backend.api.integration.retry.RetryStrategy;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -16,6 +23,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Component
 public class AttributeDictionaryIntegration implements AttributesApi {
@@ -47,6 +56,8 @@ public class AttributeDictionaryIntegration implements AttributesApi {
      * @param exchange : the server web exchange
      * @return {@link PageAttributeDictionary}
      */
+    @TimeLimiter(name = "attributes")
+    @CircuitBreaker(name = "attributes", fallbackMethod = "getAllAttributesFallback")
     @Override
     public Mono<ResponseEntity<PageAttributeDictionary>> getAllAttributes(Integer page,
                                                                           Integer size,
@@ -66,9 +77,33 @@ public class AttributeDictionaryIntegration implements AttributesApi {
                 clientResponse -> Mono.empty())
             .bodyToMono(PageAttributeDictionary.class)
             .doOnError(t -> log.error(t.getMessage(), t))
-            .retryWhen(retryStrategy.retryBackoff())
+            //.retryWhen(retryStrategy.retryBackoff())
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.noContent().build());
+    }
+
+    /**
+     * @param page
+     * @param size
+     * @param exchange
+     * @param ex
+     * @return
+     */
+    public Mono<ResponseEntity<PageAttributeDictionary>> getAllAttributesFallback(Integer page,
+                                                                                  Integer size,
+                                                                                  ServerWebExchange exchange,
+                                                                                  CallNotPermittedException ex) {
+
+        log.warn("Creating a fail-fast fallback attributes for page = {}, size = {} and exception = {}.",
+                page, size, ex.toString());
+
+        final var empty = new PageAttributeDictionary()
+            .content(List.of())
+            .pageMetadata(new PageMetadata().number(0).size(0).totalElements(0L).totalPages(0L));
+
+        return Mono.just(empty)
+            .map(ResponseEntity::ok)
+            ;
     }
 
     /**

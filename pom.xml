@@ -43,6 +43,7 @@
 		<rest-assured.version>5.4.0</rest-assured.version>
 		<junit-platform-suite.version>1.10.2</junit-platform-suite.version>
 		<mockserver-netty.version>5.15.0</mockserver-netty.version>
+		<resilience4j.version>2.2.0</resilience4j.version>
 	</properties>
 
 	<modules>

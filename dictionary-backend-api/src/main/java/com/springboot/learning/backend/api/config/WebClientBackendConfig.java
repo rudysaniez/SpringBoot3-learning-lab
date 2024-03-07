@@ -6,6 +6,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServerBearerExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.DefaultUriBuilderFactory;
@@ -50,13 +51,9 @@ public class WebClientBackendConfig {
 
         log.info(" > The dictionaryWebClient is created with uri={}", microservices.dictionaryApiUri());
 
-        return webClientBuilder.defaultHeaders(headers ->
-                    headers.setBasicAuth(
-                        microservices.dictionaryBasicAuthUsername(),
-                        microservices.dictionaryBasicAuthPassword())
-                )
-                .exchangeStrategies(exchangeStrategies())
+        return webClientBuilder.exchangeStrategies(exchangeStrategies())
                 .uriBuilderFactory(new DefaultUriBuilderFactory(microservices.dictionaryApiUri()))
+                .filter(new ServerBearerExchangeFilterFunction())
                 .build();
     }
 }

@@ -4,7 +4,7 @@ import com.adeo.pro.replenishment.api.dictionary.model.AttributeDictionary;
 import com.adeo.pro.replenishment.api.dictionary.model.PageAttributeDictionary;
 import com.springboot.learning.backend.api.config.PropertiesBackendConfig;
 import com.springboot.learning.backend.api.controller.contract.v1.AttributeDictionaryModel;
-import com.springboot.learning.backend.api.controller.contract.v1.BonsaiBackendAPI;
+import com.springboot.learning.backend.api.controller.contract.v1.BackendAttributeAPI;
 import com.springboot.learning.backend.api.controller.contract.v1.PageModel;
 import com.springboot.learning.backend.api.integration.AttributeDictionaryIntegration;
 import com.springboot.learning.backend.api.mapper.AttributeDictionaryMapper;
@@ -17,17 +17,17 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @RestController
-public class BonsaiBackendRestController implements BonsaiBackendAPI {
+public class BackendAttributeController implements BackendAttributeAPI {
 
     private final AttributeDictionaryIntegration attributeDictionaryIntegration;
     private final PropertiesBackendConfig.Pagination pagination;
 
     private static final AttributeDictionaryMapper attributeDictionaryMapper = Mappers.getMapper(AttributeDictionaryMapper.class);
 
-    private static final Logger log = LoggerFactory.getLogger(BonsaiBackendRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(BackendAttributeController.class);
 
-    public BonsaiBackendRestController(AttributeDictionaryIntegration attributeDictionaryIntegration,
-                                       PropertiesBackendConfig.Pagination pagination) {
+    public BackendAttributeController(AttributeDictionaryIntegration attributeDictionaryIntegration,
+                                      PropertiesBackendConfig.Pagination pagination) {
 
         this.attributeDictionaryIntegration = attributeDictionaryIntegration;
         this.pagination = pagination;

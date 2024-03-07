@@ -8,6 +8,9 @@ server:
   port: 9080
 
 management:
+  health:
+    circuitbreakers:
+      enabled: true
   endpoints:
     web:
       exposure:
@@ -64,8 +67,6 @@ api:
 microservices:
   dictionary-api-uri: ${DICTIONARY_API_URI}
   dictionary-api-key: ${DICTIONARY_API_KEY}
-  dictionary-basic-auth-username: ${DICTIONARY_BASIC_AUTH_USERNAME}
-  dictionary-basic-auth-password: ${DICTIONARY_BASIC_AUTH_PASSWORD}
 
 app:
   eureka-server: ${EUREKA_SERVER}
@@ -79,3 +80,23 @@ eureka:
   instance:
     lease-renewal-interval-in-seconds: 5
     lease-expiration-duration-in-seconds: 5
+
+resilience4j:
+  timelimiter:
+    instances:
+      attributes:
+        timeout-duration:
+          seconds: 2
+  circuitbreaker:
+    instances:
+      attributes:
+        allow-health-indicator-to-fail: false
+        register-health-indicator: true
+        sliding-window-type: count_based
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        ignore-exceptions:
+          - com.springboot.learning.backend.api.integration.exception.InvalidInputException

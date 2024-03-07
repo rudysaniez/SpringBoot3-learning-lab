@@ -10,9 +10,6 @@ public class PropertiesBackendConfig {
     public record Pagination(int page, int size) {}
 
     @ConfigurationProperties(prefix = "microservices")
-    public record Microservices(
-            String dictionaryApiUri,
-            String dictionaryApiKey,
-            String dictionaryBasicAuthUsername,
-            String dictionaryBasicAuthPassword) {}
+    public record Microservices(String dictionaryApiUri,
+                                String dictionaryApiKey) {}
 }

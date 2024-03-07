@@ -51,6 +51,14 @@ spring:
     virtual:
       enabled: false
 
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: ${RESOURCE_SERVER_URI}
+          jwk-set-uri: ${RESOURCE_SERVER_JWK_URI}
+          jws-algorithms: ${RESOURCE_SERVER_JWS_ALGORITHMS}
+
   cloud:
     stream:
       default-binder: kafka

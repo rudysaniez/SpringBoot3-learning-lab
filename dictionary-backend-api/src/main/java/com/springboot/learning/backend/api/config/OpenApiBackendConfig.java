@@ -13,8 +13,8 @@ public class OpenApiBackendConfig {
     OpenAPI openAPI() {
 
         return new OpenAPI()
-                .info(new Info().title("Bonsai backend reactive API")
-                        .description("The Bonsai backend reactive API")
+                .info(new Info().title("Backend attribute reactive API")
+                        .description("Backend attribute reactive API")
                         .version("1")
                         .contact(new Contact()
                                 .name("rudysaniez")

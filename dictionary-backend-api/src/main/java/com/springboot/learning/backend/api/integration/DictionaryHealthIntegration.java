@@ -9,13 +9,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Component
-public class DictionaryIntegration {
+public class DictionaryHealthIntegration {
 
     private final WebClient dictionaryWebClient;
 
-    private static final Logger log = LoggerFactory.getLogger(DictionaryIntegration.class);
+    private static final Logger log = LoggerFactory.getLogger(DictionaryHealthIntegration.class);
 
-    public DictionaryIntegration(WebClient dictionaryWebClient) {
+    public DictionaryHealthIntegration(WebClient dictionaryWebClient) {
         this.dictionaryWebClient = dictionaryWebClient;
     }
 
