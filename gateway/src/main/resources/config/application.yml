@@ -43,18 +43,28 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: backend
+        - id: backend-attribute
+          uri: lb://${app.backend-name}
+          predicates:
+            - Path=/dictionary/attributes/{segment}
+
+        - id: backend-attributes
           uri: lb://${app.backend-name}
           predicates:
             - Path=/dictionary/attributes/**
+
         - id: backend-swagger-ui
           uri: lb://${app.backend-name}
           predicates:
             - Path=/openapi/**
-        - id: eureka-apps
+
+        - id: eureka-api
           uri: http://${app.eureka-server}:8761
           predicates:
-            - Path=/eureka/apps
+            - Path=/eureka/api/{segment}
+          filters:
+            - SetPath=/eureka/{segment}
+
         - id: eureka-web
           uri: http://${app.eureka-server}:8761
           predicates:
