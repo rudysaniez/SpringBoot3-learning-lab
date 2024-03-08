@@ -58,10 +58,25 @@ public class OpensearchHelper {
     public static Optional<OpenSearchIndexCreationResult> putIndexV1(String baseUrl) {
         return OpensearchHelper.putIndex(
                 new ClassPathResource("index/index_attribute_dictionary_v1.json"),
-                "attributes_dictionary_v1",
+                INDEX_NAME_V1,
+                baseUrl
+        );
+    }
+
+    /**
+     * @param baseUrl : the opensearch base URL
+     * @param indexName : the index name
+     * @return {@link OpenSearchIndexCreationResult}
+     */
+    public static Optional<OpenSearchIndexCreationResult> putIndexV1(String baseUrl, String indexName) {
+        return OpensearchHelper.putIndex(
+                new ClassPathResource("index/index_attribute_dictionary_v1.json"),
+                indexName,
                 baseUrl
         );
     }
 
     public record OpenSearchIndexCreationResult(boolean acknowledged, boolean shards_acknowledged, String index) {}
+
+    public static final String INDEX_NAME_V1 = "attributes_dictionary_v1";
 }

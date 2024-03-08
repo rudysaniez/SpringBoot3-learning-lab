@@ -100,3 +100,11 @@ resilience4j:
         automatic-transition-from-open-to-half-open-enabled: true
         ignore-exceptions:
           - com.springboot.learning.backend.api.integration.exception.InvalidInputException
+  retry:
+    instances:
+      attributes:
+        max-attempts: 3
+        wait-duration:
+          seconds: 1
+        retry-exceptions:
+          - com.springboot.learning.backend.api.integration.exception.MicroserviceCalledException

@@ -11,6 +11,7 @@ import com.springboot.learning.backend.api.integration.exception.MicroserviceCal
 import com.springboot.learning.backend.api.integration.retry.RetryStrategy;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,7 @@ public class AttributeDictionaryIntegration implements AttributesApi {
      * @param exchange : the server web exchange
      * @return {@link PageAttributeDictionary}
      */
+    @Retry(name = "attributes")
     @TimeLimiter(name = "attributes")
     @CircuitBreaker(name = "attributes", fallbackMethod = "getAllAttributesFallback")
     @Override
@@ -77,17 +79,16 @@ public class AttributeDictionaryIntegration implements AttributesApi {
                 clientResponse -> Mono.empty())
             .bodyToMono(PageAttributeDictionary.class)
             .doOnError(t -> log.error(t.getMessage(), t))
-            //.retryWhen(retryStrategy.retryBackoff())
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.noContent().build());
     }
 
     /**
-     * @param page
-     * @param size
-     * @param exchange
-     * @param ex
-     * @return
+     * @param page (optional, default to 0)
+     * @param size (optional, default to 5)
+     * @param exchange : the server web exchange
+     * @param ex : the call not permitted exception
+     * @return flow of {@link PageAttributeDictionary}
      */
     public Mono<ResponseEntity<PageAttributeDictionary>> getAllAttributesFallback(Integer page,
                                                                                   Integer size,
@@ -102,8 +103,7 @@ public class AttributeDictionaryIntegration implements AttributesApi {
             .pageMetadata(new PageMetadata().number(0).size(0).totalElements(0L).totalPages(0L));
 
         return Mono.just(empty)
-            .map(ResponseEntity::ok)
-            ;
+            .map(ResponseEntity::ok);
     }
 
     /**
