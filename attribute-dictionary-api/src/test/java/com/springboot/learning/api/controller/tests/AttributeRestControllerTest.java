@@ -7,6 +7,7 @@ import com.springboot.learning.common.JackHelper;
 import com.springboot.learning.common.OpensearchHelper;
 import com.springboot.learning.common.WaitHelper;
 import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
+import com.springboot.learning.repository.impl.ReactiveOpensearchMappingRepository;
 import com.springboot.learning.service.impl.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
@@ -58,6 +59,7 @@ class AttributeRestControllerTest {
     @Autowired WebTestClient webTestClient;
     @Autowired ObjectMapper jack;
     @Autowired AttributeDictionaryService attributeDictionaryService;
+    @Autowired ReactiveOpensearchMappingRepository mappingRepository;
 
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
@@ -71,20 +73,10 @@ class AttributeRestControllerTest {
     @Value("classpath:json/attributeBad01.json")
     Resource attributeBad01;
 
-    static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
-
     static final Logger log = LoggerFactory.getLogger(AttributeRestControllerTest.class);
 
     @BeforeEach
     void setup() {
-
-        synchronized (this) {
-            if(!INDEX_IS_CREATED.get()) {
-                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
-                result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
-            }
-        }
-
         filling(attributes);
     }
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.learning.common.JackHelper;
 import com.springboot.learning.common.OpensearchHelper;
 import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
+import com.springboot.learning.repository.impl.ReactiveOpensearchMappingRepository;
 import com.springboot.learning.sync.mapper.AttributeDictionaryAvroMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,8 +62,14 @@ class MessagingTest {
     @Autowired
     ObjectMapper jack;
 
+    @Autowired
+    ReactiveOpensearchMappingRepository mappingRepository;
+
     @Value("classpath:json/attribute01.json")
     Resource attribute01;
+
+    @Value("classpath:index/index_attribute_dictionary_v1.json")
+    Resource indexAttributeDictionaryV1;
 
     static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
     static final AttributeDictionaryAvroMapper mapper = Mappers.getMapper(AttributeDictionaryAvroMapper.class);
@@ -72,8 +79,12 @@ class MessagingTest {
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
-                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
-                result.ifPresent(openSearchIndexCreationResult -> INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged()));
+                mappingRepository.createIndex(
+                    OpensearchHelper.INDEX_NAME_V1,
+                    indexAttributeDictionaryV1,
+                    true)
+                .block();
+                INDEX_IS_CREATED.set(true);
             }
         }
     }

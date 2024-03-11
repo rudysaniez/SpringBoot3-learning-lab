@@ -68,11 +68,12 @@ class AttributeMappingRepositoryTest {
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
-                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
-                result.ifPresent(openSearchIndexCreationResult -> {
-                    INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged());
-                    IDX_TARGET.set(openSearchIndexCreationResult.index());
-                });
+                opensearchMappingRepository.createIndex(
+                        OpensearchHelper.INDEX_NAME_V1,
+                        indexAttributeDictionaryV1,
+                        true)
+                    .block();
+                INDEX_IS_CREATED.set(true);
             }
         }
     }

@@ -5,6 +5,7 @@ import com.springboot.learning.common.JackHelper;
 import com.springboot.learning.common.OpensearchHelper;
 import com.springboot.learning.common.WaitHelper;
 import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
+import com.springboot.learning.repository.impl.ReactiveOpensearchMappingRepository;
 import com.springboot.learning.repository.impl.ReactiveOpensearchRepository;
 import com.springboot.learning.service.impl.AttributeDictionaryService;
 import org.assertj.core.api.Assertions;
@@ -72,6 +73,9 @@ class AttributeDictionaryServiceTest {
     @Value("classpath:json/attributes.json")
     Resource attributes;
 
+    @Value("classpath:index/index_attribute_dictionary_v1.json")
+    Resource indexAttributeDictionaryV1;
+
     private static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
     private static final String IDX_TARGET = "attribute_dictionary_v1";
     private static final Logger log = LoggerFactory.getLogger(AttributeDictionaryServiceTest.class);
@@ -80,6 +84,18 @@ class AttributeDictionaryServiceTest {
     void setup() {
         opensearchRepository = new ReactiveOpensearchRepository(highLevelClient, jack);
         attributeDictionaryService = new AttributeDictionaryService(opensearchRepository);
+        var opensearchMappingRepository = new ReactiveOpensearchMappingRepository(highLevelClient);
+
+        synchronized (this) {
+            if(!INDEX_IS_CREATED.get()) {
+                opensearchMappingRepository.createIndex(
+                    OpensearchHelper.INDEX_NAME_V1,
+                    indexAttributeDictionaryV1,
+                    true)
+                .block();
+                INDEX_IS_CREATED.set(true);
+            }
+        }
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {

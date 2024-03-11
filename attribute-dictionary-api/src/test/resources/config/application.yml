@@ -40,6 +40,14 @@ spring:
     virtual:
       enabled: false
 
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: https://idpb2e-rec.adeo.com
+          jwk-set-uri: https://idpb2e-rec.adeo.com/ext/oauth/jwks
+          jws-algorithms: RS512
+
   cloud:
     stream:
       default-binder: kafka
@@ -60,36 +68,6 @@ api:
   pagination:
     page: 0
     size: 20
-
-security:
-  access:
-    users:
-      -
-        username: user
-        password: user
-        authorities:
-          - READER
-          - WRITER
-
-      -
-        username: user_writer
-        password: user_writer
-        authorities:
-          - READER
-          - WRITER
-
-      -
-        username: admin
-        password: admin
-        authorities:
-          - READER
-          - WRITER
-          - ADMIN
-
-      - username: bob
-        password: bob
-        authorities:
-          - READER
 
 service.version: v1
 

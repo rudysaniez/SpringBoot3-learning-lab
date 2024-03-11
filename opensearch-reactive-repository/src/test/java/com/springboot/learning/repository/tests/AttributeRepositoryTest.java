@@ -5,6 +5,7 @@ import com.springboot.learning.common.JackHelper;
 import com.springboot.learning.common.OpensearchHelper;
 import com.springboot.learning.common.WaitHelper;
 import com.springboot.learning.dictionary.domain.AttributeDictionaryEntity;
+import com.springboot.learning.repository.impl.ReactiveOpensearchMappingRepository;
 import com.springboot.learning.repository.impl.ReactiveOpensearchRepository;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
@@ -92,6 +93,9 @@ class AttributeRepositoryTest {
     @Value("classpath:json/attributes.json")
     Resource attributes;
 
+    @Value("classpath:index/index_attribute_dictionary_v1.json")
+    Resource indexAttributeDictionaryV1;
+
     private static final AtomicBoolean INDEX_IS_CREATED = new AtomicBoolean();
     private static final AtomicReference<String> IDX_TARGET = new AtomicReference<>();
     private static final Logger log = LoggerFactory.getLogger(AttributeRepositoryTest.class);
@@ -99,14 +103,17 @@ class AttributeRepositoryTest {
     @BeforeEach
     void setup() {
         opensearchRepository = new ReactiveOpensearchRepository(highLevelClient, jack);
+        var opensearchMappingRepository = new ReactiveOpensearchMappingRepository(highLevelClient);
 
         synchronized (this) {
             if(!INDEX_IS_CREATED.get()) {
-                var result = OpensearchHelper.putIndexV1(opensearch.getHttpHostAddress());
-                result.ifPresent(openSearchIndexCreationResult -> {
-                    INDEX_IS_CREATED.set(openSearchIndexCreationResult.acknowledged());
-                    IDX_TARGET.set(openSearchIndexCreationResult.index());
-                });
+                opensearchMappingRepository.createIndex(
+                                OpensearchHelper.INDEX_NAME_V1,
+                                indexAttributeDictionaryV1,
+                                true)
+                        .block();
+                INDEX_IS_CREATED.set(true);
+                IDX_TARGET.set(OpensearchHelper.INDEX_NAME_V1);
             }
         }
     }

@@ -114,31 +114,6 @@ api:
     page: 0
     size: 20
 
-security:
-  access:
-    users:
-      -
-        username: user
-        password: ${USER_PASSWORD}
-        authorities:
-          - READER
-          - WRITER
-
-      -
-        username: user_writer
-        password: ${WRITER_PASSWORD}
-        authorities:
-          - READER
-          - WRITER
-
-      -
-        username: admin
-        password: ${ADMIN_PASSWORD}
-        authorities:
-          - READER
-          - WRITER
-          - ADMIN
-
 service.version: v1
 
 application:
