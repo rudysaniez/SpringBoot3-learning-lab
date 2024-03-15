@@ -20,6 +20,7 @@ import reactor.core.scheduler.Schedulers;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 @ConditionalOnProperty(prefix = "service", name = "version", havingValue = "v1")
@@ -34,9 +35,9 @@ public class AttributeDictionarySenderService {
     public static final String BINDING_TARGET = "attributeDictionarySyncEventConsume-out-0";
     private static final Logger log = LoggerFactory.getLogger(AttributeDictionarySenderService.class);
 
-    public AttributeDictionarySenderService(StreamBridge streamBridge, Executor taskExecutor) {
+    public AttributeDictionarySenderService(StreamBridge streamBridge) {
         this.streamBridge = streamBridge;
-        this.scheduler = Schedulers.fromExecutor(taskExecutor);
+        this.scheduler = Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor());
     }
 
     /**

@@ -9,10 +9,10 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>authorization-server</artifactId>
+    <artifactId>authorization-server-default</artifactId>
 
-    <name>pro-authorization-server</name>
-    <description>The authorization server</description>
+    <name>pro-authorization-server-default</name>
+    <description>The default authorization server</description>
 
     <dependencies>
         <dependency>

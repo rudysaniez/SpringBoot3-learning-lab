@@ -21,6 +21,10 @@ import java.util.List;
 @Configuration
 public class SecurityBackendConfig {
 
+    static final String WRITE = "SCOPE_attribute:write";
+    static final String READ = "SCOPE_attribute:read";
+    static final String[] AUTHORITIES_READ_WRITE = new String[]{READ, WRITE};
+
     private static final Logger log = LoggerFactory.getLogger(SecurityBackendConfig.class);
 
     @Bean
@@ -31,8 +35,11 @@ public class SecurityBackendConfig {
         http.cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(auth -> auth
-                    .matchers(EndpointRequest.to(Management.INFO,Management.HEALTH)).permitAll()
-                    .anyExchange().permitAll()
+                .matchers(EndpointRequest.to(Management.INFO,Management.HEALTH)).permitAll()
+                .pathMatchers("/openapi/**").permitAll()
+                .pathMatchers("/webjars/**").permitAll()
+                .pathMatchers("/dictionary/attributes/**").hasAnyAuthority(AUTHORITIES_READ_WRITE)
+                .anyExchange().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 

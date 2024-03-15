@@ -6,6 +6,12 @@ logging:
     '[org.springframework.cloud.gateway]': TRACE
 
 server.port: 7070
+server:
+  ssl:
+    key-store-type: PKCS12
+    key-store: ${SERVER_SSL_KEY_STORE}
+    key-store-password: ${SERVER_SSL_KEY_STORE_PASSWORD}
+    key-alias: localhost
 
 management:
   endpoints:
@@ -58,6 +64,11 @@ spring:
           predicates:
             - Path=/openapi/**
 
+        - id: dictionary-attribute
+          uri: lb://${app.dictionary-api}
+          predicates:
+            - Path=/attributes/**
+
         - id: eureka-api
           uri: http://${app.eureka-server}:8761
           predicates:
@@ -75,11 +86,16 @@ spring:
 app:
   eureka-server: ${EUREKA_SERVER}
   backend-name: pro-backend-api
+  dictionary-api: pro-attribute-dictionary-api
+
+security:
+  eureka-username: ${EUREKA_USERNAME}
+  eureka-password: ${EUREKA_PASSWORD}
 
 eureka:
   client:
     service-url:
-      defaultZone: http://${app.eureka-server}:8761/eureka/
+      defaultZone: http://${security.eureka-username}:${security.eureka-password}@${app.eureka-server}:8761/eureka/
     initial-instance-info-replication-interval-seconds: 5
     registry-fetch-interval-seconds: 5
   instance:

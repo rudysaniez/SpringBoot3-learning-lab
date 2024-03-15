@@ -57,3 +57,6 @@ target
 /node
 /node/**
 /.parcel-cache
+
+# data used by opensearch by example
+data

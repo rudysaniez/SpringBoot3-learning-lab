@@ -51,5 +51,5 @@ eureka:
     response-cache-update-interval-ms: 5000
 
 security:
-  eureka-username: ${EUREKA_USERNAME}
-  eureka-password: ${EUREKA_PASSWORD}
+  eureka-username: user
+  eureka-password: user_password

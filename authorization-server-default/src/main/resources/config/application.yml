@@ -2,8 +2,9 @@
 logging:
   level:
     root: INFO
+    '[org.springframework.security: trace]': TRACE
 
-server.port: 9999
+server.port: 9998
 server:
   forward-headers-strategy: framework
 
@@ -34,11 +35,41 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ssZ
 
   application:
-    name: auth-server
+    name: auth-server-default
 
   threads:
     virtual:
       enabled: false
+
+  security:
+    user:
+      name: user1
+      password: user1
+    oauth2:
+      authorizationserver:
+        client:
+          messaging-client:
+            registration:
+              client-id: "attribute-client"
+              client-secret: "{noop}attribute_secret"
+              client-authentication-methods:
+                - "client_secret_basic"
+              authorization-grant-types:
+                - "authorization_code"
+                - "refresh_token"
+                - "client_credentials"
+              redirect-uris:
+                - "http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc"
+                - "http://127.0.0.1:8080/authorized"
+                - "http://localhost:9080/openapi/webjars/swagger-ui/oauth2-redirect.html"
+              post-logout-redirect-uris:
+                - "http://127.0.0.1:8080/logged-out"
+              scopes:
+                - "openid"
+                - "profile"
+                - "attribute:read"
+                - "attribute:write"
+            require-authorization-consent: true
 
 app:
   eureka-server: ${EUREKA_SERVER}

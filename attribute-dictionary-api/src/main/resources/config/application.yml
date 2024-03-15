@@ -99,10 +99,14 @@ spring:
 app:
   eureka-server: ${EUREKA_SERVER}
 
+security:
+  eureka-username: ${EUREKA_USERNAME}
+  eureka-password: ${EUREKA_PASSWORD}
+
 eureka:
   client:
     service-url:
-      defaultZone: http://${app.eureka-server}:8761/eureka/
+      defaultZone: http://${security.eureka-username}:${security.eureka-password}@${app.eureka-server}:8761/eureka/
     initial-instance-info-replication-interval-seconds: 5
     registry-fetch-interval-seconds: 5
   instance:

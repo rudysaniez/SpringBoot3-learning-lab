@@ -44,6 +44,7 @@
 		<junit-platform-suite.version>1.10.2</junit-platform-suite.version>
 		<mockserver-netty.version>5.15.0</mockserver-netty.version>
 		<resilience4j.version>2.2.0</resilience4j.version>
+		<spring-security-oauth2-authorization-server.version>1.2.2</spring-security-oauth2-authorization-server.version>
 	</properties>
 
 	<modules>
@@ -56,6 +57,8 @@
 		<module>eureka-server</module>
 		<module>dictionary-entity</module>
 		<module>gateway</module>
+		<module>authorization-server</module>
+		<module>authorization-server-default</module>
 	</modules>
 
 	<repositories>

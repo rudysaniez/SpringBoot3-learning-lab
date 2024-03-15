@@ -17,6 +17,8 @@ services:
     ports:
       - 9200:9200
       - 9600:9600
+    volumes:
+      - './data/opensearch:/usr/share/opensearch/data'
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -160,3 +162,7 @@ services:
       - EUREKA_SERVER=eureka
       - DICTIONARY_API_URI=http://pro-attribute-dictionary-api
       - BACKEND_API_URI=http://pro-backend-api
+      - SERVER_SSL_KEY_STORE=file:/keystore/edge-test.p12
+      - SERVER_SSL_KEY_STORE_PASSWORD=testtest
+    volumes:
+      - $PWD/keystore:/keystore

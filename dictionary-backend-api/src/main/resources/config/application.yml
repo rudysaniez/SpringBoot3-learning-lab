@@ -23,15 +23,25 @@ management:
         time-to-live: 10000ms
     info:
       cache:
-        time-to-live: 10000ms
+        time-to-live: 5000ms
 
 springdoc:
   api-docs:
     path: /openapi/v3/api-docs
   swagger-ui:
     path: /openapi/swagger-ui.html
+    oauth2-redirect-url: /swagger-ui/oauth2-redirect.html
+    oauth:
+      client-id: ${CLIENT_ID}
+      client-secret: ${CLIENT_SECRET}
+      use-basic-authentication-with-access-code-grant: true
+  oAuthFlow:
+    authorizationUrl: ${OAUTH2_AUTHORIZE}
+    tokenUrl: ${OAUTH2_TOKEN}
   paths-to-match: /**
   packages-to-scan: com.springboot.learning.backend.api.controller
+  cache:
+    disabled: true
 
 spring:
   jackson:
@@ -71,10 +81,14 @@ microservices:
 app:
   eureka-server: ${EUREKA_SERVER}
 
+security:
+  eureka-username: ${EUREKA_USERNAME}
+  eureka-password: ${EUREKA_PASSWORD}
+
 eureka:
   client:
     service-url:
-      defaultZone: http://${app.eureka-server}:8761/eureka/
+      defaultZone: http://${security.eureka-username}:${security.eureka-password}@${app.eureka-server}:8761/eureka/
     initial-instance-info-replication-interval-seconds: 5
     registry-fetch-interval-seconds: 5
   instance:

@@ -17,6 +17,8 @@ services:
     ports:
       - 9200:9200
       - 9600:9600
+    volumes:
+      - './data/opensearch:/usr/share/opensearch/data'
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
